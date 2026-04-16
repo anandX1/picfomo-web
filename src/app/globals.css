@@ -1,26 +1,86 @@
 @import "tailwindcss";
 
-:root {
-	--background: #ffffff;
-	--foreground: #171717;
+@theme {
+  /* PicFOMO Premium Palette */
+  --color-white: #FAFAF8;
+  --color-cream: #F5F1EA;
+  --color-cream2: #EDE8DE;
+  --color-ink: #111009;
+  --color-ink2: #3A3830;
+  --color-ink3: #8A8478;
+  --color-gold: #C8971F;
+  --color-gold-light: #F0C84A;
+  --color-gold-pale: #FBF3DC;
+  --color-gold-border: rgba(200, 151, 31, 0.2);
+  
+  /* System Colors */
+  --color-red: #D94035;
+  --color-grn: #2E7D52;
+
+  /* --- TAILWIND V4 NATIVE ANIMATIONS --- */
+  --animate-scroll-up: scroll-up 25s linear infinite;
+  --animate-scroll-down: scroll-down 30s linear infinite;
+  --animate-scroll-left: scroll-left 25s linear infinite;
+
+  @keyframes scroll-up {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+  }
+  
+  @keyframes scroll-down {
+    0% { transform: translateY(-50%); }
+    100% { transform: translateY(0); }
+  }
+  
+  @keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 }
 
-@theme inline {
-	--color-background: var(--background);
-	--color-foreground: var(--foreground);
-	--font-sans: var(--font-geist-sans);
-	--font-mono: var(--font-geist-mono);
+@layer base {
+  :root {
+    --rule: rgba(17, 16, 9, 0.08);
+    --rule2: rgba(17, 16, 9, 0.04);
+  }
+
+  body {
+    background-color: var(--color-white);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--background: #0a0a0a;
-		--foreground: #ededed;
-	}
-}
+@layer utilities {
+  .c-ghibli { background: linear-gradient(160deg, #2d5a3d, #4a8c63, #2d5a3d); }
+  .c-ipl { background: linear-gradient(160deg, #1c3d5c, #2d6194, #1c3d5c); }
+  .c-action { background: linear-gradient(160deg, #2d2d52, #4848a8, #2d2d52); }
+  .c-bolly { background: linear-gradient(160deg, #5c2d2d, #a84848, #5c1c1c); }
+  .c-wedding { background: linear-gradient(160deg, #5c3d1c, #a86e33, #5c2d0a); }
 
-body {
-	background: var(--background);
-	color: var(--foreground);
-	font-family: Arial, Helvetica, sans-serif;
+  /* --- THE SOCIAL UI OVERRIDE --- */
+  /* Any element wrapped in .app-ui will automatically strip away the fancy marketing styles */
+  .app-ui .font-\[family-name\:var\(--mono\)\] {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  }
+  
+  .app-ui .tracking-\[1px\],
+  .app-ui .tracking-\[2px\],
+  .app-ui .tracking-\[3px\] {
+    letter-spacing: normal !important;
+  }
+  
+  .app-ui .text-\[9px\],
+  .app-ui .text-\[10px\],
+  .app-ui .text-\[11px\],
+  .app-ui .text-\[12px\] {
+    font-size: 13px !important;
+    text-transform: none !important;
+    font-weight: 500 !important;
+  }
+
+  .app-ui .uppercase {
+    text-transform: none !important;
+  }
 }

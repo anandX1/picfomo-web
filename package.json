@@ -13,10 +13,19 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1030.0",
+    "@clerk/nextjs": "^7.0.11",
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@opennextjs/cloudflare": "^1.17.1",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.7.0",
     "next": "16.1.5",
     "react": "19.1.5",
-    "react-dom": "19.1.5"
+    "react-dom": "19.1.5",
+    "replicate": "^1.4.0",
+    "sonner": "^2.0.7",
+    "svix": "^1.90.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

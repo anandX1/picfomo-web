@@ -1,0 +1,10 @@
+help
+cloudflared tunnel --url http://localhost:3000
+
+
+to fetch user peferd monthly price on sparks npx wrangler d1 execute picfomo-prod --local --command="SELECT * FROM early_access_leads;"
+
+
+
+
+npx tree-cli -l 4 -x node_modules,.git,.next,public --dirs-first
