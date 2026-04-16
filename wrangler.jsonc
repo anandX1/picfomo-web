@@ -1,10 +1,19 @@
 {
-  "name": "picfomo-web",
-  "compatibility_date": "2026-04-08",
-  "compatibility_flags": ["nodejs_compat"],
-  "main": ".open-next/worker.js",
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  }
+	"name": "picfomo-web",
+	"compatibility_date": "2026-04-08",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": ".open-next/worker.js",
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "picfomo-prod",
+			"database_id": "33031e9b-d764-4458-82d5-4038cd4b906e"
+		}
+	]
 }
