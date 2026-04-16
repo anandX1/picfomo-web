@@ -1,12 +1,12 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import { ShieldAlert, Settings2, Eye, EyeOff, Trash2, Target } from "lucide-react";
 import StyleForm from "./StyleForm";
 import TaskForm from "./TaskForm";
 import { toggleStyleActive, deleteStyle, toggleTaskActive, deleteTask } from "@/actions/admin";
 
-export const runtime = "edge";
+
 
 export default async function AdminDashboard() {
   const user = await currentUser();
@@ -17,7 +17,7 @@ export default async function AdminDashboard() {
     redirect("/dashboard");
   }
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
   
   // Fetch both Styles and Bounties
   const [stylesResult, tasksResult] = await db.batch([

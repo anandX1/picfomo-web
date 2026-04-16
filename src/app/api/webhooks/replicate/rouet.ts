@@ -1,7 +1,3 @@
-import { getRequestContext } from "@cloudflare/next-on-pages";
-
-export const runtime = "edge";
-
 export async function POST(req: Request) {
   try {
     // 1. THE BOUNCER: Check for your custom secret
@@ -22,7 +18,7 @@ export async function POST(req: Request) {
         const imageUrl = body.output[0];
         const predictionId = body.id; // Replicate's unique ID for this generation
         
-        const db = getRequestContext().env.DB;
+        const db = ((process.env as any).DB as D1Database);
 
         // 4. Update the Vault! Find the "pending" post and attach the finished image.
         await db.prepare("UPDATE posts SET image_url = ?, status = 'completed' WHERE replicate_id = ?")

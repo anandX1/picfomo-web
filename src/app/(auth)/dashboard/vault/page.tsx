@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import VaultClient from "./VaultClient";
 
-export const runtime = "edge";
+
 
 interface VaultPost {
   id: string;
@@ -15,7 +15,7 @@ export default async function VaultPage() {
   const { userId } = await auth();
   if (!userId) return null;
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   // Fetch ONLY the current user's posts
   const { results: posts } = await db

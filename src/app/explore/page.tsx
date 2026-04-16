@@ -1,12 +1,12 @@
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import FeedClient from "./FeedClient";
 import { auth } from "@clerk/nextjs/server";
 
-export const runtime = "edge";
+
 export const revalidate = 0;
 
 export default async function ExplorePage() {
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
   const { userId } = await auth();
 
   // THE FIX: Added 'is_liked_by_me' to the query to prevent fake red hearts and spamming

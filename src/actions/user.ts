@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import { revalidatePath } from "next/cache";
 
 export async function updateProfile(formData: FormData) {
@@ -13,7 +13,7 @@ export async function updateProfile(formData: FormData) {
   const bio = formData.get("bio") as string;
   const website = formData.get("website") as string; 
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   try {
     // Save the identity and the website link to D1

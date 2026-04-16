@@ -1,10 +1,10 @@
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import ProfileClient from "./ProfileClient";
 import { calculateUserStatus } from "@/utils/badges";
 
-export const runtime = "edge";
+
 export const revalidate = 0; 
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
@@ -14,7 +14,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   if (targetUsername.includes('.')) return notFound();
 
   const { userId } = await auth();
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   // 1. Fetch User Data
   const user = await db

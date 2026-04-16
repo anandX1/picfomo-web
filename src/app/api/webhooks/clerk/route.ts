@@ -1,7 +1,7 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+
 
 export const runtime = 'edge';
 
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     console.log(`⚡ WEBHOOK: Processing user ${finalUsername} (ID: ${id})`);
     
     try {
-      const db = getRequestContext().env.DB;
+      const db = ((process.env as any).DB as D1Database);
 
       // THE FIX 2: Wipe out old ghost accounts if you reuse an email during testing
       const oldUser = await db.prepare("SELECT id FROM users WHERE email = ?").bind(primaryEmail).first<{ id: string }>();
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     console.log(`⚡ WEBHOOK: Updating user ${finalUsername} (ID: ${id})`);
     
     try {
-      const db = getRequestContext().env.DB;
+      const db = ((process.env as any).DB as D1Database);
       await db.prepare(`
         UPDATE users 
         SET username = ?, profile_image_url = ? 

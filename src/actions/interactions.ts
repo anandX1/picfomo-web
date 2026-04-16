@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import { revalidatePath } from "next/cache";
 
 export async function likePost(postId: string) {
@@ -11,7 +11,7 @@ export async function likePost(postId: string) {
     throw new Error("You must be logged in to like a post.");
   }
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   // 1. Check if the user already liked this post (Prevent double-liking)
   const existingLike = await db

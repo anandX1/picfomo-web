@@ -1,14 +1,14 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 
 export async function fetchStoryStats() {
   const { userId } = await auth();
   if (!userId) return { sparks: 0, totalLikes: 0, totalPosts: 0 };
 
   try {
-    const db = getRequestContext().env.DB;
+    const db = ((process.env as any).DB as D1Database);
     
     const batchResults = await db.batch([
       db.prepare("SELECT sparks_balance FROM users WHERE id = ?").bind(userId),

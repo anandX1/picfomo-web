@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import { revalidatePath } from "next/cache";
 
 // 1. CLAIM DAILY LOGIN REWARD
@@ -9,7 +9,7 @@ export async function claimDailyLogin() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   const existingClaim = await db
     .prepare("SELECT id FROM task_completions WHERE user_id = ? AND task_key = 'daily_login' AND date(completed_at) = date('now')")
@@ -38,7 +38,7 @@ export async function joinProWaitlist(expectedPrice: number, contactInfo: string
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   const existingLead = await db
     .prepare("SELECT id FROM early_access_leads WHERE user_id = ?")
@@ -67,7 +67,7 @@ export async function purchasePrivacy(postId: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
   
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
   const COST = 22; 
 
   const post = await db.prepare("SELECT user_id, is_public FROM posts WHERE id = ?").bind(postId).first<{ user_id: string; is_public: number }>();
@@ -94,7 +94,7 @@ export async function likePost(postId: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
   
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   const existingLike = await db.prepare("SELECT * FROM likes WHERE post_id = ? AND user_id = ?").bind(postId, userId).first();
   if (existingLike) return { success: false, message: "Already liked" };
@@ -127,7 +127,7 @@ export async function mockRemixPost(postId: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
   
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
   const REMIX_COST = 10; 
 
   const post = await db.prepare("SELECT user_id, image_url, prompt_used, style_id FROM posts WHERE id = ?").bind(postId).first<{ user_id: string; image_url: string; prompt_used: string; style_id: string }>();
@@ -165,7 +165,7 @@ export async function deletePost(postId: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
   
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   const post = await db.prepare("SELECT user_id FROM posts WHERE id = ?").bind(postId).first<{ user_id: string }>();
   if (!post) return { success: false, message: "Post not found" };
@@ -186,7 +186,7 @@ export async function completeTask(taskId: string, submittedData: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   const task = await db.prepare("SELECT * FROM tasks WHERE id = ? AND is_active = 1").bind(taskId).first<{ reward_amount: number, title: string }>();
   if (!task) return { success: false, message: "Task not found or inactive" };
@@ -213,7 +213,7 @@ export async function processReferral(referralCode: string) {
     const { userId } = await auth();
     if (!userId) return { success: false, message: "Unauthorized" };
 
-    const db = getRequestContext().env.DB;
+    const db = ((process.env as any).DB as D1Database);
 
     const me = await db.prepare("SELECT id FROM users WHERE id = ?").bind(userId).first();
     if (!me) {
@@ -256,7 +256,7 @@ export async function claimDividends() {
   const { userId } = await auth();
   if (!userId) return { success: false, message: "Unauthorized" };
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   const user = await db.prepare("SELECT unclaimed_sparks FROM users WHERE id = ?").bind(userId).first<{ unclaimed_sparks: number }>();
 

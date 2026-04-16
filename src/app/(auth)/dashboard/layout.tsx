@@ -1,13 +1,13 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import { redirect } from "next/navigation";
 import { Zap } from "lucide-react";
 import NotificationBell from "@/components/dashboard/NotificationBell";
 import { getNotifications } from "@/actions/notifications";
 import StoryLogo from "@/components/dashboard/StoryLogo";
 
-export const runtime = "edge";
+
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
@@ -18,7 +18,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   let initialUnreadCount = 0;
 
   try {
-    const db = getRequestContext().env.DB;
+    const db = ((process.env as any).DB as D1Database);
     
     // 1. Fetch Sparks for the top header balance (UNTOUCHED)
     const result = await db

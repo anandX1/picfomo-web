@@ -1,7 +1,7 @@
 "use server";
 
 import { currentUser } from "@clerk/nextjs/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -35,7 +35,7 @@ async function verifyAdmin() {
 export async function addStyle(formData: FormData) {
   try {
     await verifyAdmin();
-    const db = getRequestContext().env.DB;
+    const db = ((process.env as any).DB as D1Database);
     
     const rawData = {
       name: formData.get("name") as string,
@@ -73,7 +73,7 @@ export async function addStyle(formData: FormData) {
 export async function toggleStyleActive(id: string, currentStatus: number) {
   try {
     await verifyAdmin();
-    const db = getRequestContext().env.DB;
+    const db = ((process.env as any).DB as D1Database);
     const newStatus = currentStatus === 1 ? 0 : 1;
     await db.prepare("UPDATE styles SET is_active = ? WHERE id = ?").bind(newStatus, id).run();
     revalidatePath("/admin");
@@ -85,7 +85,7 @@ export async function toggleStyleActive(id: string, currentStatus: number) {
 export async function deleteStyle(id: string) {
   try {
     await verifyAdmin();
-    const db = getRequestContext().env.DB;
+    const db = ((process.env as any).DB as D1Database);
     await db.prepare("DELETE FROM styles WHERE id = ?").bind(id).run();
     revalidatePath("/admin");
   } catch (error) {
@@ -100,7 +100,7 @@ export async function deleteStyle(id: string) {
 export async function addTask(formData: FormData) {
   try {
     await verifyAdmin();
-    const db = getRequestContext().env.DB;
+    const db = ((process.env as any).DB as D1Database);
     
     const rawData = {
       title: formData.get("title") as string,
@@ -137,7 +137,7 @@ export async function addTask(formData: FormData) {
 export async function toggleTaskActive(id: string, currentStatus: number) {
   try {
     await verifyAdmin();
-    const db = getRequestContext().env.DB;
+    const db = ((process.env as any).DB as D1Database);
     const newStatus = currentStatus === 1 ? 0 : 1;
     await db.prepare("UPDATE tasks SET is_active = ? WHERE id = ?").bind(newStatus, id).run();
     
@@ -152,7 +152,7 @@ export async function toggleTaskActive(id: string, currentStatus: number) {
 export async function deleteTask(id: string) {
   try {
     await verifyAdmin();
-    const db = getRequestContext().env.DB;
+    const db = ((process.env as any).DB as D1Database);
     // Deleting the task automatically cascades and deletes user_tasks linked to it
     await db.prepare("DELETE FROM tasks WHERE id = ?").bind(id).run();
     

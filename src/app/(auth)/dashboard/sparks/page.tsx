@@ -1,15 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import SparksHubClient from "./SparksHubClient";
 
-export const runtime = "edge";
+
 
 export default async function SparksHubPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   // 1. Fetch User Balance, Referral Code & UNCLAIMED SPARKS
   const user = await db

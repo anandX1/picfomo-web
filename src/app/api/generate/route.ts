@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export async function POST(req: Request) {
   let sparksDeducted = false;
@@ -19,12 +19,14 @@ export async function POST(req: Request) {
 
     if (!prompt) return NextResponse.json({ error: "Missing prompt data" }, { status: 400 });
 
-    // 🌟 THE OPENNEXT WAY: Access Cloudflare D1 directly from process.env
-    const db = ((process.env as any).DB as D1Database);
-    if (!db) throw new Error("Database binding missing from process.env");
+    // 🌟 OFFICIAL OPENNEXT DATABASE CONNECTION
+    const { env } = await getCloudflareContext({ async: true });
+    const db = env.DB as any;
+    if (!db) throw new Error("Database binding missing from OpenNext context");
 
-    // 2. ECONOMY CHECK: Dynamic Pricing
+    // 2. ECONOMY CHECK
     if (styleId) {
+      // 'as any' instantly kills the strict TypeScript unknown errors
       const style = await db
         .prepare("SELECT name, spark_cost FROM styles WHERE id = ? AND is_active = 1")
         .bind(styleId)
@@ -108,7 +110,8 @@ export async function POST(req: Request) {
     // 7. THE REFUND MECHANISM
     if (sparksDeducted && currentUserId && costToRefund > 0) {
       try {
-        const db = ((process.env as any).DB as D1Database);
+        const { env } = await getCloudflareContext({ async: true });
+        const db = env.DB as any;
         const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
         await db.batch([
           db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(costToRefund, currentUserId),

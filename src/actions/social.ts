@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import { revalidatePath } from "next/cache";
 
 // 1. TOGGLE FOLLOW STATUS
@@ -10,7 +10,7 @@ export async function toggleFollow(targetUserId: string) {
   if (!userId) return { success: false, message: "Must be logged in to follow." };
   if (userId === targetUserId) return { success: false, message: "You cannot follow yourself." };
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   try {
     const existing = await db.prepare("SELECT * FROM follows WHERE follower_id = ? AND following_id = ?")
@@ -37,7 +37,7 @@ export async function recordView(postId: string) {
   const { userId } = await auth();
   if (!userId) return { success: false }; // Only track logged-in views for now
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   try {
     // INSERT OR IGNORE prevents the app from crashing if they already viewed it

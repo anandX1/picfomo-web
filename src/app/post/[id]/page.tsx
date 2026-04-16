@@ -1,10 +1,10 @@
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import PostClient from "./PostClient";
 import { Metadata } from "next"; // <-- Needed for SEO
 
-export const runtime = "edge";
+
 export const revalidate = 0;
 
 // THE SEO ENGINE: This generates the dynamic Twitter/WhatsApp preview cards!
@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   
   if (postId.includes('.')) return { title: "PicFOMO" };
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
   
   // Quickly fetch just the data needed for the preview card
   const post = await db.prepare(`
@@ -61,7 +61,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
   if (postId.includes('.')) return notFound();
 
   const { userId } = await auth(); 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
 
   const post = await db.prepare(`
     SELECT 

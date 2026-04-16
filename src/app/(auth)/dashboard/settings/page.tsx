@@ -1,15 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+
 import { redirect } from "next/navigation";
 import SettingsClient from "./SettingsClient";
 
-export const runtime = "edge";
+
 
 export default async function SettingsPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const db = getRequestContext().env.DB;
+  const db = ((process.env as any).DB as D1Database);
   
   // Fetch current user details from D1 (including the new website field)
   const user = await db
