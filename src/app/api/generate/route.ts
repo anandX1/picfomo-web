@@ -1,8 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
 
 export async function POST(req: Request) {
   let sparksDeducted = false;
@@ -11,39 +9,39 @@ export async function POST(req: Request) {
   let styleName = "Generation";
 
   try {
-    // 1. AUTH CHECK (Untouched)
+    // 1. AUTH CHECK
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     currentUserId = userId;
 
     const body = (await req.json()) as any;
-    // Accept both Sandbox (model/steps) and Studio (styleId) payloads
     const { prompt, styleId, model, steps, width, height } = body;
 
     if (!prompt) return NextResponse.json({ error: "Missing prompt data" }, { status: 400 });
 
-    const db = getRequestContext().env.DB;
+    // 🌟 THE OPENNEXT WAY: Access Cloudflare D1 directly from process.env
+    const db = ((process.env as any).DB as D1Database);
+    if (!db) throw new Error("Database binding missing from process.env");
 
     // 2. ECONOMY CHECK: Dynamic Pricing
     if (styleId) {
       const style = await db
         .prepare("SELECT name, spark_cost FROM styles WHERE id = ? AND is_active = 1")
         .bind(styleId)
-        .first<{ name: string; spark_cost: number }>();
+        .first() as any;
 
       if (!style) return NextResponse.json({ error: "Invalid style" }, { status: 400 });
       
       costToRefund = style.spark_cost;
       styleName = style.name;
     } else if (model === "schnell") {
-      // Sandbox Instant Generate is Free
       costToRefund = 0; 
       styleName = "Flux Schnell";
     } else {
       return NextResponse.json({ error: "Invalid generation request" }, { status: 400 });
     }
 
-    // 3. THE ATOMIC TOLL BOOTH (Untouched - Only runs if it costs Sparks)
+    // 3. THE ATOMIC TOLL BOOTH 
     if (costToRefund > 0) {
       const updateResult = await db
         .prepare(`UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ? AND sparks_balance >= ? RETURNING sparks_balance`)
@@ -52,7 +50,6 @@ export async function POST(req: Request) {
 
       if (!updateResult) return NextResponse.json({ error: "Not enough Sparks." }, { status: 402 });
 
-      // INSTANT LEDGER LOG
       const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
       await db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)")
         .bind(txId, userId, -costToRefund, `Started: ${styleName}`)
@@ -61,7 +58,7 @@ export async function POST(req: Request) {
       sparksDeducted = true; 
     }
 
-    // 4. CALL THE AI (The Engine Swap)
+    // 4. CALL THE AI 
     const PIXAZO_KEY = process.env.PIXAZO_API_KEY;
     if (!PIXAZO_KEY) throw new Error("Server missing Pixazo API key");
 
@@ -86,18 +83,17 @@ export async function POST(req: Request) {
 
       if (!response.ok) throw new Error(`Pixazo Error: ${response.status} - ${await response.text()}`);
       
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
       if (data.output) {
         imageUrl = data.output;
       } else {
         throw new Error("No image URL returned from Pixazo.");
       }
     } else if (styleId) {
-      // Future-proofing for when we migrate the FireRed Styles logic to the backend
       throw new Error("Premium Styles are currently under maintenance. Please use the free Imagine tool.");
     }
 
-    // 5. SAVE TO VAULT (Untouched)
+    // 5. SAVE TO VAULT 
     const postId = `post_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     await db.prepare("INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, is_public) VALUES (?, ?, ?, ?, ?, ?)")
       .bind(postId, userId, imageUrl, prompt, styleId || "schnell", 1)
@@ -109,10 +105,10 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Generation Error:", error);
     
-    // 7. THE REFUND MECHANISM (Untouched)
+    // 7. THE REFUND MECHANISM
     if (sparksDeducted && currentUserId && costToRefund > 0) {
       try {
-        const db = getRequestContext().env.DB;
+        const db = ((process.env as any).DB as D1Database);
         const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
         await db.batch([
           db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(costToRefund, currentUserId),
