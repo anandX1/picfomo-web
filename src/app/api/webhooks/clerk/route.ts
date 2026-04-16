@@ -1,9 +1,9 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-
-export const runtime = 'edge';
+// ❌ WE DELETED 'export const runtime = "edge"' to allow Svix crypto to work via OpenNext
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
@@ -13,6 +13,7 @@ export async function POST(req: Request) {
     return new Response('Error: Missing secret', { status: 500 });
   }
 
+  // Next.js 15+ async headers
   const headerPayload = await headers();
   const svix_id = headerPayload.get("svix-id");
   const svix_timestamp = headerPayload.get("svix-timestamp");
@@ -41,6 +42,16 @@ export async function POST(req: Request) {
 
   const eventType = evt.type;
 
+  // 🌟 Clean OpenNext DB Connection
+  let db: any;
+  try {
+    const { env } = await getCloudflareContext({ async: true });
+    db = env.DB;
+  } catch (e) {
+    console.error("Failed to connect to D1:", e);
+    return new Response('Database Connection Error', { status: 500 });
+  }
+
   // ---------------------------------------------------------
   // 1. HANDLE NEW USER SIGNUPS (The 35 Spark Welcome Bonus)
   // ---------------------------------------------------------
@@ -49,20 +60,17 @@ export async function POST(req: Request) {
     const primaryEmail = email_addresses?.[0]?.email_address || '';
     const finalUsername = username || first_name || `user_${id.slice(0, 5)}`;
     
-    // THE FIX 1: Guarantee uniqueness for referral codes by adding a random hash
+    // Guarantee uniqueness for referral codes
     const referralCode = `${finalUsername.toLowerCase()}_${Math.random().toString(36).substring(7)}`; 
 
     console.log(`⚡ WEBHOOK: Processing user ${finalUsername} (ID: ${id})`);
     
     try {
-      const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
-
-      // THE FIX 2: Wipe out old ghost accounts if you reuse an email during testing
-      const oldUser = await db.prepare("SELECT id FROM users WHERE email = ?").bind(primaryEmail).first<{ id: string }>();
+      // Wipe out old ghost accounts if you reuse an email during testing
+      const oldUser = await db.prepare("SELECT id FROM users WHERE email = ?").bind(primaryEmail).first();
       
       if (oldUser) {
         console.log(`⚠️ Cleaning up old ghost data for reused email: ${primaryEmail}`);
-        // Delete child records first to prevent Foreign Key crashes
         await db.batch([
           db.prepare("DELETE FROM spark_transactions WHERE user_id = ?").bind(oldUser.id),
           db.prepare("DELETE FROM user_tasks WHERE user_id = ?").bind(oldUser.id),
@@ -73,9 +81,11 @@ export async function POST(req: Request) {
 
       // Insert fresh User with exactly 35 Sparks and their unique referral code
       await db.prepare(`
-        INSERT INTO users (id, email, username, profile_image_url, sparks_balance, referral_code)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).bind(id, primaryEmail, finalUsername, image_url || '', 35, referralCode).run();
+        INSERT INTO users (id, email, username, display_name, profile_image_url, sparks_balance, referral_code)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        id, primaryEmail, finalUsername, finalUsername, image_url || '', 35, referralCode
+      ).run();
 
       const txId = `tx_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
@@ -102,17 +112,36 @@ export async function POST(req: Request) {
     console.log(`⚡ WEBHOOK: Updating user ${finalUsername} (ID: ${id})`);
     
     try {
-      const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
       await db.prepare(`
         UPDATE users 
-        SET username = ?, profile_image_url = ? 
+        SET username = ?, display_name = ?, profile_image_url = ? 
         WHERE id = ?
-      `).bind(finalUsername, image_url || '', id).run();
+      `).bind(finalUsername, finalUsername, image_url || '', id).run();
 
       console.log(`✅ UPDATED ${finalUsername} IN DATABASE!`);
     } catch (dbError) {
       console.error("❌ Database Update Error:", dbError);
       return new Response('Database update failed', { status: 500 });
+    }
+  }
+
+  // ---------------------------------------------------------
+  // 3. HANDLE USER DELETIONS (Auto-Cleanup)
+  // ---------------------------------------------------------
+  if (eventType === 'user.deleted') {
+    const { id } = evt.data;
+    if (id) {
+      try {
+        await db.batch([
+          db.prepare("DELETE FROM spark_transactions WHERE user_id = ?").bind(id),
+          db.prepare("DELETE FROM user_tasks WHERE user_id = ?").bind(id),
+          db.prepare("DELETE FROM referrals WHERE referred_user_id = ? OR referrer_id = ?").bind(id, id),
+          db.prepare("DELETE FROM users WHERE id = ?").bind(id)
+        ]);
+        console.log(`🗑️ Successfully purged user ${id}`);
+      } catch (err) {
+        console.error("Failed to delete user:", err);
+      }
     }
   }
 
