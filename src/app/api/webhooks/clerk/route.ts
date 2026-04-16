@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     console.log(`⚡ WEBHOOK: Processing user ${finalUsername} (ID: ${id})`);
     
     try {
-      const db = ((process.env as any).DB as D1Database);
+      const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
       // THE FIX 2: Wipe out old ghost accounts if you reuse an email during testing
       const oldUser = await db.prepare("SELECT id FROM users WHERE email = ?").bind(primaryEmail).first<{ id: string }>();
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     console.log(`⚡ WEBHOOK: Updating user ${finalUsername} (ID: ${id})`);
     
     try {
-      const db = ((process.env as any).DB as D1Database);
+      const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
       await db.prepare(`
         UPDATE users 
         SET username = ?, profile_image_url = ? 

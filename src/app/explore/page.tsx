@@ -6,7 +6,7 @@ import { auth } from "@clerk/nextjs/server";
 export const revalidate = 0;
 
 export default async function ExplorePage() {
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
   const { userId } = await auth();
 
   // THE FIX: Added 'is_liked_by_me' to the query to prevent fake red hearts and spamming

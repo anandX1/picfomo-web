@@ -13,7 +13,7 @@ export async function updateProfile(formData: FormData) {
   const bio = formData.get("bio") as string;
   const website = formData.get("website") as string; 
 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
   try {
     // Save the identity and the website link to D1

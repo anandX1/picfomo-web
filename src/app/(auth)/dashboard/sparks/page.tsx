@@ -9,7 +9,7 @@ export default async function SparksHubPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
   // 1. Fetch User Balance, Referral Code & UNCLAIMED SPARKS
   const user = await db

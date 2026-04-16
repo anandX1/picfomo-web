@@ -10,7 +10,7 @@ export async function toggleFollow(targetUserId: string) {
   if (!userId) return { success: false, message: "Must be logged in to follow." };
   if (userId === targetUserId) return { success: false, message: "You cannot follow yourself." };
 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
   try {
     const existing = await db.prepare("SELECT * FROM follows WHERE follower_id = ? AND following_id = ?")
@@ -37,7 +37,7 @@ export async function recordView(postId: string) {
   const { userId } = await auth();
   if (!userId) return { success: false }; // Only track logged-in views for now
 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
   try {
     // INSERT OR IGNORE prevents the app from crashing if they already viewed it

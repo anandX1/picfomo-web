@@ -11,7 +11,7 @@ export async function likePost(postId: string) {
     throw new Error("You must be logged in to like a post.");
   }
 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
   // 1. Check if the user already liked this post (Prevent double-liking)
   const existingLike = await db

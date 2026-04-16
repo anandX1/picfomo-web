@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   
   if (postId.includes('.')) return { title: "PicFOMO" };
 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
   
   // Quickly fetch just the data needed for the preview card
   const post = await db.prepare(`
@@ -61,7 +61,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
   if (postId.includes('.')) return notFound();
 
   const { userId } = await auth(); 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
   const post = await db.prepare(`
     SELECT 

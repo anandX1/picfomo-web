@@ -15,7 +15,7 @@ export default async function VaultPage() {
   const { userId } = await auth();
   if (!userId) return null;
 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
   // Fetch ONLY the current user's posts
   const { results: posts } = await db

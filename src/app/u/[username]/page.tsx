@@ -14,7 +14,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   if (targetUsername.includes('.')) return notFound();
 
   const { userId } = await auth();
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
   // 1. Fetch User Data
   const user = await db

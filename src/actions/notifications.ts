@@ -7,7 +7,7 @@ export async function getNotifications() {
   const { userId } = await auth();
   if (!userId) return { success: false, notifications: [], unreadCount: 0 };
 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
   // 1. Fetch the raw notifications with the user details attached
   const { results } = await db.prepare(`
@@ -62,7 +62,7 @@ export async function markNotificationsAsRead() {
   const { userId } = await auth();
   if (!userId) return { success: false };
 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
   
   // Wipe the red dots clean!
   await db.prepare("UPDATE notifications SET is_read = 1 WHERE recipient_id = ? AND is_read = 0").bind(userId).run();

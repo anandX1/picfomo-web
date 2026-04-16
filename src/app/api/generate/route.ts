@@ -98,7 +98,7 @@ export async function POST(req: Request) {
     // 5. SAVE TO VAULT 
     const postId = `post_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     await db.prepare("INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, is_public) VALUES (?, ?, ?, ?, ?, ?)")
-      .bind(postId, userId, imageUrl, prompt, styleId || "schnell", 1)
+      .bind(postId, userId, imageUrl, prompt, styleId || null, 1)
       .run();
 
     // 6. RETURN TO FRONTEND

@@ -17,7 +17,7 @@ export default async function AdminDashboard() {
     redirect("/dashboard");
   }
 
-  const db = ((process.env as any).DB as D1Database);
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
   
   // Fetch both Styles and Bounties
   const [stylesResult, tasksResult] = await db.batch([

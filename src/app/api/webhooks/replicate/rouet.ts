@@ -18,7 +18,7 @@ export async function POST(req: Request) {
         const imageUrl = body.output[0];
         const predictionId = body.id; // Replicate's unique ID for this generation
         
-        const db = ((process.env as any).DB as D1Database);
+        const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
         // 4. Update the Vault! Find the "pending" post and attach the finished image.
         await db.prepare("UPDATE posts SET image_url = ?, status = 'completed' WHERE replicate_id = ?")

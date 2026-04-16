@@ -18,7 +18,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   let initialUnreadCount = 0;
 
   try {
-    const db = ((process.env as any).DB as D1Database);
+    const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
     
     // 1. Fetch Sparks for the top header balance (UNTOUCHED)
     const result = await db
