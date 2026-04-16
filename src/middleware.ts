@@ -1,22 +1,15 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server' // Add this import
 
+// Surgically mapped to your actual file architecture
 const isProtectedRoute = createRouteMatcher([
   '/dashboard(.*)',
-  '/generate(.*)',
-  '/gallery(.*)',
-  '/sparks(.*)',
-  '/profile(.*)',
   '/admin(.*)'
 ])
 
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
-    await auth.protect();
+    await auth.protect()
   }
-  
-  // ADD THIS LINE: Next.js 16 requires an explicit response
-  return NextResponse.next(); 
 })
 
 export const config = {

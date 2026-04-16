@@ -8,3 +8,9 @@ to fetch user peferd monthly price on sparks npx wrangler d1 execute picfomo-pro
 
 
 npx tree-cli -l 4 -x node_modules,.git,.next,public --dirs-first
+
+git add .
+git commit -m "info"
+git push origin main
+
+npx wrangler tail picfomo-web

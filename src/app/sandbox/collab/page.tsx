@@ -21,7 +21,6 @@ export default function UnifiedMVPLab() {
   // --- IMAGINE (SCHNELL / SDXL) STATE ---
   const [imaginePrompt, setImaginePrompt] = useState("Picture a sleek, futuristic car racing through a neon-lit cityscape");
   const [selectedModel, setSelectedModel] = useState<"schnell" | "sdxl">("schnell");
-  // Schnell specific params from your new docs
   const [schWidth, setSchWidth] = useState(1024);
   const [schHeight, setSchHeight] = useState(1024);
   const [schSteps, setSchSteps] = useState(4);
@@ -35,122 +34,37 @@ export default function UnifiedMVPLab() {
     setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
   };
 
-  // --- HELPER: R2 UPLOAD ---
-  const uploadToR2 = async (fileToUpload: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append("file", fileToUpload);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    if (!res.ok) throw new Error(`R2 Upload failed status ${res.status}`);
-    const data = (await res.json()) as { url: string };
-    return data.url;
-  };
-
-  // --- HELPER: FIRE-RED POLLING ---
-  const pollFireRedResult = async (pollingUrl: string): Promise<string> => {
-    const PIXAZO_KEY = process.env.PIXAZO_API_KEY!;
-    let attempts = 0;
-    const MAX_ATTEMPTS = 60;
-    while (attempts < MAX_ATTEMPTS) {
-      attempts++;
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      addLog(`Polling attempt ${attempts}...`);
-      try {
-        const response = await fetch(pollingUrl, { headers: { "Ocp-Apim-Subscription-Key": PIXAZO_KEY }});
-        if (!response.ok) throw new Error(`HTTP_FATAL: ${response.status}`);
-       const data = (await response.json()) as any;
-        const currentStatus = typeof data.status === 'string' ? data.status.toUpperCase() : "UNKNOWN";
-        addLog(`↳ Status: ${currentStatus}`);
-        if (currentStatus === "COMPLETED" || currentStatus === "SUCCESS") {
-          addLog(`✅ Generation Successful!`);
-          return Array.isArray(data.output?.media_url) ? data.output.media_url[0] : data.output?.media_url || data.media_url; 
-        }
-        if (currentStatus === "FAILED" || currentStatus === "ERROR") {
-          throw new Error(`HARD_FAIL: ${JSON.stringify(data.error || data)}`);
-        }
-      } catch (err: any) {
-        if (err.message.includes("HARD_FAIL") || err.message.includes("HTTP_FATAL")) throw err; 
-        addLog(`⚠️ Network hiccup: ${err.message}`);
-      }
-    }
-    throw new Error("Polling Timeout");
-  };
-
   // --- PIPELINE 1: FIRE-RED V1.1 (Styles) ---
   const runStylesPipeline = async () => {
-    if (!file) return alert("Upload a photo first!");
-    if (!stylePrompt) return alert("Provide a style prompt!");
-    setIsTesting(true); setFinalStyleImage(null); setLogs([]); 
-    const PIXAZO_KEY = process.env.NEXT_PUBLIC_PIXAZO_API_KEY;
-    if (!PIXAZO_KEY) return addLog("❌ ERROR: API KEY missing.");
-
-    try {
-      setStatus("Uploading to R2...");
-      addLog(`🚀 Uploading ${file.name} to Cloudflare R2...`);
-      const r2Url = await uploadToR2(file);
-      addLog(`✅ R2 Upload Success.`);
-      
-      setStatus(`Executing FireRed v1.1...`);
-      const payload = {
-        prompt: stylePrompt,
-        image_urls: [r2Url], // V1.1 requirement
-        num_inference_steps: frNumSteps,
-        guidance_scale: frGuidance,
-        acceleration: frAcceleration
-      };
-
-      addLog(`🚀 Sending V1.1 JSON payload...`);
-      const res = await fetch("https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Ocp-Apim-Subscription-Key": PIXAZO_KEY },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!res.ok) throw new Error(`HTTP ${res.status} - ${await res.text()}`);
-      const data = (await res.json()) as any;
-      addLog(`✅ Queued. ID: ${data.request_id}`);
-      
-      const targetUrl = data.polling_url || `https://gateway.pixazo.ai/v2/requests/status/${data.request_id}`;
-      const generatedUrl = await pollFireRedResult(targetUrl);
-      setFinalStyleImage(generatedUrl);
-      setStatus("Complete.");
-      addLog("🎉 STYLE SYNTHESIS SUCCESSFUL.");
-    } catch (error) {
-      setStatus("ERROR"); addLog(`🛑 FATAL: ${(error as Error).message}`);
-    } finally {
-      setIsTesting(false);
-    }
+    alert("CTO Note: FireRed Styles are being migrated to the secure backend. Please use the 'Imagine (Free APIs)' tab for now!");
   };
 
   // --- PIPELINE 2: FLUX SCHNELL (Imagine) ---
   const runImaginePipeline = async () => {
     if (!imaginePrompt) return alert("Enter a prompt!");
-    if (selectedModel === "sdxl") return alert("ERROR: Waiting on SDXL API Docs from CTO! Upload the screenshots first.");
+    if (selectedModel === "sdxl") return alert("ERROR: Waiting on SDXL API Docs!");
     
     setIsTesting(true); setFinalImagineImage(null); setLogs([]); 
-    const PIXAZO_KEY = process.env.NEXT_PUBLIC_PIXAZO_API_KEY;
-    if (!PIXAZO_KEY) return addLog("❌ ERROR: API KEY missing.");
 
     try {
-      setStatus("Generating via Flux Schnell...");
-      addLog(`🚀 Sending synchronous request to Flux 1 Schnell...`);
+      setStatus("Generating via Secure API...");
+      addLog(`🚀 Sending request to backend engine (/api/generate)...`);
       
-      // Matching your new docs exactly
-      const payload = { 
-        prompt: imaginePrompt, 
-        num_steps: schSteps, 
-        height: schHeight, 
-        width: schWidth 
-        // seed: omitted to allow random generation each time
-      };
-
-      const res = await fetch("https://gateway.pixazo.ai/flux-1-schnell/v1/getData", {
+      const res = await fetch("/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Ocp-Apim-Subscription-Key": PIXAZO_KEY },
-        body: JSON.stringify(payload)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: imaginePrompt,
+          model: selectedModel,
+          steps: schSteps,
+          width: schWidth,
+          height: schHeight
+        })
       });
       
-      if (!res.ok) throw new Error(`HTTP ${res.status} - ${await res.text()}`);
-      const data = (await res.json()) as { output: string };
+      const data = (await res.json()) as any;
+
+      if (!res.ok) throw new Error(data.error || "Failed to generate image");
       
       if (data.output) {
         setFinalImagineImage(data.output);
@@ -256,7 +170,6 @@ export default function UnifiedMVPLab() {
                 />
               </div>
 
-              {/* Flux Schnell Params based on docs */}
               {selectedModel === "schnell" && (
                 <div className="border border-gray-800 rounded-xl bg-[#0a0a0a] p-4 space-y-4">
                   <div className="text-xs font-bold text-blue-400 mb-2">SCHNELL ENGINE CONTROLS</div>

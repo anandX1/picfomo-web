@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import Replicate from "replicate";
+import { NextResponse } from "next/server";
 
 export const runtime = "edge";
 
@@ -11,65 +11,106 @@ export async function POST(req: Request) {
   let styleName = "Generation";
 
   try {
+    // 1. AUTH CHECK (Untouched)
     const { userId } = await auth();
-    if (!userId) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     currentUserId = userId;
 
-    const body = (await req.json()) as { prompt: string; styleId: string };
-    const { prompt, styleId } = body;
+    const body = (await req.json()) as any;
+    // Accept both Sandbox (model/steps) and Studio (styleId) payloads
+    const { prompt, styleId, model, steps, width, height } = body;
 
-    if (!prompt || !styleId) return new Response(JSON.stringify({ error: "Missing data" }), { status: 400 });
+    if (!prompt) return NextResponse.json({ error: "Missing prompt data" }, { status: 400 });
 
     const db = getRequestContext().env.DB;
 
-    const style = await db
-      .prepare("SELECT name, spark_cost FROM styles WHERE id = ? AND is_active = 1")
-      .bind(styleId)
-      .first<{ name: string; spark_cost: number }>();
+    // 2. ECONOMY CHECK: Dynamic Pricing
+    if (styleId) {
+      const style = await db
+        .prepare("SELECT name, spark_cost FROM styles WHERE id = ? AND is_active = 1")
+        .bind(styleId)
+        .first<{ name: string; spark_cost: number }>();
 
-    if (!style) return new Response(JSON.stringify({ error: "Invalid style" }), { status: 400 });
-    
-    costToRefund = style.spark_cost;
-    styleName = style.name;
+      if (!style) return NextResponse.json({ error: "Invalid style" }, { status: 400 });
+      
+      costToRefund = style.spark_cost;
+      styleName = style.name;
+    } else if (model === "schnell") {
+      // Sandbox Instant Generate is Free
+      costToRefund = 0; 
+      styleName = "Flux Schnell";
+    } else {
+      return NextResponse.json({ error: "Invalid generation request" }, { status: 400 });
+    }
 
-    // 1. THE ATOMIC TOLL BOOTH
-    const updateResult = await db
-      .prepare(`UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ? AND sparks_balance >= ? RETURNING sparks_balance`)
-      .bind(costToRefund, userId, costToRefund)
-      .first();
+    // 3. THE ATOMIC TOLL BOOTH (Untouched - Only runs if it costs Sparks)
+    if (costToRefund > 0) {
+      const updateResult = await db
+        .prepare(`UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ? AND sparks_balance >= ? RETURNING sparks_balance`)
+        .bind(costToRefund, userId, costToRefund)
+        .first();
 
-    if (!updateResult) return new Response(JSON.stringify({ error: "Not enough Sparks." }), { status: 402 });
+      if (!updateResult) return NextResponse.json({ error: "Not enough Sparks." }, { status: 402 });
 
-    // 2. INSTANT LEDGER LOG
-    const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
-    await db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)")
-      .bind(txId, userId, -costToRefund, `Started: ${styleName}`)
-      .run();
+      // INSTANT LEDGER LOG
+      const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
+      await db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)")
+        .bind(txId, userId, -costToRefund, `Started: ${styleName}`)
+        .run();
 
-    sparksDeducted = true; 
+      sparksDeducted = true; 
+    }
 
-    // 3. CALL THE AI 
-    const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
-    const output = await replicate.run(
-      "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
-      { input: { prompt: `${prompt}, in the style of ${styleName}` } }
-    ) as string[];
+    // 4. CALL THE AI (The Engine Swap)
+    const PIXAZO_KEY = process.env.PIXAZO_API_KEY;
+    if (!PIXAZO_KEY) throw new Error("Server missing Pixazo API key");
 
-    const imageUrl = output[0];
+    let imageUrl = "";
 
-    // 4. SAVE TO VAULT (Transaction is already logged above!)
+    if (model === "schnell") {
+      const payload = {
+        prompt: prompt,
+        num_steps: steps || 4,
+        width: width || 1024,
+        height: height || 1024
+      };
+
+      const response = await fetch("https://gateway.pixazo.ai/flux-1-schnell/v1/getData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Ocp-Apim-Subscription-Key": PIXAZO_KEY
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error(`Pixazo Error: ${response.status} - ${await response.text()}`);
+      
+      const data = await response.json() as any;
+      if (data.output) {
+        imageUrl = data.output;
+      } else {
+        throw new Error("No image URL returned from Pixazo.");
+      }
+    } else if (styleId) {
+      // Future-proofing for when we migrate the FireRed Styles logic to the backend
+      throw new Error("Premium Styles are currently under maintenance. Please use the free Imagine tool.");
+    }
+
+    // 5. SAVE TO VAULT (Untouched)
     const postId = `post_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     await db.prepare("INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, is_public) VALUES (?, ?, ?, ?, ?, ?)")
-      .bind(postId, userId, imageUrl, prompt, styleId, 1)
+      .bind(postId, userId, imageUrl, prompt, styleId || "schnell", 1)
       .run();
 
-    return new Response(JSON.stringify({ imageUrl: imageUrl }), { status: 200 });
+    // 6. RETURN TO FRONTEND
+    return NextResponse.json({ output: imageUrl }, { status: 200 });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Generation Error:", error);
     
-    // 5. THE REFUND MECHANISM
-    if (sparksDeducted && currentUserId) {
+    // 7. THE REFUND MECHANISM (Untouched)
+    if (sparksDeducted && currentUserId && costToRefund > 0) {
       try {
         const db = getRequestContext().env.DB;
         const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
@@ -79,6 +120,6 @@ export async function POST(req: Request) {
         ]);
       } catch (e) { console.error("Refund failed!", e); }
     }
-    return new Response(JSON.stringify({ error: "API Error. Sparks refunded." }), { status: 500 });
+    return NextResponse.json({ error: error.message || "API Error. Sparks refunded." }, { status: 500 });
   }
 }
