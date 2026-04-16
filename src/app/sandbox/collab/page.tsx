@@ -57,7 +57,7 @@ export default function UnifiedMVPLab() {
       try {
         const response = await fetch(pollingUrl, { headers: { "Ocp-Apim-Subscription-Key": PIXAZO_KEY }});
         if (!response.ok) throw new Error(`HTTP_FATAL: ${response.status}`);
-        const data = (await res.json()) as any;
+       const data = (await response.json()) as any;
         const currentStatus = typeof data.status === 'string' ? data.status.toUpperCase() : "UNKNOWN";
         addLog(`↳ Status: ${currentStatus}`);
         if (currentStatus === "COMPLETED" || currentStatus === "SUCCESS") {
