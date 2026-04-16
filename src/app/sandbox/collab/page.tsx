@@ -47,7 +47,7 @@ export default function UnifiedMVPLab() {
 
   // --- HELPER: FIRE-RED POLLING ---
   const pollFireRedResult = async (pollingUrl: string): Promise<string> => {
-    const PIXAZO_KEY = process.env.NEXT_PUBLIC_PIXAZO_API_KEY!;
+    const PIXAZO_KEY = process.env.PIXAZO_API_KEY!;
     let attempts = 0;
     const MAX_ATTEMPTS = 60;
     while (attempts < MAX_ATTEMPTS) {
