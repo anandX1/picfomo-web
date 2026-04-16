@@ -1,19 +1,26 @@
 {
-	"name": "picfomo-web",
-	"compatibility_date": "2026-04-08",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
-	"main": ".open-next/worker.js",
-	"assets": {
-		"directory": ".open-next/assets",
-		"binding": "ASSETS"
-	},
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "picfomo-prod",
-			"database_id": "33031e9b-d764-4458-82d5-4038cd4b906e"
-		}
-	]
+  "name": "picfomo-web",
+  "compatibility_date": "2026-04-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": ".open-next/worker.js",
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_YW1hemluZy1lbGstMi5jbGVyay5hY2NvdW50cy5kZXYk",
+    "NEXT_PUBLIC_CLERK_SIGN_IN_URL": "/sign-in",
+    "NEXT_PUBLIC_CLERK_SIGN_UP_URL": "/sign-up",
+    "NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL": "/dashboard",
+    "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL": "/dashboard",
+    "NEXT_PUBLIC_R2_URL": "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev",
+    "R2_BUCKET_NAME": "picfomo-vault"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "picfomo-prod",
+      "database_id": "33031e9b-d764-4458-82d5-4038cd4b906e"
+    }
+  ]
 }
