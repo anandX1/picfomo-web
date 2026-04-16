@@ -1,41 +1,10 @@
 {
-  "name": "picfomo",
+  "name": "picfomo-web",
   "compatibility_date": "2026-04-08",
   "compatibility_flags": ["nodejs_compat"],
   "main": ".open-next/worker.js",
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "picfomo-prod",
-      "database_id": "local-dev-id",
-      "preview_database_id": "DB"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "IMAGES_BUCKET",
-      "bucket_name": "picfomo-images"
-    }
-  ],
-  "kv_namespaces": [
-    {
-      "binding": "CACHE",
-      "id": "local-cache-id"
-    }
-  ],
-  "queues": {
-    "producers": [
-      {
-        "binding": "GENERATION_QUEUE",
-        "queue": "picfomo-generations"
-      }
-    ]
-  },
-  "triggers": {
-    "crons": ["0 18 * * *", "0 * * * *"]
   }
 }
