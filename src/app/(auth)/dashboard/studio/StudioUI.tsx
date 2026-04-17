@@ -291,10 +291,17 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
               </div>
             ) 
             
-            /* STATE 2: GENERATING (PROGRESS BAR & NATIVE ADSTERRA BANNER) */
+            /* STATE 2: GENERATING (PROGRESS BAR & ADS) */
             : isGenerating || isUploading ? (
               <div className="p-8 py-10 flex flex-col items-center justify-center text-center space-y-6">
                 
+                {/* 🌟 RE-ADDED: ADSTERRA SOCIAL BAR (Full Screen Pop) 🌟 */}
+                <Script 
+                  id="adsterra-social-bar"
+                  src="//pl29173184.profitablecpmratenetwork.com/60/ab/b9/60abb92c67b12ba0a5b4574a79d2e149.js"
+                  strategy="afterInteractive"
+                />
+
                 <div className="text-4xl animate-bounce">⚡</div>
                 <h2 className="font-extrabold text-xl text-gray-900">Synthesizing Reality...</h2>
                 
@@ -303,16 +310,17 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                 </div>
                 <p className="font-bold text-gray-400">{progress}%</p>
 
-                {/* 🌟 NEW: ADSTERRA NATIVE BANNER 🌟 */}
+                {/* 🌟 ADSTERRA NATIVE BANNER 🌟 */}
                 <div className="w-full min-h-[100px] border border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center justify-center overflow-hidden relative pt-4 pb-2">
                   <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold absolute top-1 left-2">Sponsored</span>
                   
-                  {/* Replace this div and script with your actual Adsterra Native Banner Code */}
-                  <div id="container-YOUR_NATIVE_HASH"></div> 
+                  {/* Your exact Native Banner Code */}
+                  <div id="container-b39280394b30c04b29a8908fb4b0bd64"></div> 
                   <Script 
                     id="adsterra-native-banner"
-                    src="//pl29173255.profitablecpmratenetwork.com/YOUR_NATIVE_HASH.js" 
+                    src="//pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" 
                     strategy="afterInteractive"
+                    data-cfasync="false"
                   />
                 </div>
 

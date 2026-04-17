@@ -171,8 +171,8 @@ export async function POST(req: Request) {
       // --- D. SAVE TO DATABASE ---
       const postId = `post_${Date.now()}`;
       await db.prepare(`
-        INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, title, description, tags, is_private)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
+        INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, title, description, tags, is_public)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
       `).bind(
         postId, 
         userId, 
