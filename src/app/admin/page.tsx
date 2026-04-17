@@ -1,23 +1,30 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-
 import { ShieldAlert, Settings2, Eye, EyeOff, Trash2, Target } from "lucide-react";
 import StyleForm from "./StyleForm";
 import TaskForm from "./TaskForm";
 import { toggleStyleActive, deleteStyle, toggleTaskActive, deleteTask } from "@/actions/admin";
 
+// 🌟 OPENNEXT FIX: Replaced next-on-pages with OpenNext
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
+// 🌟 MULTIPLE ADMINS CONFIGURATION
+const ALLOWED_ADMINS = [
+  "everykart.help@gmail.com",
+  "anandkumar.3042008@gmail.com", // Add your other emails here!
+];
 
 export default async function AdminDashboard() {
   const user = await currentUser();
   
-  // GOD MODE SECURITY
-  const isAdmin = user?.emailAddresses.some(e => e.emailAddress === "everykart.help@gmail.com");
+  // GOD MODE SECURITY: Checks if the user's email is in the allowed list
+  const isAdmin = user?.emailAddresses.some(e => ALLOWED_ADMINS.includes(e.emailAddress));
   if (!isAdmin) {
     redirect("/dashboard");
   }
 
-  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
+  // 🌟 OPENNEXT FIX: Correct DB Connection
+  const db = ((await getCloudflareContext({ async: true })).env.DB as any as D1Database);
   
   // Fetch both Styles and Bounties
   const [stylesResult, tasksResult] = await db.batch([
@@ -62,36 +69,48 @@ export default async function AdminDashboard() {
                 </div>
               ) : (
                 <div className="flex flex-col divide-y divide-[var(--rule)]">
-                  {styles.map((style: any) => (
-                    <div key={style.id} className={`flex items-center justify-between p-4 transition-colors ${style.is_active ? 'hover:bg-[var(--color-cream)]' : 'bg-gray-50 opacity-60'}`}>
-                      <div className="flex items-center gap-4">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={style.preview_image_url} alt={style.name} className="h-16 w-16 rounded-md object-cover border border-[var(--rule)]" />
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            <span className="font-[family-name:var(--mono)] text-[14px] font-bold text-[var(--color-ink)]">{style.name}</span>
-                            {style.badge && (
-                              <span className="bg-[var(--color-ink)] text-[var(--color-gold)] text-[8px] px-2 py-0.5 rounded-sm font-bold tracking-widest">{style.badge}</span>
-                            )}
+                  {styles.map((style: any) => {
+                    // 🌟 NEW: Parse the JSON array of images safely
+                    let images = [];
+                    try { images = JSON.parse(style.preview_urls || '[]'); } catch(e) {}
+                    const mainImage = images[0] || style.preview_image_url;
+
+                    return (
+                      <div key={style.id} className={`flex items-center justify-between p-4 transition-colors ${style.is_active ? 'hover:bg-[var(--color-cream)]' : 'bg-gray-50 opacity-60'}`}>
+                        <div className="flex items-center gap-4">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          {mainImage && <img src={mainImage} alt={style.name} className="h-16 w-16 rounded-md object-cover border border-[var(--rule)]" />}
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-[family-name:var(--mono)] text-[14px] font-bold text-[var(--color-ink)]">{style.name}</span>
+                              {style.badge && (
+                                <span className="bg-[var(--color-ink)] text-[var(--color-gold)] text-[8px] px-2 py-0.5 rounded-sm font-bold tracking-widest">{style.badge}</span>
+                              )}
+                              {style.expires_at && (
+                                <span className="bg-red-50 border border-red-200 text-red-600 text-[8px] px-2 py-0.5 rounded-sm font-bold tracking-widest">TIMER SET</span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-[var(--color-ink3)] font-[family-name:var(--mono)] mt-1">
+                              {images.length > 0 ? `${images.length} Images` : '1 Image'} • {style.spark_cost} ⚡
+                            </span>
                           </div>
-                          <span className="text-[10px] text-[var(--color-ink3)] font-[family-name:var(--mono)] mt-1">/{style.slug} • {style.spark_cost} ⚡</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <form action={async () => { "use server"; await toggleStyleActive(style.id, style.is_active); }}>
+                            <button type="submit" className={`p-2 rounded-full border transition-colors ${style.is_active ? 'border-green-200 bg-green-50 text-green-700 hover:bg-red-50 hover:text-red-700 hover:border-red-200' : 'border-gray-200 bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-700 hover:border-green-200'}`}>
+                              {style.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
+                            </button>
+                          </form>
+                          <form action={async () => { "use server"; await deleteStyle(style.id); }}>
+                            <button type="submit" className="p-2 rounded-full border border-gray-200 bg-white text-gray-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors">
+                              <Trash2 size={16} />
+                            </button>
+                          </form>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <form action={async () => { "use server"; await toggleStyleActive(style.id, style.is_active); }}>
-                          <button type="submit" className={`p-2 rounded-full border transition-colors ${style.is_active ? 'border-green-200 bg-green-50 text-green-700 hover:bg-red-50 hover:text-red-700 hover:border-red-200' : 'border-gray-200 bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-700 hover:border-green-200'}`}>
-                            {style.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
-                          </button>
-                        </form>
-                        <form action={async () => { "use server"; await deleteStyle(style.id); }}>
-                          <button type="submit" className="p-2 rounded-full border border-gray-200 bg-white text-gray-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors">
-                            <Trash2 size={16} />
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -101,7 +120,7 @@ export default async function AdminDashboard() {
         {/* VISUAL DIVIDER */}
         <hr className="border-[var(--rule)] mb-12" />
 
-        {/* SECTION 2: BOUNTY MANAGEMENT */}
+        {/* SECTION 2: BOUNTY MANAGEMENT (UNTOUCHED) */}
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-1">
             <TaskForm />

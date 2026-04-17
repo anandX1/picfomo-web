@@ -2,12 +2,15 @@
 
 import { useRef, useTransition, useState } from "react";
 import { addStyle } from "@/actions/admin";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Images } from "lucide-react"; // Added Images icon
 
 export default function StyleForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState("");
+  
+  // NEW: State to toggle the FOMO timer input
+  const [hasTimer, setHasTimer] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,6 +22,7 @@ export default function StyleForm() {
       const result = await addStyle(formData);
       if (result.success) {
         formRef.current?.reset(); // Clear the form on success
+        setHasTimer(false); // Reset the timer UI
       } else {
         setErrorMsg(result.error || "Something went wrong");
       }
@@ -39,7 +43,7 @@ export default function StyleForm() {
 
       <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4">
         
-        {/* NEW: 2-Column Grid for Name and Spark Cost */}
+        {/* 2-Column Grid for Name and Spark Cost */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)]">Display Name</label>
@@ -52,23 +56,51 @@ export default function StyleForm() {
         </div>
         
         <div>
-          <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)]">Prompt Instructions (Hidden)</label>
+          <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)] flex items-center gap-2">
+            <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-sm">Secret Prompt (Hidden)</span>
+          </label>
           <textarea required name="description" placeholder="e.g. in the style of Hayao Miyazaki, anime, highly detailed..." className="w-full mt-1 h-24 resize-none rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
         </div>
 
-        <div>
-          <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)]">Preview Image URL</label>
-          <input required name="preview_image_url" type="url" placeholder="https://..." className="w-full mt-1 rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
+        {/* NEW: 5 Image URLs (Preview Gallery) */}
+        <div className="rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-4">
+          <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink)] flex items-center gap-2 mb-3">
+            <Images size={14} /> Preview Gallery (Min 1, Up to 5)
+          </label>
+          <div className="space-y-2">
+            <input required name="url_1" type="url" placeholder="Main Image URL (Required)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
+            <input name="url_2" type="url" placeholder="Image URL 2 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
+            <input name="url_3" type="url" placeholder="Image URL 3 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
+            <input name="url_4" type="url" placeholder="Image URL 4 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
+            <input name="url_5" type="url" placeholder="Image URL 5 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
+          </div>
         </div>
 
-        <div>
-          <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)]">Badge (Optional)</label>
-          <select name="badge" className="w-full mt-1 rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-ink)] focus:outline-none">
-            <option value="">None</option>
-            <option value="HOT">HOT</option>
-            <option value="NEW">NEW</option>
-            <option value="PRO">PRO</option>
-          </select>
+        {/* NEW: Badge and FOMO Timer Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)]">Badge (Optional)</label>
+            <select name="badge" className="w-full mt-1 rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-ink)] focus:outline-none">
+              <option value="">None</option>
+              <option value="HOT">HOT</option>
+              <option value="NEW">NEW</option>
+              <option value="PRO">PRO</option>
+              <option value="SALE">SALE</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)] flex justify-between items-center">
+              <span>FOMO Timer</span>
+              <input type="checkbox" checked={hasTimer} onChange={() => setHasTimer(!hasTimer)} className="cursor-pointer" />
+            </label>
+            {hasTimer ? (
+              <input name="expires_at" type="datetime-local" className="w-full mt-1 rounded-md border border-red-300 bg-red-50 p-3 text-[12px] text-red-900 focus:outline-none" />
+            ) : (
+              <div className="w-full mt-1 rounded-md border border-[var(--rule)] bg-gray-50 p-3 text-[12px] text-gray-400 text-center select-none">
+                No Timer Set
+              </div>
+            )}
+          </div>
         </div>
 
         <button 
