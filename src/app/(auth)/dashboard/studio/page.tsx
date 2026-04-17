@@ -64,7 +64,7 @@ export default function StudioPage() {
         body: JSON.stringify(payload)
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as { error?: string; output?: string };
 
       if (!res.ok) throw new Error(data.error || "Generation failed");
       if (data.output) setOutputImage(data.output);
