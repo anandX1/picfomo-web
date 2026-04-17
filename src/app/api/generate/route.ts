@@ -2,123 +2,182 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-export async function POST(req: Request) {
-  let sparksDeducted = false;
-  let costToRefund = 0;
-  let currentUserId = "";
-  let styleName = "Generation";
-
+// === 1. GROQ SEO HELPER ===
+async function generateSEOData(prompt: string) {
   try {
-    // 1. AUTH CHECK
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama3-8b-8192",
+        response_format: { type: "json_object" },
+        messages: [{
+          role: "system",
+          content: "You are an SEO expert for an AI image gallery. Based on the user's image prompt, return a JSON object with exactly three keys: 'title' (catchy 3-5 words), 'description' (engaging 1-2 sentences), and 'tags' (a comma-separated string of 5 relevant tags)."
+        }, {
+          role: "user",
+          content: prompt
+        }]
+      })
+    });
+    
+    const data = await res.json();
+    return JSON.parse(data.choices[0].message.content);
+  } catch (error) {
+    console.error("Groq SEO Error:", error);
+    return { title: "AI Generation", description: "Created in PicFOMO Studio.", tags: "ai, art, picfomo" };
+  }
+}
+
+// === 2. PIXAZO FIRE-RED POLLING HELPER ===
+async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
+  let attempts = 0;
+  const maxAttempts = 20; // 20 attempts * 1.5s = 30 seconds max timeout
+
+  while (attempts < maxAttempts) {
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // Wait 1.5s between checks
+    
+    const res = await fetch(pollingUrl, {
+      headers: { "Ocp-Apim-Subscription-Key": apiKey }
+    });
+    const data = await res.json();
+
+    if (data.status === "COMPLETED" && data.output?.media_url?.[0]) {
+      return data.output.media_url[0];
+    }
+    if (data.status === "FAILED" || data.status === "ERROR") {
+      throw new Error(`Pixazo Generation Failed: ${data.error || "Unknown Error"}`);
+    }
+    
+    attempts++;
+  }
+  throw new Error("Generation timed out. Please try again.");
+}
+
+// === 3. THE MAIN API ROUTE ===
+export async function POST(req: Request) {
+  try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    currentUserId = userId;
 
-    const body = (await req.json()) as any;
-    const { prompt, styleId, model, steps, width, height } = body;
+    const body = await req.json();
+    const { prompt, model, styleId, sourceImage } = body;
 
-    if (!prompt) return NextResponse.json({ error: "Missing prompt data" }, { status: 400 });
+    const db = ((await getCloudflareContext({ async: true })).env.DB as any as D1Database);
+    const PIXAZO_KEY = process.env.PIXAZO_API_KEY!;
 
-    // 🌟 OFFICIAL OPENNEXT DATABASE CONNECTION
-    const { env } = await getCloudflareContext({ async: true });
-    const db = env.DB as any;
-    if (!db) throw new Error("Database binding missing from OpenNext context");
+    // --- A. GET PRICING & PROMPTS ---
+    let sparkCost = 2; // Default for Schnell
+    let finalPrompt = prompt;
 
-    // 2. ECONOMY CHECK
-    if (styleId) {
-      // 'as any' instantly kills the strict TypeScript unknown errors
-      const style = await db
-        .prepare("SELECT name, spark_cost FROM styles WHERE id = ? AND is_active = 1")
-        .bind(styleId)
-        .first() as any;
-
-      if (!style) return NextResponse.json({ error: "Invalid style" }, { status: 400 });
+    if (model !== "schnell" && styleId) {
+      // It's a Premium Style. Fetch details from DB.
+      const styleRecord = await db.prepare("SELECT spark_cost, description FROM styles WHERE id = ?").bind(styleId).first();
+      if (!styleRecord) throw new Error("Style not found or inactive.");
       
-      costToRefund = style.spark_cost;
-      styleName = style.name;
-    } else if (model === "schnell") {
-      costToRefund = 0; 
-      styleName = "Flux Schnell";
-    } else {
-      return NextResponse.json({ error: "Invalid generation request" }, { status: 400 });
+      sparkCost = styleRecord.spark_cost as number;
+      // Combine the Secret Prompt + Optional User Prompt
+      finalPrompt = prompt ? `${styleRecord.description}. Additional details: ${prompt}` : (styleRecord.description as string);
     }
 
-    // 3. THE ATOMIC TOLL BOOTH 
-    if (costToRefund > 0) {
-      const updateResult = await db
-        .prepare(`UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ? AND sparks_balance >= ? RETURNING sparks_balance`)
-        .bind(costToRefund, userId, costToRefund)
-        .first();
+    // --- B. SECURE BILLING ---
+    const userWallet = await db.prepare("SELECT balance FROM users WHERE id = ?").bind(userId).first();
+    const currentBalance = (userWallet?.balance as number) || 0;
 
-      if (!updateResult) return NextResponse.json({ error: "Not enough Sparks." }, { status: 402 });
-
-      const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
-      await db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)")
-        .bind(txId, userId, -costToRefund, `Started: ${styleName}`)
-        .run();
-
-      sparksDeducted = true; 
+    if (currentBalance < sparkCost) {
+      return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
     }
 
-    // 4. CALL THE AI 
-    const PIXAZO_KEY = process.env.PIXAZO_API_KEY;
-    if (!PIXAZO_KEY) throw new Error("Server missing Pixazo API key");
+    // DEDUCT SPARKS FIRST (The secure way)
+    await db.prepare("UPDATE users SET balance = balance - ? WHERE id = ?").bind(sparkCost, userId).run();
 
-    let imageUrl = "";
+    try {
+      // --- C. AI GENERATION & SEO (CONCURRENT) ---
+      let outputImageUrl = "";
+      let seoData = { title: "", description: "", tags: "" };
 
-    if (model === "schnell") {
-      const payload = {
-        prompt: prompt,
-        num_steps: steps || 4,
-        width: width || 1024,
-        height: height || 1024
-      };
-
-      const response = await fetch("https://gateway.pixazo.ai/flux-1-schnell/v1/getData", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Ocp-Apim-Subscription-Key": PIXAZO_KEY
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) throw new Error(`Pixazo Error: ${response.status} - ${await response.text()}`);
-      
-      const data = (await response.json()) as any;
-      if (data.output) {
-        imageUrl = data.output;
-      } else {
-        throw new Error("No image URL returned from Pixazo.");
-      }
-    } else if (styleId) {
-      throw new Error("Premium Styles are currently under maintenance. Please use the free Imagine tool.");
-    }
-
-    // 5. SAVE TO VAULT 
-    const postId = `post_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    await db.prepare("INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, is_public) VALUES (?, ?, ?, ?, ?, ?)")
-      .bind(postId, userId, imageUrl, prompt, styleId || null, 1)
-      .run();
-
-    // 6. RETURN TO FRONTEND
-    return NextResponse.json({ output: imageUrl }, { status: 200 });
-
-  } catch (error: any) {
-    console.error("Generation Error:", error);
-    
-    // 7. THE REFUND MECHANISM
-    if (sparksDeducted && currentUserId && costToRefund > 0) {
-      try {
-        const { env } = await getCloudflareContext({ async: true });
-        const db = env.DB as any;
-        const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
-        await db.batch([
-          db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(costToRefund, currentUserId),
-          db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(refundTxId, currentUserId, costToRefund, `Refunded: ${styleName} (Failed)`)
+      if (model === "schnell") {
+        // FAST LANE: Run Schnell & Groq at the exact same time
+        const [pixazoRes, groqRes] = await Promise.all([
+          fetch("https://gateway.pixazo.ai/flux-1-schnell/v1/getData", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Ocp-Apim-Subscription-Key": PIXAZO_KEY
+            },
+            body: JSON.stringify({ prompt: finalPrompt, num_steps: 4, height: 1024, width: 1024 })
+          }),
+          generateSEOData(finalPrompt)
         ]);
-      } catch (e) { console.error("Refund failed!", e); }
+
+        const pixazoData = await pixazoRes.json();
+        if (!pixazoRes.ok) throw new Error(pixazoData.error || "Schnell API Failed");
+        
+        outputImageUrl = pixazoData.output;
+        seoData = groqRes;
+
+      } else {
+        // HEAVY LANE: FireRed Edit (Image to Image)
+        if (!sourceImage) throw new Error("Source image required for this style.");
+
+        // Start FireRed Job & Groq SEO at the same time
+        const [pixazoStartRes, groqRes] = await Promise.all([
+          fetch("https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Ocp-Apim-Subscription-Key": PIXAZO_KEY
+            },
+            body: JSON.stringify({
+              prompt: finalPrompt,
+              image_urls: [sourceImage],
+              num_inference_steps: 30,
+              guidance_scale: 4
+            })
+          }),
+          generateSEOData(finalPrompt)
+        ]);
+
+        const startData = await pixazoStartRes.json();
+        if (!pixazoStartRes.ok || !startData.polling_url) throw new Error(startData.error || "FireRed queue failed");
+
+        // Wait for FireRed to finish processing via Polling Helper
+        outputImageUrl = await pollPixazoStatus(startData.polling_url, PIXAZO_KEY);
+        seoData = groqRes;
+      }
+
+      // --- D. SAVE TO DATABASE ---
+      const postId = `post_${Date.now()}`;
+      await db.prepare(`
+        INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, title, description, tags, is_private)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
+      `).bind(
+        postId, 
+        userId, 
+        outputImageUrl, 
+        finalPrompt, 
+        styleId || "schnell",
+        seoData.title,
+        seoData.description,
+        seoData.tags
+      ).run();
+
+      // Return success to the frontend!
+      return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
+
+    } catch (aiError: any) {
+      // 🚨 CRITICAL REFUND LOGIC 🚨
+      // If the AI fails, we MUST give the user their Sparks back!
+      await db.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(sparkCost, userId).run();
+      console.error("AI Pipeline Error (Refunded):", aiError);
+      return NextResponse.json({ error: aiError.message || "Generation failed. Sparks refunded." }, { status: 500 });
     }
-    return NextResponse.json({ error: error.message || "API Error. Sparks refunded." }, { status: 500 });
+
+  } catch (serverError) {
+    console.error("Server API Error:", serverError);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
