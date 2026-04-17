@@ -2,34 +2,44 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { compressAndUploadImage } from "@/lib/uploadImage"; // 🌟 NEW IMPORT
+import { compressAndUploadImage } from "@/lib/uploadImage";
 
 const NSFW_WORDS = ["nude", "naked", "nsfw", "porn", "blood", "gore", "explicit", "violence"];
 
+// 🌟 Added preview images and updated costs to 10
 const STYLES = [
-  { id: "try-on", name: "Virtual Try-On", icon: "👕", cost: 5 },
-  { id: "product", name: "Product Shot", icon: "📸", cost: 4 },
-  { id: "old-money", name: "Old Money", icon: "🏛️", cost: 5 },
-  { id: "claymation", name: "Claymation", icon: "🧱", cost: 6 },
+  { id: "try-on", name: "Virtual Try-On", icon: "👕", cost: 10, preview: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80" },
+  { id: "product", name: "Product Shot", icon: "📸", cost: 10, preview: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80" },
+  { id: "old-money", name: "Old Money", icon: "🏛️", cost: 10, preview: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=400&q=80" },
+  { id: "claymation", name: "Claymation", icon: "🧱", cost: 10, preview: "https://images.unsplash.com/photo-1618331835717-801e976710b2?w=400&q=80" },
 ];
 
 export default function StudioPage() {
   const [activeTab, setActiveTab] = useState<"styles" | "imagine">("styles");
   
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedStyle, setSelectedStyle] = useState(STYLES[0]);
+  
+  // Form State
   const [prompt, setPrompt] = useState("");
-  const [selectedStyle, setSelectedStyle] = useState(STYLES[0].id);
   const [file, setFile] = useState<File | null>(null);
   
-  // 🌟 NEW: Split loading states so the user knows what is happening
+  // Loading & Output States
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const containsNSFW = (text: string) => {
-    const lowerText = text.toLowerCase();
-    return NSFW_WORDS.some(word => lowerText.includes(word));
+    return NSFW_WORDS.some(word => text.toLowerCase().includes(word));
+  };
+
+  const openStyleModal = (style: typeof STYLES[0]) => {
+    setSelectedStyle(style);
+    setFile(null); // Reset file
+    setError(null);
+    setIsModalOpen(true);
   };
 
   const handleGenerate = async () => {
@@ -38,25 +48,23 @@ export default function StudioPage() {
 
     if (!prompt && activeTab === "imagine") return setError("Please enter a prompt.");
     if (prompt && containsNSFW(prompt)) return setError("⚠️ Prompt rejected: Violates safety guidelines.");
-    if (activeTab === "styles" && !file) return setError("Please upload an image for this style.");
+    if (activeTab === "styles" && !file) return setError("Please upload your photo.");
 
     try {
       let uploadedImageUrl = "";
 
-      // 🌟 WORKFLOW 1: PREMIUM STYLES (Needs Image Upload)
+      // 🌟 WORKFLOW 1: PREMIUM STYLES (Inside Modal)
       if (activeTab === "styles" && file) {
         setIsUploading(true);
-        // 1. Compress and Upload the Image to R2
         uploadedImageUrl = await compressAndUploadImage(file);
         setIsUploading(false);
       }
 
-      // 🌟 WORKFLOW 2: CALL THE AI ENGINE
       setIsGenerating(true);
       
       const payload = activeTab === "imagine" 
         ? { prompt, model: "schnell" } 
-        : { prompt, styleId: selectedStyle, sourceImage: uploadedImageUrl };
+        : { prompt, styleId: selectedStyle.id, sourceImage: uploadedImageUrl };
 
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -67,7 +75,11 @@ export default function StudioPage() {
       const data = (await res.json()) as { error?: string; output?: string };
 
       if (!res.ok) throw new Error(data.error || "Generation failed");
-      if (data.output) setOutputImage(data.output);
+      
+      if (data.output) {
+        setOutputImage(data.output);
+        setIsModalOpen(false); // Close modal on success to show result
+      }
 
     } catch (err: any) {
       setError(err.message);
@@ -78,164 +90,180 @@ export default function StudioPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
+    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500 pb-20 px-4 mt-6 text-gray-900">
       
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+      <div className="text-center md:text-left">
+        <h1 className="text-3xl font-extrabold flex items-center justify-center md:justify-start gap-2">
           <span>✨</span> The Studio
         </h1>
-        <p className="text-gray-400 mt-2">Bring your imagination to reality.</p>
+        <p className="text-gray-500 mt-1 text-sm">Bring your imagination to reality.</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex bg-[#111] p-1.5 rounded-xl w-fit border border-white/5">
+      {/* Tabs - Light Theme */}
+      <div className="flex bg-gray-100 p-1 rounded-xl w-full md:w-fit border border-gray-200">
         <button 
           onClick={() => setActiveTab("styles")}
-          className={`px-8 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-            activeTab === "styles" ? "bg-white text-black shadow-sm" : "text-gray-400 hover:text-white"
+          className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            activeTab === "styles" ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-gray-900"
           }`}
         >
           Premium Styles
         </button>
         <button 
           onClick={() => setActiveTab("imagine")}
-          className={`px-8 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-            activeTab === "imagine" ? "bg-white text-black shadow-sm" : "text-gray-400 hover:text-white"
+          className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            activeTab === "imagine" ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-gray-900"
           }`}
         >
           Imagine (Fast)
         </button>
       </div>
 
-      {/* Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        {/* Left Column: Controls */}
-        <div className="space-y-6">
+      {/* Output Display - Shows at the top after generation */}
+      {outputImage && !isModalOpen && (
+        <div className="w-full aspect-square md:aspect-video relative rounded-3xl overflow-hidden shadow-xl border border-gray-200 bg-gray-50">
+          <Image src={outputImage} alt="Result" fill className="object-contain" />
+          <button 
+            onClick={() => setOutputImage(null)}
+            className="absolute top-4 right-4 bg-white/80 backdrop-blur-md p-2 rounded-full text-xs font-bold shadow-sm hover:bg-white"
+          >
+            Clear Result
+          </button>
+        </div>
+      )}
+
+      {/* STYLES TAB: Visual Grid */}
+      {activeTab === "styles" && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 animate-in slide-in-from-left-4">
+          {STYLES.map(style => (
+            <div 
+              key={style.id}
+              onClick={() => openStyleModal(style)}
+              className="group cursor-pointer relative aspect-[4/5] rounded-2xl overflow-hidden shadow-sm border border-gray-200 hover:shadow-md transition-all active:scale-95"
+            >
+              <Image src={style.preview} alt={style.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+              <div className="absolute bottom-3 left-3 right-3 text-white">
+                <div className="font-extrabold text-sm flex items-center gap-1.5">
+                  <span>{style.icon}</span> {style.name}
+                </div>
+                <div className="text-[10px] font-bold text-yellow-400 mt-0.5">{style.cost} Sparks</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* IMAGINE TAB: Quick Prompt */}
+      {activeTab === "imagine" && (
+        <div className="space-y-4 animate-in slide-in-from-right-4">
+          <div className="bg-white border border-gray-200 p-4 rounded-2xl shadow-sm">
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Prompt</label>
+              <span className="bg-blue-50 text-blue-600 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-blue-100">NSFW Protected</span>
+            </div>
+            <textarea 
+              placeholder="A sleek futuristic car racing through neon streets..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className="w-full bg-transparent text-gray-900 placeholder:text-gray-400 focus:outline-none resize-none h-24 text-sm md:text-base"
+            />
+          </div>
           
-          {/* STYLES TAB CONTENT */}
-          {activeTab === "styles" && (
-            <div className="space-y-6 animate-in slide-in-from-left-4">
-              {/* Image Upload Box */}
-              <div className="border-2 border-dashed border-white/10 rounded-2xl p-8 text-center hover:bg-white/5 transition-colors cursor-pointer bg-[#0a0a0a]">
+          {error && <div className="text-red-500 text-xs font-bold text-center">{error}</div>}
+
+          <button 
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            className="w-full bg-black text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all disabled:opacity-50 active:scale-[0.98] shadow-md"
+          >
+            {isGenerating ? "Synthesizing..." : "Generate (2 Sparks)"}
+          </button>
+        </div>
+      )}
+
+      {/* 🌟 THE PREMIUM STYLE MODAL 🌟 */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in">
+          <div className="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-5 border-b border-gray-100">
+              <h2 className="font-extrabold text-lg flex items-center gap-2">
+                <span>{selectedStyle.icon}</span> {selectedStyle.name}
+              </h2>
+              <button onClick={() => setIsModalOpen(false)} className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200">
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-5 overflow-y-auto">
+              
+              {/* Adsterra Placeholder (We will inject real ads here later) */}
+              {(isUploading || isGenerating) && (
+                <div className="w-full bg-blue-50 border border-blue-100 rounded-xl p-4 text-center animate-pulse">
+                  <p className="text-blue-600 font-bold text-sm mb-1">
+                    {isUploading ? "1. Securing Upload..." : "2. Processing Image..."}
+                  </p>
+                  <p className="text-blue-400 text-xs">[ Advertisement Space Loading ]</p>
+                </div>
+              )}
+
+              {/* Upload Dropzone */}
+              <div className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer ${file ? 'border-green-400 bg-green-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}`}>
                 <input 
                   type="file" 
                   accept="image/jpeg, image/png, image/webp"
                   className="hidden" 
-                  id="image-upload"
+                  id="modal-upload"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  disabled={isUploading || isGenerating}
                 />
-                <label htmlFor="image-upload" className="cursor-pointer block">
-                  <div className="text-4xl mb-3">📸</div>
-                  <h3 className="text-white font-medium">
-                    {file ? file.name : "Drop your selfie here"}
+                <label htmlFor="modal-upload" className="cursor-pointer block">
+                  <div className="text-3xl mb-2">{file ? "✅" : "📸"}</div>
+                  <h3 className={`font-bold text-sm ${file ? 'text-green-700' : 'text-gray-700'}`}>
+                    {file ? file.name : "Tap to upload photo"}
                   </h3>
-                  <p className="text-gray-500 text-sm mt-1">JPEG, PNG up to 10MB (Auto-Compressed)</p>
+                  {!file && <p className="text-gray-400 text-xs mt-1">JPEG, PNG up to 10MB</p>}
                 </label>
               </div>
 
-              {/* Style Selector */}
+              {/* Optional Prompt */}
               <div>
-                <label className="text-sm font-bold text-gray-300 mb-3 block">Select Aesthetic</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {STYLES.map(style => (
-                    <button
-                      key={style.id}
-                      onClick={() => setSelectedStyle(style.id)}
-                      className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all ${
-                        selectedStyle === style.id 
-                          ? "bg-blue-500/10 border-blue-500" 
-                          : "bg-[#0a0a0a] border-white/5 hover:border-white/20"
-                      }`}
-                    >
-                      <span className="text-2xl">{style.icon}</span>
-                      <div>
-                        <div className="text-white text-sm font-bold">{style.name}</div>
-                        <div className="text-blue-400 text-xs font-mono">{style.cost} Sparks</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* IMAGINE TAB CONTENT */}
-          {activeTab === "imagine" && (
-            <div className="space-y-6 animate-in slide-in-from-right-4">
-              <div className="bg-[#0a0a0a] border border-white/5 p-5 rounded-2xl">
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-sm font-bold text-blue-400">IMAGINATION PROMPT</label>
-                  <span className="bg-blue-500/20 text-blue-400 text-[10px] px-2 py-1 rounded-full font-bold tracking-wider">NSFW PROTECTED</span>
-                </div>
-                <textarea 
-                  placeholder="A cinematic shot of a cyberpunk city..."
+                <label className="text-xs font-bold text-gray-500 mb-1 block">Additional Instructions (Optional)</label>
+                <input 
+                  type="text"
+                  placeholder="e.g., make the jacket blue..."
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  className="w-full bg-transparent text-white placeholder:text-gray-600 focus:outline-none resize-none h-32"
+                  disabled={isUploading || isGenerating}
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl p-3 text-sm focus:outline-none focus:border-gray-400"
                 />
               </div>
+
+              {error && <div className="text-red-500 text-xs font-bold text-center bg-red-50 p-2 rounded-lg">{error}</div>}
             </div>
-          )}
 
-          {/* Shared Prompt for Styles */}
-          {activeTab === "styles" && (
-             <div className="bg-[#0a0a0a] border border-white/5 p-4 rounded-2xl">
-               <input 
-                 type="text"
-                 placeholder="Additional prompt details (optional)..."
-                 value={prompt}
-                 onChange={(e) => setPrompt(e.target.value)}
-                 className="w-full bg-transparent text-white placeholder:text-gray-600 text-sm focus:outline-none"
-               />
-             </div>
-          )}
+            {/* Modal Footer / Action */}
+            <div className="p-5 border-t border-gray-100 bg-gray-50">
+              <button 
+                onClick={handleGenerate}
+                disabled={isGenerating || isUploading || !file}
+                className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-extrabold py-4 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-lg shadow-orange-500/30 active:scale-95"
+              >
+                {isUploading || isGenerating 
+                  ? "Please Wait..." 
+                  : `Generate (-10 Sparks) & Watch Ad`
+                }
+              </button>
+            </div>
 
-          {/* Error Display */}
-          {error && <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">{error}</div>}
-
-          {/* Generate Button */}
-          <button 
-            onClick={handleGenerate}
-            disabled={isGenerating || isUploading}
-            className="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-gray-200 transition-all disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-2"
-          >
-            {isUploading ? (
-              "Securely Uploading Image..."
-            ) : isGenerating ? (
-              "Synthesizing Reality..."
-            ) : (
-              <>
-                Generate 
-                <span className="text-gray-500 font-mono text-xs ml-1">
-                  ({activeTab === "imagine" ? "2 Sparks" : `${STYLES.find(s => s.id === selectedStyle)?.cost} Sparks`})
-                </span>
-              </>
-            )}
-          </button>
+          </div>
         </div>
+      )}
 
-        {/* Right Column: Output */}
-        <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl min-h-[500px] flex items-center justify-center relative overflow-hidden">
-          {outputImage ? (
-            <Image src={outputImage} alt="Generated output" fill className="object-cover" />
-          ) : (
-            <div className="text-center text-gray-600">
-              <div className="text-4xl mb-3 opacity-50">✨</div>
-              <p className="text-sm font-medium">Awaiting Subject Input</p>
-            </div>
-          )}
-          
-          {/* Scanning Overlay Effect */}
-          {(isGenerating || isUploading) && (
-            <div className="absolute inset-0 bg-blue-500/10 backdrop-blur-sm flex items-center justify-center">
-              <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          )}
-        </div>
-
-      </div>
     </div>
   );
 }
