@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-// === 1. GROQ SEO HELPER ===
+// === 1. GROQ SEO HELPER (Fortified) ===
 async function generateSEOData(prompt: string) {
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -24,21 +24,40 @@ async function generateSEOData(prompt: string) {
       })
     });
     
+    // 🌟 FIX: Defensive error handling for API outages/rate limits
+    if (!res.ok) {
+      console.warn(`Groq API failed with status: ${res.status}`);
+      throw new Error("Groq request failed");
+    }
+
     const data = await res.json();
+    
+    // 🌟 FIX: Defensive check for malformed JSON
+    if (!data?.choices?.[0]?.message?.content) {
+      throw new Error("Malformed Groq response structure");
+    }
+
     return JSON.parse(data.choices[0].message.content);
   } catch (error) {
-    console.error("Groq SEO Error:", error);
-    return { title: "AI Generation", description: "Created in PicFOMO Studio.", tags: "ai, art, picfomo" };
+    console.error("Groq SEO Error (Using Safe Fallback):", error);
+    // Safe Fallback Data so the generation never fails because of SEO
+    return { 
+      title: "PicFOMO Generation", 
+      description: "A stunning creation synthesized in the PicFOMO Studio.", 
+      tags: "ai, art, picfomo, synthesis" 
+    };
   }
 }
 
-// === 2. PIXAZO FIRE-RED POLLING HELPER ===
+// === 2. PIXAZO FIRE-RED POLLING HELPER (Fixed for Rate Limits) ===
 async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
   let attempts = 0;
-  const maxAttempts = 20; // 20 attempts * 1.5s = 30 seconds max timeout
+  // 🌟 FIX: 24 attempts * 5s = 120 seconds max timeout (plenty of time for heavy models)
+  const maxAttempts = 24; 
 
   while (attempts < maxAttempts) {
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Wait 1.5s between checks
+    // 🌟 FIX: Wait exactly 5 seconds to avoid API DDoS/Rate limits
+    await new Promise((resolve) => setTimeout(resolve, 5000)); 
     
     const res = await fetch(pollingUrl, {
       headers: { "Ocp-Apim-Subscription-Key": apiKey }
@@ -54,10 +73,10 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
     
     attempts++;
   }
-  throw new Error("Generation timed out. Please try again.");
+  throw new Error("Generation timed out. The model is currently overloaded. Please try again.");
 }
 
-// === 3. THE MAIN API ROUTE ===
+// === 3. THE MAIN API ROUTE (Untouched Logic) ===
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
@@ -83,7 +102,7 @@ export async function POST(req: Request) {
       finalPrompt = prompt ? `${styleRecord.description}. Additional details: ${prompt}` : (styleRecord.description as string);
     }
 
-    // --- B. SECURE BILLING (🌟 FIX: Uses 'sparks_balance') ---
+    // --- B. SECURE BILLING ---
     const userWallet = await db.prepare("SELECT sparks_balance FROM users WHERE id = ?").bind(userId).first();
     const currentBalance = (userWallet?.sparks_balance as number) || 0;
 
@@ -169,7 +188,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
 
     } catch (aiError: any) {
-      // 🚨 CRITICAL REFUND LOGIC (🌟 FIX: Uses 'sparks_balance') 🚨
+      // 🚨 CRITICAL REFUND LOGIC 🚨
       // If the AI fails, we MUST give the user their Sparks back!
       await db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId).run();
       console.error("AI Pipeline Error (Refunded):", aiError);
