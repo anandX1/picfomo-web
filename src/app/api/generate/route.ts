@@ -14,17 +14,15 @@ async function generateSEOData(prompt: string, apiKey: string) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // 🌟 FIX 1: Upgraded to Groq's most robust model
-        model: "llama-3.3-70b-versatile",
-        // 🌟 FIX 2: Removed strict response_format to stop the 400 crashes!
+        model: "llama3-8b-8192",
+        response_format: { type: "json_object" },
         messages: [{
           role: "system",
-          content: "You are an SEO expert for an AI image gallery. Output ONLY valid JSON. Your JSON must contain exactly three keys: 'title' (catchy 3-5 words), 'description' (engaging 1-2 sentences), and 'tags' (a comma-separated string of 5 relevant tags). Do not use markdown blocks."
+          content: "You are an SEO expert for an AI image gallery. Based on the user's image prompt, return a JSON object with exactly three keys: 'title' (catchy 3-5 words), 'description' (engaging 1-2 sentences), and 'tags' (a comma-separated string of 5 relevant tags)."
         }, {
           role: "user",
           content: safePrompt 
-        }],
-        temperature: 0.2
+        }]
       })
     });
     
@@ -38,21 +36,11 @@ async function generateSEOData(prompt: string, apiKey: string) {
     // 🌟 TS FIX: Cast as any to fix "Type unknown" errors
     const data = (await res.json()) as any;
     
-    let content = data?.choices?.[0]?.message?.content;
-    
-    if (!content) {
+    if (!data?.choices?.[0]?.message?.content) {
       throw new Error("Malformed Groq response structure");
     }
 
-    // 🌟 FIX 3: Defensive parsing to strip markdown if Groq disobeys
-    content = content.trim();
-    if (content.startsWith('```json')) {
-      content = content.replace(/```json/g, '').replace(/```/g, '').trim();
-    } else if (content.startsWith('```')) {
-      content = content.replace(/```/g, '').trim();
-    }
-
-    return JSON.parse(content);
+    return JSON.parse(data.choices[0].message.content);
   } catch (error) {
     console.error("Groq SEO Error (Using Safe Fallback):", error);
     return { 
@@ -101,7 +89,7 @@ export async function POST(req: Request) {
     const { prompt, model, styleId, sourceImage } = body;
 
     const envCtx = ((await getCloudflareContext({ async: true })).env as any);
-    const db = envCtx.DB as any; // Cast as any to bypass strict D1Database typing issues here
+    const db = envCtx.DB as D1Database;
     
     const PIXAZO_KEY = envCtx.PIXAZO_API_KEY || process.env.PIXAZO_API_KEY;
     const GROQ_KEY = envCtx.GROQ_API_KEY || process.env.GROQ_API_KEY;
@@ -138,7 +126,7 @@ export async function POST(req: Request) {
 
       if (model === "schnell") {
         const [pixazoRes, groqRes] = await Promise.all([
-          fetch("[https://gateway.pixazo.ai/flux-1-schnell/v1/getData](https://gateway.pixazo.ai/flux-1-schnell/v1/getData)", {
+          fetch("https://gateway.pixazo.ai/flux-1-schnell/v1/getData", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -160,7 +148,7 @@ export async function POST(req: Request) {
         if (!sourceImage) throw new Error("Source image required for this style.");
 
         const [pixazoStartRes, groqRes] = await Promise.all([
-          fetch("[https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request](https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request)", {
+          fetch("https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
