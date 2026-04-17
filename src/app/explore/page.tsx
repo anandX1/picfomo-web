@@ -1,16 +1,20 @@
 import FeedClient from "./FeedClient";
 import { auth } from "@clerk/nextjs/server";
-import { fetchFeedChunk } from "@/actions/feed"; // 🌟 NEW IMPORT
+import { fetchFeedChunk } from "@/actions/feed";
 
+// 🌟 THE MAGIC FIX: Tells Next.js to NEVER pre-render this during build!
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function ExplorePage({ searchParams }: { searchParams: any }) {
-  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
+  // Cast as any to avoid strict type errors with Cloudflare context
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any);
   const { userId } = await auth();
 
   // Handle Collab Target
   const remixId = searchParams?.remix as string | undefined;
   let targetRemixPost = null;
+  
   if (remixId) {
     targetRemixPost = await db.prepare(`
       SELECT posts.id, posts.image_url, styles.name as style_name, users.username
@@ -21,8 +25,8 @@ export default async function ExplorePage({ searchParams }: { searchParams: any 
     `).bind(remixId).first();
   }
 
-  // 🌟 Grab the first chunk (Offset 0, Limit 15)
-  const initialPosts = await fetchFeedChunk(0, 15);
+  // 🌟 FAST INITIAL LOAD: Fetch just the first 15 posts cleanly
+  const initialPosts = await fetchFeedChunk(0, 15, "");
 
   return (
     <FeedClient 
