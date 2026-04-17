@@ -2,13 +2,14 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-// === 1. GROQ SEO HELPER (Fortified) ===
-async function generateSEOData(prompt: string) {
+// === 1. GROQ SEO HELPER (Fortified & Cloudflare Safe) ===
+// 🌟 FIX: We now accept the apiKey as a parameter!
+async function generateSEOData(prompt: string, apiKey: string) {
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Authorization": `Bearer ${apiKey}`, // 🌟 FIX: Using the passed API key
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -24,7 +25,6 @@ async function generateSEOData(prompt: string) {
       })
     });
     
-    // 🌟 FIX: Defensive error handling for API outages/rate limits
     if (!res.ok) {
       console.warn(`Groq API failed with status: ${res.status}`);
       throw new Error("Groq request failed");
@@ -32,7 +32,6 @@ async function generateSEOData(prompt: string) {
 
     const data = await res.json();
     
-    // 🌟 FIX: Defensive check for malformed JSON
     if (!data?.choices?.[0]?.message?.content) {
       throw new Error("Malformed Groq response structure");
     }
@@ -40,7 +39,6 @@ async function generateSEOData(prompt: string) {
     return JSON.parse(data.choices[0].message.content);
   } catch (error) {
     console.error("Groq SEO Error (Using Safe Fallback):", error);
-    // Safe Fallback Data so the generation never fails because of SEO
     return { 
       title: "PicFOMO Generation", 
       description: "A stunning creation synthesized in the PicFOMO Studio.", 
@@ -52,11 +50,9 @@ async function generateSEOData(prompt: string) {
 // === 2. PIXAZO FIRE-RED POLLING HELPER (Fixed for Rate Limits) ===
 async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
   let attempts = 0;
-  // 🌟 FIX: 24 attempts * 5s = 120 seconds max timeout (plenty of time for heavy models)
   const maxAttempts = 24; 
 
   while (attempts < maxAttempts) {
-    // 🌟 FIX: Wait exactly 5 seconds to avoid API DDoS/Rate limits
     await new Promise((resolve) => setTimeout(resolve, 5000)); 
     
     const res = await fetch(pollingUrl, {
@@ -76,7 +72,7 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
   throw new Error("Generation timed out. The model is currently overloaded. Please try again.");
 }
 
-// === 3. THE MAIN API ROUTE (Untouched Logic) ===
+// === 3. THE MAIN API ROUTE ===
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
@@ -85,20 +81,25 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { prompt, model, styleId, sourceImage } = body;
 
-    const db = ((await getCloudflareContext({ async: true })).env.DB as any as D1Database);
-    const PIXAZO_KEY = process.env.PIXAZO_API_KEY!;
+    // 🌟 FIX: Safely extracting bindings from the Cloudflare Context
+    const envCtx = ((await getCloudflareContext({ async: true })).env as any);
+    const db = envCtx.DB as D1Database;
+    
+    // Fallback to process.env for local development, but prioritize CF bindings
+    const PIXAZO_KEY = envCtx.PIXAZO_API_KEY || process.env.PIXAZO_API_KEY;
+    const GROQ_KEY = envCtx.GROQ_API_KEY || process.env.GROQ_API_KEY;
+
+    if (!GROQ_KEY) console.error("🚨 CRITICAL: GROQ_API_KEY is missing from Cloudflare environment!");
 
     // --- A. GET PRICING & PROMPTS ---
     let sparkCost = 2; // Default for Schnell
     let finalPrompt = prompt;
 
     if (model !== "schnell" && styleId) {
-      // It's a Premium Style. Fetch details from DB.
       const styleRecord = await db.prepare("SELECT spark_cost, description FROM styles WHERE id = ?").bind(styleId).first();
       if (!styleRecord) throw new Error("Style not found or inactive.");
       
       sparkCost = styleRecord.spark_cost as number;
-      // Combine the Secret Prompt + Optional User Prompt
       finalPrompt = prompt ? `${styleRecord.description}. Additional details: ${prompt}` : (styleRecord.description as string);
     }
 
@@ -110,7 +111,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
     }
 
-    // DEDUCT SPARKS FIRST (The secure way)
+    // DEDUCT SPARKS FIRST
     await db.prepare("UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ?").bind(sparkCost, userId).run();
 
     try {
@@ -119,7 +120,6 @@ export async function POST(req: Request) {
       let seoData = { title: "", description: "", tags: "" };
 
       if (model === "schnell") {
-        // FAST LANE: Run Schnell & Groq at the exact same time
         const [pixazoRes, groqRes] = await Promise.all([
           fetch("https://gateway.pixazo.ai/flux-1-schnell/v1/getData", {
             method: "POST",
@@ -129,7 +129,7 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({ prompt: finalPrompt, num_steps: 4, height: 1024, width: 1024 })
           }),
-          generateSEOData(finalPrompt)
+          generateSEOData(finalPrompt, GROQ_KEY) // 🌟 FIX: Passing the key securely
         ]);
 
         const pixazoData = await pixazoRes.json();
@@ -139,10 +139,8 @@ export async function POST(req: Request) {
         seoData = groqRes;
 
       } else {
-        // HEAVY LANE: FireRed Edit (Image to Image)
         if (!sourceImage) throw new Error("Source image required for this style.");
 
-        // Start FireRed Job & Groq SEO at the same time
         const [pixazoStartRes, groqRes] = await Promise.all([
           fetch("https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request", {
             method: "POST",
@@ -157,13 +155,12 @@ export async function POST(req: Request) {
               guidance_scale: 4
             })
           }),
-          generateSEOData(finalPrompt)
+          generateSEOData(finalPrompt, GROQ_KEY) // 🌟 FIX: Passing the key securely
         ]);
 
         const startData = await pixazoStartRes.json();
         if (!pixazoStartRes.ok || !startData.polling_url) throw new Error(startData.error || "FireRed queue failed");
 
-        // Wait for FireRed to finish processing via Polling Helper
         outputImageUrl = await pollPixazoStatus(startData.polling_url, PIXAZO_KEY);
         seoData = groqRes;
       }
@@ -184,12 +181,9 @@ export async function POST(req: Request) {
         seoData.tags
       ).run();
 
-      // Return success to the frontend!
       return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
 
     } catch (aiError: any) {
-      // 🚨 CRITICAL REFUND LOGIC 🚨
-      // If the AI fails, we MUST give the user their Sparks back!
       await db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId).run();
       console.error("AI Pipeline Error (Refunded):", aiError);
       return NextResponse.json({ error: aiError.message || "Generation failed. Sparks refunded." }, { status: 500 });
