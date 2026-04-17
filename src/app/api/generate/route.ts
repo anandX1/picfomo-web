@@ -14,33 +14,43 @@ async function generateSEOData(prompt: string, apiKey: string) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192",
-        response_format: { type: "json_object" },
+        // 🌟 FIX 1: Upgraded model and removed strict json_object requirement to stop 400 errors
+        model: "llama-3.3-70b-versatile",
         messages: [{
           role: "system",
-          content: "You are an SEO expert for an AI image gallery. Based on the user's image prompt, return a JSON object with exactly three keys: 'title' (catchy 3-5 words), 'description' (engaging 1-2 sentences), and 'tags' (a comma-separated string of 5 relevant tags)."
+          content: "You are an SEO expert for an AI image gallery. Output ONLY valid JSON. Do not use markdown blocks. Return a JSON object with exactly three keys: 'title' (catchy 3-5 words), 'description' (engaging 1-2 sentences), and 'tags' (a comma-separated string of 5 relevant tags)."
         }, {
           role: "user",
           content: safePrompt 
-        }]
+        }],
+        temperature: 0.2
       })
     });
     
     if (!res.ok) {
-      // 🚨 EXTRACT EXACT ERROR BODY FROM GROQ
+      // 🚨 EXTRACT EXACT ERROR BODY FROM GROQ FOR DEBUGGING
       const errorBody = await res.text();
       console.warn(`Groq API failed with status: ${res.status}. Body: ${errorBody}`);
       throw new Error(`Groq request failed: ${res.status}`);
     }
 
-    // 🌟 TS FIX: Cast as any to fix "Type unknown" errors
+    // 🌟 TS FIX: Cast as any to clear "Type unknown" errors in VS Code
     const data = (await res.json()) as any;
     
-    if (!data?.choices?.[0]?.message?.content) {
+    let content = data?.choices?.[0]?.message?.content;
+    if (!content) {
       throw new Error("Malformed Groq response structure");
     }
 
-    return JSON.parse(data.choices[0].message.content);
+    // 🌟 FIX 2: Defensively strip markdown if Groq disobeys and adds ```json
+    content = content.trim();
+    if (content.startsWith('```json')) {
+      content = content.replace(/```json/g, '').replace(/```/g, '').trim();
+    } else if (content.startsWith('```')) {
+      content = content.replace(/```/g, '').trim();
+    }
+
+    return JSON.parse(content);
   } catch (error) {
     console.error("Groq SEO Error (Using Safe Fallback):", error);
     return { 
