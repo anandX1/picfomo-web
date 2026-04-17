@@ -1,5 +1,5 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import StudioUI from "./studioUI";
+import StudioUI from "./StudioUI.tsx";
 
 export const revalidate = 0; // Ensures the page updates instantly when you add styles in Admin
 
