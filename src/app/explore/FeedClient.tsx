@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef, useCallback } from "react";
-import { Heart, Zap, Loader2, X, Image as ImageIcon, Users, Eye, User } from "lucide-react";
+import { Heart, Zap, Loader2, X, Eye, User, Search } from "lucide-react";
 import { likePost, mockRemixPost } from "@/actions/economy";
-import { fetchFeedChunk } from "@/actions/feed"; // 🌟 NEW IMPORT
+import { fetchFeedChunk } from "@/actions/feed"; 
 import Link from "next/link"; 
 import { toast } from "sonner"; 
 import { useRouter } from "next/navigation"; 
+import Script from "next/script"; // 🌟 NEEDED FOR NATIVE ADS
 
 interface Post {
   id: string;
@@ -37,29 +38,46 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
   const [animatedPostId, setAnimatedPostId] = useState<string | null>(null);
   const [showCollabModal, setShowCollabModal] = useState(!!initialRemixData);
 
+  // 🌟 NEW: SEARCH STATE
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
   // 🌟 INFINITE SCROLL STATE
   const [offset, setOffset] = useState(15);
   const [hasMore, setHasMore] = useState(initialPosts.length === 15);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // 🌟 INFINITE SCROLL TRIGGER
+  // 🌟 NEW: SEARCH HANDLER
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSearching(true);
+    // Fetch offset 0 with the new search query
+    const results = await fetchFeedChunk(0, 15, searchQuery);
+    setPosts(results);
+    setOffset(15);
+    setHasMore(results.length === 15);
+    setIsSearching(false);
+  };
+
+  // 🌟 INFINITE SCROLL TRIGGER (Updated to respect Search)
   const lastPostElementRef = useCallback((node: HTMLDivElement) => {
-    if (isLoadingMore) return;
+    if (isLoadingMore || isSearching) return;
     if (observerRef.current) observerRef.current.disconnect();
     
     observerRef.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore) {
         loadMorePosts();
       }
-    }, { rootMargin: '400px' }); // Load early before they hit bottom
+    }, { rootMargin: '400px' }); 
     
     if (node) observerRef.current.observe(node);
-  }, [isLoadingMore, hasMore]);
+  }, [isLoadingMore, hasMore, isSearching]);
 
   const loadMorePosts = async () => {
     setIsLoadingMore(true);
-    const newPosts = await fetchFeedChunk(offset, 15);
+    // 🌟 FIX: Pass the search query so infinite scroll loads the next page of search results!
+    const newPosts = await fetchFeedChunk(offset, 15, searchQuery);
     
     if (newPosts.length === 0) {
       setHasMore(false);
@@ -132,7 +150,7 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
   };
 
   return (
-    <div className="mx-auto max-w-[1600px] p-4 md:p-8 relative">
+    <div className="mx-auto max-w-[1600px] p-4 md:p-8 relative min-h-screen">
       
       {showCollabModal && initialRemixData && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md px-4 animate-in fade-in duration-300">
@@ -141,6 +159,7 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
             <h2 className="font-extrabold text-2xl text-center mb-1">Collab Request 🤝</h2>
             <p className="text-gray-500 text-sm text-center mb-6">Remixing style from <span className="font-bold text-gray-900">@{initialRemixData.username || "creator"}</span></p>
             <div className="w-full aspect-[4/5] rounded-xl overflow-hidden mb-6 shadow-md border border-gray-200">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={initialRemixData.image_url} alt="Remix Target" className="w-full h-full object-cover" />
             </div>
             <button onClick={() => handleRemix(initialRemixData.id)} disabled={isPending} className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-extrabold py-4 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex justify-center items-center gap-2">
@@ -157,6 +176,7 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
             <div className="absolute -bottom-24 -right-24 h-48 w-48 rounded-full bg-[var(--color-gold)] opacity-10 blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
             <button onClick={() => setShowAuthModal(false)} className="absolute right-4 top-4 z-10 rounded-full bg-gray-50 p-2 text-gray-500 hover:bg-gray-200"><X size={16} /></button>
             <div className="relative z-10 flex flex-col items-center text-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="PicFOMO Logo" className="mb-6 w-40 sm:w-48 h-auto rounded-xl shadow-lg object-contain" />
               <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-ink)] tracking-tight">Unlock Your Aesthetic</h2>
               <p className="mb-8 font-[family-name:var(--mono)] text-[12px] uppercase leading-relaxed tracking-[1px] text-[var(--color-ink3)]">Drop your photo. Pick a trending style.<br/> Get your portrait in ~20 seconds.</p>
@@ -168,16 +188,33 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
         </div>
       )}
 
-      {/* HEADER (Dev Inject Removed) */}
-      <div className="mb-8 hidden md:block">
-        <h1 className="mb-2 font-[family-name:var(--display)] text-4xl tracking-[-0.5px] text-[var(--color-ink)]">DISCOVER</h1>
-        <p className="font-[family-name:var(--mono)] text-[12px] uppercase tracking-[2px] text-[var(--color-ink3)]">Trending styles tailored to your taste</p>
+      {/* HEADER & SEARCH BAR */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div>
+          <h1 className="mb-2 font-[family-name:var(--display)] text-4xl tracking-[-0.5px] text-[var(--color-ink)]">DISCOVER</h1>
+          <p className="font-[family-name:var(--mono)] text-[12px] uppercase tracking-[2px] text-[var(--color-ink3)]">Trending styles tailored to your taste</p>
+        </div>
+
+        {/* 🌟 NEW SEARCH BAR */}
+        <form onSubmit={handleSearch} className="w-full md:w-96 relative">
+          <input 
+            type="text" 
+            placeholder="Search tags, creators, or prompts..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-white border border-gray-200 rounded-full py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          />
+          <Search size={18} className="absolute left-5 top-4 text-gray-400" />
+          <button type="submit" disabled={isSearching} className="hidden">Search</button>
+        </form>
       </div>
       
-      {posts.length === 0 ? (
+      {isSearching ? (
+        <div className="flex justify-center py-20"><Loader2 size={32} className="animate-spin text-gray-400" /></div>
+      ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <span className="mb-4 text-6xl">🌍</span>
-          <h3 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)]">THE FEED IS QUIET</h3>
+          <span className="mb-4 text-6xl">🔍</span>
+          <h3 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)]">NO POSTS FOUND</h3>
         </div>
       ) : (
         <div className="columns-2 gap-3 sm:columns-3 lg:columns-4 xl:columns-5 md:gap-4 pb-20">
@@ -186,14 +223,17 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
             const displayUsername = post.username || `user_${post.user_id.substring(0,6)}`;
             const isLiked = post.is_liked_by_me > 0;
             
-            // 🌟 Attach ref to the 3rd-to-last item to trigger loading before they hit bottom
             const isRefElement = index === posts.length - 3;
+            
+            // 🌟 NEW: INJECT NATIVE AD EVERY 6TH POST
+            const showAd = (index + 1) % 6 === 0;
 
             return (
-              <div ref={isRefElement ? lastPostElementRef : null} key={`${post.id}-${index}`} className="mb-6 break-inside-avoid group">
+              <div key={`${post.id}-${index}`} className="break-inside-avoid group">
                 
-                <div className="relative rounded-2xl overflow-hidden bg-gray-100 mb-2 cursor-pointer select-none" onDoubleClick={(e) => handleDoubleTap(post.id, e)}>
+                <div ref={isRefElement ? lastPostElementRef : null} className="relative rounded-2xl overflow-hidden bg-gray-100 mb-2 cursor-pointer select-none" onDoubleClick={(e) => handleDoubleTap(post.id, e)}>
                   <Link href={`/post/${post.id}`} className="block">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={post.image_url} alt="Generated Asset" className="w-full h-auto object-cover transition-all duration-500 group-hover:scale-[1.02] group-hover:brightness-95" loading="lazy" />
                   </Link>
 
@@ -217,10 +257,11 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between px-1">
+                <div className="flex items-center justify-between px-1 mb-6">
                   <Link href={`/u/${displayUsername}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                     <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-gray-200 flex items-center justify-center">
                       {post.profile_image_url ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img src={post.profile_image_url} alt={displayUsername} className="h-full w-full object-cover" />
                       ) : (
                         <User size={14} className="text-gray-400" />
@@ -240,6 +281,20 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
                     </div>
                   </div>
                 </div>
+
+                {/* 🌟 NATIVE AD BLOCK (Renders every 6th iteration) */}
+                {showAd && (
+                  <div className="mb-6 w-full rounded-2xl border border-gray-200 bg-gray-50 flex flex-col items-center justify-center overflow-hidden relative min-h-[250px] p-2">
+                    <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold absolute top-2 left-3 z-10">Sponsored</span>
+                    <div id="container-b39280394b30c04b29a8908fb4b0bd64" className="mt-4"></div> 
+                    <Script 
+                      id={`adsterra-native-${index}`}
+                      src="//pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" 
+                      strategy="lazyOnload"
+                      data-cfasync="false"
+                    />
+                  </div>
+                )}
 
               </div>
             );
