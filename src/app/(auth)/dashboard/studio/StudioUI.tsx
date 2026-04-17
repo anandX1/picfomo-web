@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { compressAndUploadImage } from "@/lib/uploadImage";
 
 const NSFW_WORDS = ["nude", "naked", "nsfw", "porn", "blood", "gore", "explicit", "violence"];
@@ -111,7 +110,10 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
 
       {outputImage && !isModalOpen && (
         <div className="w-full aspect-square md:aspect-video relative rounded-3xl overflow-hidden shadow-xl border border-gray-200 bg-gray-50">
-          <Image src={outputImage} alt="Result" fill className="object-contain" />
+          {/* 🌟 FIX: Standard img tag instead of Next.js Image component */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={outputImage} alt="Result" className="absolute inset-0 h-full w-full object-contain" />
+          
           <button 
             onClick={() => setOutputImage(null)}
             className="absolute top-4 right-4 bg-white/80 backdrop-blur-md p-2 rounded-full text-xs font-bold shadow-sm hover:bg-white"
@@ -136,7 +138,9 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                   className="group cursor-pointer relative aspect-[4/5] rounded-2xl overflow-hidden shadow-sm border border-gray-200 hover:shadow-md transition-all active:scale-95 bg-gray-100"
                 >
                   {style.mainImage && (
-                    <Image src={style.mainImage} alt={style.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                    /* 🌟 FIX: Standard img tag instead of Next.js Image component */
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={style.mainImage} alt={style.name} className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                   <div className="absolute bottom-3 left-3 right-3 text-white">
@@ -181,7 +185,6 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
             >
               {isGenerating ? "Synthesizing..." : "Generate (2 Sparks)"}
             </button>
-            {/* 🌟 LEGAL DISCLAIMER */}
             <p className="text-center text-[10px] text-gray-400 mt-3 font-medium">
               By generating, you accept our <a href="#" className="underline">Terms & Conditions</a>. AI generations are completely private and auto-deleted from our servers.
             </p>
@@ -257,7 +260,6 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                   : `Generate (-${selectedStyle.spark_cost} Sparks) & Watch Ad`
                 }
               </button>
-              {/* 🌟 LEGAL DISCLAIMER */}
               <p className="text-center text-[10px] text-gray-500 mt-3 font-medium">
                 By generating, you accept our Terms & Conditions. AI generations are completely private and auto-deleted from our servers.
               </p>
