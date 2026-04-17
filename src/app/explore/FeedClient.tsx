@@ -7,7 +7,7 @@ import { fetchFeedChunk } from "@/actions/feed";
 import Link from "next/link"; 
 import { toast } from "sonner"; 
 import { useRouter } from "next/navigation"; 
-import Script from "next/script"; // 🌟 NEEDED FOR NATIVE ADS
+import Script from "next/script"; // 🌟 NEEDED FOR ADSTERRA
 
 interface Post {
   id: string;
@@ -38,7 +38,7 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
   const [animatedPostId, setAnimatedPostId] = useState<string | null>(null);
   const [showCollabModal, setShowCollabModal] = useState(!!initialRemixData);
 
-  // 🌟 NEW: SEARCH STATE
+  // 🌟 SEARCH STATE
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
@@ -48,11 +48,10 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // 🌟 NEW: SEARCH HANDLER
+  // 🌟 SEARCH HANDLER
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSearching(true);
-    // Fetch offset 0 with the new search query
     const results = await fetchFeedChunk(0, 15, searchQuery);
     setPosts(results);
     setOffset(15);
@@ -60,7 +59,7 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
     setIsSearching(false);
   };
 
-  // 🌟 INFINITE SCROLL TRIGGER (Updated to respect Search)
+  // 🌟 INFINITE SCROLL TRIGGER
   const lastPostElementRef = useCallback((node: HTMLDivElement) => {
     if (isLoadingMore || isSearching) return;
     if (observerRef.current) observerRef.current.disconnect();
@@ -72,11 +71,10 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
     }, { rootMargin: '400px' }); 
     
     if (node) observerRef.current.observe(node);
-  }, [isLoadingMore, hasMore, isSearching]);
+  }, [isLoadingMore, hasMore, isSearching, searchQuery]);
 
   const loadMorePosts = async () => {
     setIsLoadingMore(true);
-    // 🌟 FIX: Pass the search query so infinite scroll loads the next page of search results!
     const newPosts = await fetchFeedChunk(offset, 15, searchQuery);
     
     if (newPosts.length === 0) {
@@ -195,7 +193,6 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
           <p className="font-[family-name:var(--mono)] text-[12px] uppercase tracking-[2px] text-[var(--color-ink3)]">Trending styles tailored to your taste</p>
         </div>
 
-        {/* 🌟 NEW SEARCH BAR */}
         <form onSubmit={handleSearch} className="w-full md:w-96 relative">
           <input 
             type="text" 
@@ -222,11 +219,10 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
             const isMine = post.user_id === currentUserId;
             const displayUsername = post.username || `user_${post.user_id.substring(0,6)}`;
             const isLiked = post.is_liked_by_me > 0;
-            
             const isRefElement = index === posts.length - 3;
             
-            // 🌟 NEW: INJECT NATIVE AD EVERY 6TH POST
-            const showAd = (index + 1) % 6 === 0;
+            // 🌟 INJECT NATIVE AD EVERY 5 POSTS
+            const showAd = (index + 1) % 5 === 0;
 
             return (
               <div key={`${post.id}-${index}`} className="break-inside-avoid group">
@@ -282,16 +278,21 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
                   </div>
                 </div>
 
-                {/* 🌟 NATIVE AD BLOCK (Renders every 6th iteration) */}
+                {/* 🌟 NATIVE AD BLOCK (Your Exact Adsterra Code) */}
                 {showAd && (
                   <div className="mb-6 w-full rounded-2xl border border-gray-200 bg-gray-50 flex flex-col items-center justify-center overflow-hidden relative min-h-[250px] p-2">
                     <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold absolute top-2 left-3 z-10">Sponsored</span>
-                    <div id="container-b39280394b30c04b29a8908fb4b0bd64" className="mt-4"></div> 
+                    
+                    {/* The exact Adsterra Div ID you requested */}
+                    <div id="container-b39280394b30c04b29a8908fb4b0bd64" className="mt-4 w-full flex justify-center"></div> 
+                    
+                    {/* The exact Adsterra Script using Next.js safe Script component */}
                     <Script 
                       id={`adsterra-native-${index}`}
-                      src="//pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" 
-                      strategy="lazyOnload"
+                      src="https://pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" 
+                      strategy="afterInteractive"
                       data-cfasync="false"
+                      async
                     />
                   </div>
                 )}
