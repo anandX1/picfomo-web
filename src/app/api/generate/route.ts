@@ -3,13 +3,15 @@ import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // === 1. GROQ SEO HELPER (Fortified & Cloudflare Safe) ===
-// 🌟 FIX: We now accept the apiKey as a parameter!
 async function generateSEOData(prompt: string, apiKey: string) {
   try {
+    // 🌟 FIX: Prevent 400 Bad Request by guaranteeing the prompt is NEVER empty
+    const safePrompt = prompt?.trim() ? prompt.trim() : "A highly detailed, aesthetic AI image generation.";
+
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`, // 🌟 FIX: Using the passed API key
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -20,7 +22,7 @@ async function generateSEOData(prompt: string, apiKey: string) {
           content: "You are an SEO expert for an AI image gallery. Based on the user's image prompt, return a JSON object with exactly three keys: 'title' (catchy 3-5 words), 'description' (engaging 1-2 sentences), and 'tags' (a comma-separated string of 5 relevant tags)."
         }, {
           role: "user",
-          content: prompt
+          content: safePrompt // 🌟 FIX: Using the guaranteed string
         }]
       })
     });
@@ -81,11 +83,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { prompt, model, styleId, sourceImage } = body;
 
-    // 🌟 FIX: Safely extracting bindings from the Cloudflare Context
     const envCtx = ((await getCloudflareContext({ async: true })).env as any);
     const db = envCtx.DB as D1Database;
     
-    // Fallback to process.env for local development, but prioritize CF bindings
     const PIXAZO_KEY = envCtx.PIXAZO_API_KEY || process.env.PIXAZO_API_KEY;
     const GROQ_KEY = envCtx.GROQ_API_KEY || process.env.GROQ_API_KEY;
 
@@ -129,7 +129,7 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({ prompt: finalPrompt, num_steps: 4, height: 1024, width: 1024 })
           }),
-          generateSEOData(finalPrompt, GROQ_KEY) // 🌟 FIX: Passing the key securely
+          generateSEOData(finalPrompt, GROQ_KEY) 
         ]);
 
         const pixazoData = await pixazoRes.json();
@@ -155,7 +155,7 @@ export async function POST(req: Request) {
               guidance_scale: 4
             })
           }),
-          generateSEOData(finalPrompt, GROQ_KEY) // 🌟 FIX: Passing the key securely
+          generateSEOData(finalPrompt, GROQ_KEY) 
         ]);
 
         const startData = await pixazoStartRes.json();

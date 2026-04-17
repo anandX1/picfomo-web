@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
-import { Heart, Zap, Loader2, Code, X, Image as ImageIcon, Users, Eye, User } from "lucide-react";
+import { useState, useTransition, useEffect, useRef, useCallback } from "react";
+import { Heart, Zap, Loader2, X, Image as ImageIcon, Users, Eye, User } from "lucide-react";
 import { likePost, mockRemixPost } from "@/actions/economy";
+import { fetchFeedChunk } from "@/actions/feed"; // 🌟 NEW IMPORT
 import Link from "next/link"; 
 import { toast } from "sonner"; 
+import { useRouter } from "next/navigation"; 
 
 interface Post {
   id: string;
@@ -14,8 +16,8 @@ interface Post {
   style_name: string | null;
   likes_count: number;
   views_count: number;
-  followers_count: number;
-  is_liked_by_me: number; // <-- Added to track if current user liked it
+  remix_count: number;
+  is_liked_by_me: number; 
   username: string | null;
   profile_image_url: string | null;
 }
@@ -23,164 +25,153 @@ interface Post {
 interface Props {
   initialPosts: Post[];
   currentUserId: string | null; 
-  injectAction: () => Promise<void>;
+  initialRemixData?: any; 
 }
 
-export default function FeedClient({ initialPosts, currentUserId, injectAction }: Props) {
+export default function FeedClient({ initialPosts, currentUserId, initialRemixData }: Props) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showAuthModal, setShowAuthModal] = useState(false);
   
   const [posts, setPosts] = useState<Post[]>(initialPosts);
-  
-  // THE NEW FIX: State for the massive pop-up heart animation
   const [animatedPostId, setAnimatedPostId] = useState<string | null>(null);
+  const [showCollabModal, setShowCollabModal] = useState(!!initialRemixData);
+
+  // 🌟 INFINITE SCROLL STATE
+  const [offset, setOffset] = useState(15);
+  const [hasMore, setHasMore] = useState(initialPosts.length === 15);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // 🌟 INFINITE SCROLL TRIGGER
+  const lastPostElementRef = useCallback((node: HTMLDivElement) => {
+    if (isLoadingMore) return;
+    if (observerRef.current) observerRef.current.disconnect();
+    
+    observerRef.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMorePosts();
+      }
+    }, { rootMargin: '400px' }); // Load early before they hit bottom
+    
+    if (node) observerRef.current.observe(node);
+  }, [isLoadingMore, hasMore]);
+
+  const loadMorePosts = async () => {
+    setIsLoadingMore(true);
+    const newPosts = await fetchFeedChunk(offset, 15);
+    
+    if (newPosts.length === 0) {
+      setHasMore(false);
+    } else {
+      setPosts(prev => [...prev, ...newPosts]);
+      setOffset(prev => prev + 15);
+      if (newPosts.length < 15) setHasMore(false);
+    }
+    setIsLoadingMore(false);
+  };
 
   useEffect(() => {
-    setPosts(initialPosts);
-  }, [initialPosts]);
-
-  useEffect(() => {
-    if (!currentUserId) {
-      const timer = setTimeout(() => {
-        setShowAuthModal(true);
-      }, 20000); 
+    if (!currentUserId && !initialRemixData) { 
+      const timer = setTimeout(() => setShowAuthModal(true), 20000); 
       return () => clearTimeout(timer);
     }
-  }, [currentUserId]);
+  }, [currentUserId, initialRemixData]);
 
   const triggerHeartAnimation = (postId: string) => {
     setAnimatedPostId(postId);
-    setTimeout(() => setAnimatedPostId(null), 800); // Hide after 800ms
+    setTimeout(() => setAnimatedPostId(null), 800); 
   };
 
   const handleLike = (postId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+    e.preventDefault(); e.stopPropagation();
     if (!currentUserId) return setShowAuthModal(true); 
 
     const targetPost = posts.find(p => p.id === postId);
     if (!targetPost) return;
-
-    // THE LOCK: If already liked, just pop the animation to feel good, but don't add numbers or hit DB
     if (targetPost.is_liked_by_me > 0) {
       triggerHeartAnimation(postId);
       return; 
     }
 
-    // Play animation
     triggerHeartAnimation(postId);
-
-    // OPTIMISTIC UPDATE: Add +1 and set is_liked_by_me to 1 so they can't spam it again
-    setPosts(currentPosts => 
-      currentPosts.map(post => 
-        post.id === postId ? { ...post, likes_count: post.likes_count + 1, is_liked_by_me: 1 } : post
-      )
-    );
+    setPosts(currentPosts => currentPosts.map(post => post.id === postId ? { ...post, likes_count: post.likes_count + 1, is_liked_by_me: 1 } : post));
 
     startTransition(async () => {
       const res = await likePost(postId);
-      if (res.success) {
-        toast.success("Liked! Creator earned +1 ⚡");
-      } else {
-        // REVERT if database fails
-        setPosts(currentPosts => 
-          currentPosts.map(post => 
-            post.id === postId ? { ...post, likes_count: post.likes_count - 1, is_liked_by_me: 0 } : post
-          )
-        );
+      if (res.success) toast.success("Liked! Creator earned +1 ⚡");
+      else {
+        setPosts(currentPosts => currentPosts.map(post => post.id === postId ? { ...post, likes_count: post.likes_count - 1, is_liked_by_me: 0 } : post));
         toast.error(res.message);
       }
     });
   };
 
-  const handleRemix = (postId: string, e: React.MouseEvent) => {
-    e.preventDefault(); 
-    e.stopPropagation();
-    
+  const handleRemix = (postId: string, e?: React.MouseEvent) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
     if (!currentUserId) return setShowAuthModal(true);
 
     startTransition(async () => {
       const res = await mockRemixPost(postId);
-      if (res.success) toast.success("Collab Started! Cost you -10 ⚡.");
-      else toast.error(res.message);
+      if (res.success) {
+        toast.success("Collab Successful! View it in your Vault.");
+        setShowCollabModal(false);
+        router.replace('/explore'); 
+      } else toast.error(res.message);
     });
   };
 
   const handleDoubleTap = (postId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     handleLike(postId, e);
   };
 
+  const closeCollabModal = () => {
+    setShowCollabModal(false);
+    router.replace('/explore'); 
+  };
+
   return (
-    <div className="mx-auto max-w-[1600px] p-4 md:p-8">
+    <div className="mx-auto max-w-[1600px] p-4 md:p-8 relative">
       
-      {/* THE CONVERSION MODAL */}
+      {showCollabModal && initialRemixData && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md px-4 animate-in fade-in duration-300">
+          <div className="relative w-full max-w-sm overflow-hidden rounded-[24px] bg-white p-6 shadow-2xl flex flex-col items-center">
+            <button onClick={closeCollabModal} className="absolute right-4 top-4 z-10 rounded-full bg-black/10 p-2 text-gray-800 transition-colors hover:bg-black/20"><X size={16} /></button>
+            <h2 className="font-extrabold text-2xl text-center mb-1">Collab Request 🤝</h2>
+            <p className="text-gray-500 text-sm text-center mb-6">Remixing style from <span className="font-bold text-gray-900">@{initialRemixData.username || "creator"}</span></p>
+            <div className="w-full aspect-[4/5] rounded-xl overflow-hidden mb-6 shadow-md border border-gray-200">
+              <img src={initialRemixData.image_url} alt="Remix Target" className="w-full h-full object-cover" />
+            </div>
+            <button onClick={() => handleRemix(initialRemixData.id)} disabled={isPending} className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-extrabold py-4 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex justify-center items-center gap-2">
+              {isPending ? <Loader2 size={18} className="animate-spin" /> : <Zap size={18} className="fill-white" />} Remix Style (-10 Sparks)
+            </button>
+          </div>
+        </div>
+      )}
+
       {showAuthModal && !currentUserId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md px-4 animate-in fade-in duration-300">
           <div className="relative w-full max-w-md overflow-hidden rounded-[24px] bg-[var(--color-white)] p-8 shadow-2xl border border-white/20">
             <div className="absolute -top-24 -left-24 h-48 w-48 rounded-full bg-blue-400 opacity-10 blur-3xl animate-pulse"></div>
             <div className="absolute -bottom-24 -right-24 h-48 w-48 rounded-full bg-[var(--color-gold)] opacity-10 blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-            <button onClick={() => setShowAuthModal(false)} className="absolute right-4 top-4 z-10 rounded-full bg-gray-50 p-2 text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-900">
-              <X size={16} />
-            </button>
+            <button onClick={() => setShowAuthModal(false)} className="absolute right-4 top-4 z-10 rounded-full bg-gray-50 p-2 text-gray-500 hover:bg-gray-200"><X size={16} /></button>
             <div className="relative z-10 flex flex-col items-center text-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="PicFOMO Logo" className="mb-6 w-40 sm:w-48 h-auto rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] object-contain" />
+              <img src="/logo.png" alt="PicFOMO Logo" className="mb-6 w-40 sm:w-48 h-auto rounded-xl shadow-lg object-contain" />
               <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-ink)] tracking-tight">Unlock Your Aesthetic</h2>
               <p className="mb-8 font-[family-name:var(--mono)] text-[12px] uppercase leading-relaxed tracking-[1px] text-[var(--color-ink3)]">Drop your photo. Pick a trending style.<br/> Get your portrait in ~20 seconds.</p>
-              
-              <div className="mb-8 w-full space-y-3 text-left">
-                <div className="flex items-center gap-3 rounded-xl bg-gray-50/80 backdrop-blur-sm p-3 border border-gray-100/50">
-                  <Zap size={18} className="text-[var(--color-gold)]" />
-                  <span className="text-sm font-medium text-gray-700">Get up to 55 Sparks free on signup</span>
-                </div>
-                <div className="flex items-center gap-3 rounded-xl bg-gray-50/80 backdrop-blur-sm p-3 border border-gray-100/50">
-                  <ImageIcon size={18} className="text-blue-500" />
-                  <span className="text-sm font-medium text-gray-700">New premium AI styles added daily</span>
-                </div>
-                <div className="flex items-center gap-3 rounded-xl bg-gray-50/80 backdrop-blur-sm p-3 border border-gray-100/50">
-                  <Users size={18} className="text-green-500" />
-                  <span className="text-sm font-medium text-gray-700">Collab and earn from your creations</span>
-                </div>
-              </div>
-              
-              <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-full bg-gray-900 py-4 font-bold tracking-wide text-white transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(0,0,0,0.15)]">
-                <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-12deg)_translateX(-150%)] group-hover:duration-1000 group-hover:[transform:skew(-12deg)_translateX(150%)]">
-                  <div className="relative h-full w-8 bg-white/20" />
-                </div>
+              <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-full bg-gray-900 py-4 font-bold tracking-wide text-white hover:scale-[1.02] active:scale-[0.98] shadow-lg">
                 <span className="relative z-10">Create Free Account</span>
               </Link>
-              <button onClick={() => setShowAuthModal(false)} className="mt-5 text-xs font-medium text-gray-500 hover:text-gray-900 hover:underline">
-                Maybe later, let me explore
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* FEED HEADER */}
-      <div className="mb-8 hidden md:flex md:items-end md:justify-between">
-        <div>
-          <h1 className="mb-2 font-[family-name:var(--display)] text-4xl tracking-[-0.5px] text-[var(--color-ink)]">
-            DISCOVER
-          </h1>
-          <p className="font-[family-name:var(--mono)] text-[12px] uppercase tracking-[2px] text-[var(--color-ink3)]">
-            Trending styles from the community
-          </p>
-        </div>
-
-        {currentUserId && (
-          <button 
-            onClick={() => startTransition(() => injectAction())}
-            disabled={isPending}
-            className="flex items-center gap-2 rounded-full bg-red-100 px-6 py-2 font-[family-name:var(--mono)] text-[11px] font-bold text-red-600 uppercase tracking-[1px] border border-red-200 transition-transform hover:scale-105 disabled:opacity-50"
-          >
-            {isPending ? <Loader2 size={14} className="animate-spin" /> : <Code size={14} />}
-            [DEV MODE] Inject Test Asset
-          </button>
-        )}
+      {/* HEADER (Dev Inject Removed) */}
+      <div className="mb-8 hidden md:block">
+        <h1 className="mb-2 font-[family-name:var(--display)] text-4xl tracking-[-0.5px] text-[var(--color-ink)]">DISCOVER</h1>
+        <p className="font-[family-name:var(--mono)] text-[12px] uppercase tracking-[2px] text-[var(--color-ink3)]">Trending styles tailored to your taste</p>
       </div>
       
       {posts.length === 0 ? (
@@ -189,80 +180,56 @@ export default function FeedClient({ initialPosts, currentUserId, injectAction }
           <h3 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)]">THE FEED IS QUIET</h3>
         </div>
       ) : (
-        <div className="columns-2 gap-3 sm:columns-3 lg:columns-4 xl:columns-5 md:gap-4">
-          {posts.map((post) => {
+        <div className="columns-2 gap-3 sm:columns-3 lg:columns-4 xl:columns-5 md:gap-4 pb-20">
+          {posts.map((post, index) => {
             const isMine = post.user_id === currentUserId;
             const displayUsername = post.username || `user_${post.user_id.substring(0,6)}`;
-            
-            // Boolean check based on the new logic
             const isLiked = post.is_liked_by_me > 0;
+            
+            // 🌟 Attach ref to the 3rd-to-last item to trigger loading before they hit bottom
+            const isRefElement = index === posts.length - 3;
 
             return (
-              <div key={post.id} className="mb-6 break-inside-avoid group">
+              <div ref={isRefElement ? lastPostElementRef : null} key={`${post.id}-${index}`} className="mb-6 break-inside-avoid group">
                 
-                {/* IMAGE CONTAINER (Double Tap to Like) */}
-                <div 
-                  className="relative rounded-2xl overflow-hidden bg-gray-100 mb-2 cursor-pointer select-none"
-                  onDoubleClick={(e) => handleDoubleTap(post.id, e)}
-                >
+                <div className="relative rounded-2xl overflow-hidden bg-gray-100 mb-2 cursor-pointer select-none" onDoubleClick={(e) => handleDoubleTap(post.id, e)}>
                   <Link href={`/post/${post.id}`} className="block">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={post.image_url} alt="Generated Asset" className="w-full h-auto object-cover transition-all duration-500 group-hover:scale-[1.02] group-hover:brightness-95" loading="lazy" />
                   </Link>
 
-                  {/* INSTAGRAM HEART ANIMATION OVERLAY */}
                   {animatedPostId === post.id && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                       <Heart size={80} className="fill-white text-white drop-shadow-2xl animate-out fade-out zoom-out duration-700" />
                     </div>
                   )}
 
-                  {/* PC HOVER OVERLAY (Hidden on mobile) */}
                   <div className="hidden md:flex absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex-col justify-between p-3">
-                    
                     <div className="flex justify-end">
-                      <button 
-                        onClick={(e) => handleRemix(post.id, e)}
-                        disabled={isPending || isMine}
-                        className="bg-[var(--color-gold)] text-[var(--color-ink)] rounded-full px-4 py-2.5 font-bold text-xs shadow-lg pointer-events-auto hover:scale-105 active:scale-95 transition-transform flex items-center gap-1.5 disabled:opacity-50"
-                      >
-                        <Zap size={14} className="fill-[var(--color-ink)]" />
-                        {isMine ? "YOURS" : "REMIX"}
+                      <button onClick={(e) => handleRemix(post.id, e)} disabled={isPending || isMine} className="bg-[var(--color-gold)] text-[var(--color-ink)] rounded-full px-4 py-2.5 font-bold text-xs shadow-lg pointer-events-auto hover:scale-105 active:scale-95 transition-transform flex items-center gap-1.5 disabled:opacity-50">
+                        <Zap size={14} className="fill-[var(--color-ink)]" /> {isMine ? "YOURS" : "REMIX"}
                       </button>
                     </div>
-
                     <div className="flex justify-end">
-                      <button 
-                        onClick={(e) => handleLike(post.id, e)}
-                        disabled={isPending || isMine}
-                        className="bg-white/90 backdrop-blur-sm text-gray-900 rounded-full p-2.5 shadow-lg pointer-events-auto hover:bg-white hover:scale-105 transition-all disabled:opacity-50"
-                      >
+                      <button onClick={(e) => handleLike(post.id, e)} disabled={isPending || isMine} className="bg-white/90 backdrop-blur-sm text-gray-900 rounded-full p-2.5 shadow-lg pointer-events-auto hover:bg-white hover:scale-105 transition-all disabled:opacity-50">
                         <Heart size={18} className={isLiked ? "fill-red-500 text-red-500" : ""} />
                       </button>
                     </div>
-
                   </div>
                 </div>
 
-                {/* PINTEREST MINIMALIST FOOTER */}
                 <div className="flex items-center justify-between px-1">
-                  
                   <Link href={`/u/${displayUsername}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                     <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-gray-200 flex items-center justify-center">
                       {post.profile_image_url ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img src={post.profile_image_url} alt={displayUsername} className="h-full w-full object-cover" />
                       ) : (
                         <User size={14} className="text-gray-400" />
                       )}
                     </div>
-                    <span className="truncate font-semibold text-xs text-gray-900">
-                      {displayUsername}
-                    </span>
+                    <span className="truncate font-semibold text-xs text-gray-900">{displayUsername}</span>
                   </Link>
                   
                   <div className="flex items-center gap-3 text-gray-500">
-                    {/* Mobile visible like count (super tiny) */}
                     <div className="flex md:hidden items-center gap-1">
                       <Heart size={12} className={isLiked ? "fill-red-500 text-red-500" : ""} />
                       <span className="text-[10px] font-bold">{post.likes_count}</span>
@@ -272,7 +239,6 @@ export default function FeedClient({ initialPosts, currentUserId, injectAction }
                       <span className="text-[11px] font-bold">{post.views_count}</span>
                     </div>
                   </div>
-
                 </div>
 
               </div>
@@ -280,6 +246,14 @@ export default function FeedClient({ initialPosts, currentUserId, injectAction }
           })}
         </div>
       )}
+
+      {/* LOADING SPINNER AT BOTTOM */}
+      {isLoadingMore && (
+        <div className="w-full flex justify-center py-6 pb-20">
+          <Loader2 size={24} className="animate-spin text-gray-400" />
+        </div>
+      )}
+
     </div>
   );
 }
