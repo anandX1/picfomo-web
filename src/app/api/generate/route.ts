@@ -83,16 +83,16 @@ export async function POST(req: Request) {
       finalPrompt = prompt ? `${styleRecord.description}. Additional details: ${prompt}` : (styleRecord.description as string);
     }
 
-    // --- B. SECURE BILLING ---
-    const userWallet = await db.prepare("SELECT balance FROM users WHERE id = ?").bind(userId).first();
-    const currentBalance = (userWallet?.balance as number) || 0;
+    // --- B. SECURE BILLING (FIXED: Uses 'sparks' instead of 'balance') ---
+    const userWallet = await db.prepare("SELECT sparks FROM users WHERE id = ?").bind(userId).first();
+    const currentBalance = (userWallet?.sparks as number) || 0;
 
     if (currentBalance < sparkCost) {
       return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
     }
 
     // DEDUCT SPARKS FIRST (The secure way)
-    await db.prepare("UPDATE users SET balance = balance - ? WHERE id = ?").bind(sparkCost, userId).run();
+    await db.prepare("UPDATE users SET sparks = sparks - ? WHERE id = ?").bind(sparkCost, userId).run();
 
     try {
       // --- C. AI GENERATION & SEO (CONCURRENT) ---
@@ -169,9 +169,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
 
     } catch (aiError: any) {
-      // 🚨 CRITICAL REFUND LOGIC 🚨
+      // 🚨 CRITICAL REFUND LOGIC (FIXED: Uses 'sparks') 🚨
       // If the AI fails, we MUST give the user their Sparks back!
-      await db.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(sparkCost, userId).run();
+      await db.prepare("UPDATE users SET sparks = sparks + ? WHERE id = ?").bind(sparkCost, userId).run();
       console.error("AI Pipeline Error (Refunded):", aiError);
       return NextResponse.json({ error: aiError.message || "Generation failed. Sparks refunded." }, { status: 500 });
     }
