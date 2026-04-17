@@ -5,7 +5,6 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 // === 1. GROQ SEO HELPER (Fortified & Cloudflare Safe) ===
 async function generateSEOData(prompt: string, apiKey: string) {
   try {
-    // 🌟 FIX: Prevent 400 Bad Request by guaranteeing the prompt is NEVER empty
     const safePrompt = prompt?.trim() ? prompt.trim() : "A highly detailed, aesthetic AI image generation.";
 
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -22,17 +21,20 @@ async function generateSEOData(prompt: string, apiKey: string) {
           content: "You are an SEO expert for an AI image gallery. Based on the user's image prompt, return a JSON object with exactly three keys: 'title' (catchy 3-5 words), 'description' (engaging 1-2 sentences), and 'tags' (a comma-separated string of 5 relevant tags)."
         }, {
           role: "user",
-          content: safePrompt // 🌟 FIX: Using the guaranteed string
+          content: safePrompt 
         }]
       })
     });
     
     if (!res.ok) {
-      console.warn(`Groq API failed with status: ${res.status}`);
-      throw new Error("Groq request failed");
+      // 🚨 EXTRACT EXACT ERROR BODY FROM GROQ
+      const errorBody = await res.text();
+      console.warn(`Groq API failed with status: ${res.status}. Body: ${errorBody}`);
+      throw new Error(`Groq request failed: ${res.status}`);
     }
 
-    const data = await res.json();
+    // 🌟 TS FIX: Cast as any to fix "Type unknown" errors
+    const data = (await res.json()) as any;
     
     if (!data?.choices?.[0]?.message?.content) {
       throw new Error("Malformed Groq response structure");
@@ -60,7 +62,9 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
     const res = await fetch(pollingUrl, {
       headers: { "Ocp-Apim-Subscription-Key": apiKey }
     });
-    const data = await res.json();
+    
+    // 🌟 TS FIX: Cast as any
+    const data = (await res.json()) as any;
 
     if (data.status === "COMPLETED" && data.output?.media_url?.[0]) {
       return data.output.media_url[0];
@@ -80,7 +84,8 @@ export async function POST(req: Request) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const body = await req.json();
+    // 🌟 TS FIX: Cast body as any to fix 'prompt does not exist on type unknown'
+    const body = (await req.json()) as any;
     const { prompt, model, styleId, sourceImage } = body;
 
     const envCtx = ((await getCloudflareContext({ async: true })).env as any);
@@ -132,7 +137,8 @@ export async function POST(req: Request) {
           generateSEOData(finalPrompt, GROQ_KEY) 
         ]);
 
-        const pixazoData = await pixazoRes.json();
+        // 🌟 TS FIX: Cast as any
+        const pixazoData = (await pixazoRes.json()) as any;
         if (!pixazoRes.ok) throw new Error(pixazoData.error || "Schnell API Failed");
         
         outputImageUrl = pixazoData.output;
@@ -158,7 +164,8 @@ export async function POST(req: Request) {
           generateSEOData(finalPrompt, GROQ_KEY) 
         ]);
 
-        const startData = await pixazoStartRes.json();
+        // 🌟 TS FIX: Cast as any
+        const startData = (await pixazoStartRes.json()) as any;
         if (!pixazoStartRes.ok || !startData.polling_url) throw new Error(startData.error || "FireRed queue failed");
 
         outputImageUrl = await pollPixazoStatus(startData.polling_url, PIXAZO_KEY);
