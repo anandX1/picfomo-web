@@ -1,7 +1,6 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-
 import { revalidatePath } from "next/cache";
 
 // 1. TOGGLE FOLLOW STATUS
@@ -22,8 +21,16 @@ export async function toggleFollow(targetUserId: string) {
       revalidatePath("/u/[username]", "page");
       return { success: true, isFollowing: false };
     } else {
-      await db.prepare("INSERT INTO follows (follower_id, following_id) VALUES (?, ?)")
-        .bind(userId, targetUserId).run();
+      const notifId = `notif_${Date.now()}_follow_${Math.random().toString(36).substring(7)}`;
+      const message = "Someone started following you!";
+      
+      // 🌟 FIX: Added notification insert so the Bell actually rings!
+      await db.batch([
+        db.prepare("INSERT INTO follows (follower_id, following_id) VALUES (?, ?)").bind(userId, targetUserId),
+        db.prepare("INSERT INTO notifications (id, user_id, recipient_id, actor_id, type, message) VALUES (?, ?, ?, ?, ?, ?)")
+          .bind(notifId, targetUserId, targetUserId, userId, 'follow', message)
+      ]);
+      
       revalidatePath("/u/[username]", "page");
       return { success: true, isFollowing: true };
     }
@@ -35,14 +42,12 @@ export async function toggleFollow(targetUserId: string) {
 // 2. RECORD UNIQUE VIEW
 export async function recordView(postId: string) {
   const { userId } = await auth();
-  if (!userId) return { success: false }; // Only track logged-in views for now
+  if (!userId) return { success: false };
 
   const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
   try {
-    // INSERT OR IGNORE prevents the app from crashing if they already viewed it
-    await db.prepare("INSERT OR IGNORE INTO post_views (post_id, user_id) VALUES (?, ?)")
-      .bind(postId, userId).run();
+    await db.prepare("INSERT OR IGNORE INTO post_views (post_id, user_id) VALUES (?, ?)").bind(postId, userId).run();
     return { success: true };
   } catch (error) {
     return { success: false };

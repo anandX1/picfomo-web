@@ -110,12 +110,13 @@ export async function likePost(postId: string) {
   }
 
   const notifId = `notif_${Date.now()}_like_${Math.random().toString(36).substring(7)}`;
+  const message = "Someone liked your post!"; // 🌟 FIX: Required by DB schema
 
-  // HOOK MECHANIC: Route Spark to Vault AND create an Unread Notification
+  // 🌟 FIX: Added user_id and message to the SQL query
   await db.batch([
     db.prepare("INSERT INTO likes (user_id, post_id) VALUES (?, ?)").bind(userId, postId),
     db.prepare("UPDATE users SET unclaimed_sparks = unclaimed_sparks + 1 WHERE id = ?").bind(creatorId),
-    db.prepare("INSERT INTO notifications (id, recipient_id, actor_id, type, post_id) VALUES (?, ?, ?, ?, ?)").bind(notifId, creatorId, userId, 'like', postId)
+    db.prepare("INSERT INTO notifications (id, user_id, recipient_id, actor_id, type, message, post_id) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(notifId, creatorId, creatorId, userId, 'like', message, postId)
   ]);
 
   revalidatePath("/feed");
@@ -148,9 +149,11 @@ export async function mockRemixPost(postId: string) {
 
   if (creatorId !== userId) {
     const notifId = `notif_${Date.now()}_remix_${Math.random().toString(36).substring(7)}`;
-    // HOOK MECHANIC: Route Sparks to Vault AND create an Unread Notification
+    const message = "Someone remixed your style!"; // 🌟 FIX: Required by DB schema
+    
     batch.push(db.prepare("UPDATE users SET unclaimed_sparks = unclaimed_sparks + 2 WHERE id = ?").bind(creatorId));
-    batch.push(db.prepare("INSERT INTO notifications (id, recipient_id, actor_id, type, post_id) VALUES (?, ?, ?, ?, ?)").bind(notifId, creatorId, userId, 'remix', postId));
+    // 🌟 FIX: Added user_id and message to the SQL query
+    batch.push(db.prepare("INSERT INTO notifications (id, user_id, recipient_id, actor_id, type, message, post_id) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(notifId, creatorId, creatorId, userId, 'remix', message, postId));
   }
 
   await db.batch(batch);
