@@ -11,7 +11,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 // 🌟 MULTIPLE ADMINS CONFIGURATION
 const ALLOWED_ADMINS = [
   "everykart.help@gmail.com",
-  "anandkumar.3042008@gmail.com", // Add your other emails here!
+  "anandkumar.3042008@gmail.com",
+  "crafty9323@gmail.com", // Add your other emails here!
 ];
 
 export default async function AdminDashboard() {

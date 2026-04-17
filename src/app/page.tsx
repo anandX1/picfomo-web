@@ -5,7 +5,6 @@ import HowItWorks from "@/components/marketing/HowItWorks";
 import ResultsGrid from "@/components/marketing/ResultsGrid";
 import StylePalette from "@/components/marketing/StylePalette";
 import SocialProof from "@/components/marketing/SocialProof";
-import Pricing from "@/components/marketing/Pricing";
 import FAQ from "@/components/marketing/FAQ";
 import CTABand from "@/components/marketing/CTABand";
 import Footer from "@/components/marketing/Footer";
@@ -28,9 +27,6 @@ export default function Home() {
 
       <div className="mx-5 md:mx-10 h-[1px] max-w-[1040px] bg-[var(--rule)] xl:mx-auto"></div>
       <SocialProof />
-
-      <div className="mx-5 md:mx-10 h-[1px] max-w-[1040px] bg-[var(--rule)] xl:mx-auto"></div>
-      <Pricing />
 
       <div className="mx-5 md:mx-10 h-[1px] max-w-[1040px] bg-[var(--rule)] xl:mx-auto"></div>
       <FAQ />

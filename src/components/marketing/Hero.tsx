@@ -3,14 +3,14 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-// MOCK DATA: In Phase 2, this will fetch directly from Cloudflare D1
+// MOCK DATA: Using local paths. Drop your sample images into the `public/images/` folder!
 const COMMUNITY_POSTS = [
-  { id: 1, style: "Ghibli", bgClass: "c-ghibli" },
-  { id: 2, style: "IPL Card", bgClass: "c-ipl" },
-  { id: 3, style: "Bollywood", bgClass: "c-bolly" },
-  { id: 4, style: "Action Fig", bgClass: "c-action" },
-  { id: 5, style: "Wedding", bgClass: "c-wedding" },
-  { id: 6, style: "Cyber Desi", bgClass: "c-cyber" },
+  { id: 1, style: "Ghibli", bgClass: "c-ghibli", image_url: "/images/ghibli.jpg" },
+  { id: 2, style: "IPL Card", bgClass: "c-ipl", image_url: "/images/ipl.jpg" },
+  { id: 3, style: "Bollywood", bgClass: "c-bolly", image_url: "/images/bollywood.jpg" },
+  { id: 4, style: "Action Fig", bgClass: "c-action", image_url: "/images/action.jpg" },
+  { id: 5, style: "Wedding", bgClass: "c-wedding", image_url: "/images/wedding.jpg" },
+  { id: 6, style: "Cyber Desi", bgClass: "c-cyber", image_url: "/images/cyber.jpg" },
 ];
 
 // We duplicate the array so the CSS infinite scroll loops perfectly
@@ -96,18 +96,30 @@ export default function Hero() {
 // Sub-component for individual portrait cards
 function LiveWallCard({ post }: { post: any }) {
   return (
-    <div className="group relative aspect-[3/4] w-full cursor-pointer overflow-hidden shadow-[var(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)]">
-      {/* Background Gradient (Using your globals.css classes) */}
-      <div className={`h-full w-full ${post.bgClass}`}></div>
+    <div className="group relative aspect-[3/4] w-full cursor-pointer overflow-hidden shadow-[var(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)] rounded-xl">
+      {/* Background with CSS Gradient Fallback */}
+      <div className={`absolute inset-0 h-full w-full ${post.bgClass || 'bg-gray-200'}`}>
+        {/* Actual Image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img 
+          src={post.image_url} 
+          alt={post.style} 
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => { 
+            // If the image doesn't exist yet, hide the broken img icon and show the CSS gradient instead
+            e.currentTarget.style.display = 'none'; 
+          }} 
+        />
+      </div>
 
       {/* Style Badge */}
-      <div className="absolute bottom-3 right-3 bg-[var(--color-gold)] px-3 py-1 font-[family-name:var(--display)] text-[12px] tracking-[1px] text-[var(--color-ink)] shadow-sm">
+      <div className="absolute bottom-3 right-3 z-20 bg-[var(--color-gold)] px-3 py-1 font-[family-name:var(--display)] text-[12px] tracking-[1px] text-[var(--color-ink)] shadow-sm">
         {post.style}
       </div>
 
       {/* Hover Overlay: "Try this style" */}
-      <div className="absolute inset-0 flex items-center justify-center border-2 border-[var(--color-gold)] bg-[rgba(200,151,31,0.12)] opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
-        <span className="bg-[var(--color-gold)] px-4 py-1.5 font-[family-name:var(--display)] text-[14px] tracking-[1.5px] text-[var(--color-ink)]">
+      <div className="absolute inset-0 z-10 flex items-center justify-center border-2 border-[var(--color-gold)] bg-[rgba(200,151,31,0.12)] opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+        <span className="bg-[var(--color-gold)] px-4 py-1.5 font-[family-name:var(--display)] text-[14px] tracking-[1.5px] text-[var(--color-ink)] shadow-lg">
           TRY THIS →
         </span>
       </div>

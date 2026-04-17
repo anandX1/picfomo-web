@@ -24,7 +24,7 @@ const taskSchema = z.object({
 
 async function verifyAdmin() {
   const user = await currentUser();
-  const isAdmin = user?.emailAddresses.some(e => e.emailAddress === "anandkumar.3042008@gmail.com");
+  const isAdmin = user?.emailAddresses.some(e => e.emailAddress === "anandkumar.3042008@gmail.com","crafty9323@gmail.com");
   if (!isAdmin) throw new Error("Unauthorized Access");
 }
 
