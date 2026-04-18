@@ -30,36 +30,50 @@ export default function Hero() {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           {/* Live Counter Eyebrow */}
-          <div className="mb-6 inline-flex items-center gap-2 border border-[var(--color-gold-border)] bg-[var(--color-gold-pale)] px-3.5 py-1.5 font-[family-name:var(--mono)] text-[10px] md:text-[12px] uppercase tracking-[2px] md:tracking-[3px] text-[var(--color-gold)]">
+          <div className="mb-5 inline-flex items-center gap-2 border border-[var(--color-gold-border)] bg-[var(--color-gold-pale)] px-3.5 py-1.5 font-[family-name:var(--mono)] text-[10px] md:text-[12px] uppercase tracking-[2px] md:tracking-[3px] text-[var(--color-gold)]">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--color-red)]"></span>
             28,398+ portraits created today
           </div>
 
-          {/* Headline */}
-          <h1 className="mb-5 font-[family-name:var(--display)] text-[clamp(44px,8vw,96px)] leading-[0.9] tracking-[-1px] text-[var(--color-ink)]">
+          {/* Headline - Adjusted clamp and removed purple emoji for a sleek text infinity symbol */}
+          <h1 className="mb-4 font-[family-name:var(--display)] text-[clamp(42px,11vw,96px)] leading-[0.85] tracking-[-1px] text-[var(--color-ink)]">
             YOUR FACE.<br />
-            <span className="text-[var(--color-gold)]">♾️ STYLES.</span><br />
+            <span className="text-[var(--color-gold)] flex items-center gap-2">
+              <span className="font-sans text-[1.15em] font-light leading-none -mt-1">∞</span> STYLES.
+            </span>
             <span className="block font-[family-name:var(--serif)] text-[0.72em] font-normal italic text-[var(--color-ink3)]">
               ALL IN ONE PLACE.
             </span>
           </h1>
 
-          {/* Responsive Font Size on Description */}
-          <p className="mb-8 max-w-[440px] text-[16px] md:text-[20px] font-light leading-[1.6] md:leading-[1.75] text-[var(--color-ink2)]">
-            Pick a trending style — Ghibli, IPL cricket card, Bollywood poster. Drop a selfie. Get a portrait so stunning you'll actually change your Profile Picture.
+          {/* Responsive Font Size & Dynamic Content on Description */}
+          <p className="mb-8 max-w-[440px] font-light leading-[1.6] md:leading-[1.75] text-[var(--color-ink2)]">
+            {/* Mobile Text (Shorter) */}
+            <span className="block md:hidden text-[15px]">
+              Drop a selfie. Pick a style. Get a portrait so stunning you'll actually change your DP.
+            </span>
+            {/* Desktop Text (Full length) */}
+            <span className="hidden md:block text-[20px]">
+              Pick a trending style — Ghibli, IPL cricket card, Bollywood poster. Drop a selfie. Get a portrait so stunning you'll actually change your Profile Picture.
+            </span>
           </p>
 
-          {/* CTAs - Mobile optimized flex behavior */}
-          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4">
+          {/* CTAs - Forced Side-by-Side on Mobile */}
+          <div className="flex flex-row items-center gap-4 md:gap-5">
             <Link
               href="/sign-up"
-              className="flex w-full sm:w-auto items-center justify-center gap-2.5 bg-[var(--color-ink)] px-8 py-3.5 md:py-4 font-[family-name:var(--display)] text-[16px] md:text-[18px] tracking-[2px] text-[var(--color-gold-light)] shadow-[var(--shadow-md)] transition-all hover:-translate-y-0.5 hover:bg-[var(--color-gold)] hover:text-[var(--color-ink)] hover:shadow-[var(--shadow-lg)]"
+              className="flex items-center justify-center gap-2 bg-[var(--color-ink)] px-5 py-3.5 md:px-8 md:py-4 font-[family-name:var(--display)] text-[14px] md:text-[18px] tracking-[1px] md:tracking-[2px] text-[var(--color-gold-light)] shadow-[var(--shadow-md)] transition-all hover:-translate-y-0.5 hover:bg-[var(--color-gold)] hover:text-[var(--color-ink)] hover:shadow-[var(--shadow-lg)]"
             >
-              Create Free Portrait <span>→</span>
+              Create Free Portrait <span className="hidden sm:inline">→</span>
             </Link>
-            <button className="flex w-full sm:w-auto justify-center sm:justify-start items-center gap-1.5 bg-transparent py-2 text-[13px] font-medium text-[var(--color-ink2)] transition-colors hover:text-[var(--color-ink)]">
-              <span>▶</span> See how it works
-            </button>
+            
+            {/* 🌟 TRUE ANCHOR LINK TO #how-it-works */}
+            <Link 
+              href="#how-it-works" 
+              className="flex items-center gap-1.5 bg-transparent py-2 text-[12px] md:text-[13px] font-medium text-[var(--color-ink2)] transition-colors hover:text-[var(--color-ink)] shrink-0"
+            >
+              <span>▶</span> <span className="underline decoration-[var(--rule)] underline-offset-4">See how it works</span>
+            </Link>
           </div>
         </motion.div>
 
@@ -70,19 +84,15 @@ export default function Hero() {
           transition={{ duration: 1, delay: 0.3 }}
           className="relative hidden h-[600px] w-full overflow-hidden md:block"
         >
-          {/* Fade masks for smooth disappearance at top and bottom */}
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-[var(--color-white)] to-transparent"></div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-[var(--color-white)] to-transparent"></div>
 
           <div className="grid h-full grid-cols-2 gap-4">
-            {/* Column 1: Scrolls Up */}
             <div className="animate-scroll-up flex flex-col gap-4 hover:[animation-play-state:paused]">
               {SCROLL_ITEMS.slice(0, SCROLL_ITEMS.length / 2).map((post, idx) => (
                 <LiveWallCard key={`col1-${idx}`} post={post} />
               ))}
             </div>
-
-            {/* Column 2: Scrolls Down (Offset margin to stagger the start) */}
             <div className="animate-scroll-down -mt-[300px] flex flex-col gap-4 hover:[animation-play-state:paused]">
               {SCROLL_ITEMS.slice(SCROLL_ITEMS.length / 2).map((post, idx) => (
                 <LiveWallCard key={`col2-${idx}`} post={post} />
@@ -99,11 +109,9 @@ export default function Hero() {
         transition={{ duration: 0.8, delay: 0.2 }}
         className="relative mt-10 block w-[calc(100%+3rem)] -mx-6 overflow-hidden md:hidden"
       >
-        {/* Left and Right Fade masks to make scrolling look natural edge-to-edge */}
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-[var(--color-white)] to-transparent"></div>
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-[var(--color-white)] to-transparent"></div>
 
-        {/* The horizontal infinite scroll container using our custom Tailwind animation */}
         <div className="flex w-max animate-scroll-left gap-3">
           {SCROLL_ITEMS.map((post, idx) => (
             <div key={`mobile-scroll-${idx}`} className="w-[140px] shrink-0">
@@ -120,12 +128,8 @@ export default function Hero() {
 // Sub-component for individual portrait cards
 function LiveWallCard({ post }: { post: any }) {
   return (
-    // 🌟 THE FIX: This entire card is now a Link that redirects to /sign-up when clicked!
     <Link href="/sign-up" className="group relative aspect-[3/4] w-full cursor-pointer overflow-hidden shadow-[var(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)] rounded-xl block">
-      
-      {/* Background container */}
       <div className="absolute inset-0 h-full w-full bg-gray-200">
-        {/* Actual Image */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
           src={post.image_url} 
@@ -133,13 +137,9 @@ function LiveWallCard({ post }: { post: any }) {
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
-
-      {/* Style Badge */}
       <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 z-20 bg-[var(--color-gold)] px-2.5 py-1 md:px-3 font-[family-name:var(--display)] text-[10px] md:text-[12px] tracking-[1px] text-[var(--color-ink)] shadow-sm">
         {post.style}
       </div>
-
-      {/* Hover Overlay: "Try this style" */}
       <div className="absolute inset-0 z-10 flex items-center justify-center border-2 border-[var(--color-gold)] bg-[rgba(200,151,31,0.12)] opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
         <span className="bg-[var(--color-gold)] px-4 py-1.5 font-[family-name:var(--display)] text-[12px] md:text-[14px] tracking-[1.5px] text-[var(--color-ink)] shadow-lg">
           TRY THIS →
