@@ -8,14 +8,16 @@ export default function Footer() {
         {/* Top Grid */}
         <div className="mb-10 grid grid-cols-1 gap-10 md:grid-cols-4 md:gap-10">
           
-          {/* Brand Info */}
+          {/* 🌟 NEW BRAND LOGO */}
           <div className="md:col-span-1">
-            <Link href="/" className="mb-3 flex items-center gap-2 outline-none">
-              <div className="flex h-6 w-6 items-center justify-center bg-[var(--color-ink)] font-[family-name:var(--display)] text-[11px] tracking-[1px] text-[var(--color-gold-light)]">
-                PF
-              </div>
-              <div className="font-[family-name:var(--display)] text-[16px] tracking-[2px] text-[var(--color-ink)]">
-                PICFOMO
+            <Link href="/" className="mb-5 inline-block outline-none transition-opacity hover:opacity-80">
+              <div className="flex h-[36px] items-center justify-center rounded-md bg-[var(--color-ink)] px-3 shadow-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src="/logo.png" 
+                  alt="PicFOMO" 
+                  className="h-[18px] w-auto object-contain" 
+                />
               </div>
             </Link>
             <p className="max-w-[180px] text-[11px] leading-[1.6] text-[var(--color-ink3)]">
