@@ -3,14 +3,16 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-// MOCK DATA: Using local paths. Drop your sample images into the `public/images/` folder!
+// 🌟 REAL DATA: Using your actual Cloudflare R2 Studio assets!
 const COMMUNITY_POSTS = [
-  { id: 1, style: "Ghibli", bgClass: "c-ghibli", image_url: "/images/ghibli.jpg" },
-  { id: 2, style: "IPL Card", bgClass: "c-ipl", image_url: "/images/ipl.jpg" },
-  { id: 3, style: "Bollywood", bgClass: "c-bolly", image_url: "/images/bollywood.jpg" },
-  { id: 4, style: "Action Fig", bgClass: "c-action", image_url: "/images/action.jpg" },
-  { id: 5, style: "Wedding", bgClass: "c-wedding", image_url: "/images/wedding.jpg" },
-  { id: 6, style: "Cyber Desi", bgClass: "c-cyber", image_url: "/images/cyber.jpg" },
+  { id: 1, style: "Profile Break", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/Gemini_Generated_Image_7jfy047jfy047jfy.png" },
+  { id: 2, style: "Reins & Shadow", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1768355185519-cyd7mg.png" },
+  { id: 3, style: "Sage & Still", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1775307126909-bd97sm.png" },
+  { id: 4, style: "Rust & Rest", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1775308557046-canqft.png" },
+  { id: 5, style: "Flock Selfie", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1775397538147-wbqu2l.png" },
+  { id: 6, style: "Headlines", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1767951360678-4r7tke.png" },
+  { id: 7, style: "Miniature Creation", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1775307048501-bki7ts.png" },
+  { id: 8, style: "Self Creation", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/Gemini_Generated_Image_k2973ik2973ik297.png" },
 ];
 
 // We duplicate the array so the CSS infinite scroll loops perfectly
@@ -74,14 +76,14 @@ export default function Hero() {
           <div className="grid h-full grid-cols-2 gap-4">
             {/* Column 1: Scrolls Up */}
             <div className="animate-scroll-up flex flex-col gap-4 hover:[animation-play-state:paused]">
-              {SCROLL_ITEMS.map((post, idx) => (
+              {SCROLL_ITEMS.slice(0, SCROLL_ITEMS.length / 2).map((post, idx) => (
                 <LiveWallCard key={`col1-${idx}`} post={post} />
               ))}
             </div>
 
             {/* Column 2: Scrolls Down (Offset margin to stagger the start) */}
             <div className="animate-scroll-down -mt-[300px] flex flex-col gap-4 hover:[animation-play-state:paused]">
-              {SCROLL_ITEMS.map((post, idx) => (
+              {SCROLL_ITEMS.slice(SCROLL_ITEMS.length / 2).map((post, idx) => (
                 <LiveWallCard key={`col2-${idx}`} post={post} />
               ))}
             </div>
@@ -96,19 +98,17 @@ export default function Hero() {
 // Sub-component for individual portrait cards
 function LiveWallCard({ post }: { post: any }) {
   return (
-    <div className="group relative aspect-[3/4] w-full cursor-pointer overflow-hidden shadow-[var(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)] rounded-xl">
-      {/* Background with CSS Gradient Fallback */}
-      <div className={`absolute inset-0 h-full w-full ${post.bgClass || 'bg-gray-200'}`}>
+    // 🌟 THE FIX: This entire card is now a Link that redirects to /sign-up when clicked!
+    <Link href="/sign-up" className="group relative aspect-[3/4] w-full cursor-pointer overflow-hidden shadow-[var(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)] rounded-xl block">
+      
+      {/* Background container */}
+      <div className="absolute inset-0 h-full w-full bg-gray-200">
         {/* Actual Image */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
           src={post.image_url} 
           alt={post.style} 
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          onError={(e) => { 
-            // If the image doesn't exist yet, hide the broken img icon and show the CSS gradient instead
-            e.currentTarget.style.display = 'none'; 
-          }} 
         />
       </div>
 
@@ -123,6 +123,6 @@ function LiveWallCard({ post }: { post: any }) {
           TRY THIS →
         </span>
       </div>
-    </div>
+    </Link>
   );
 }
