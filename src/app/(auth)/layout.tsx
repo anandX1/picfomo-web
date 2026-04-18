@@ -1,71 +1,88 @@
-import Link from "next/link";
+import { currentUser } from "@clerk/nextjs/server";
+import { UserButton } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+import { Zap } from "lucide-react";
+import NotificationBell from "@/components/dashboard/NotificationBell";
+import { getNotifications } from "@/actions/notifications";
+import StoryLogo from "@/components/dashboard/StoryLogo";
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--color-cream)] p-4 relative overflow-hidden">
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const user = await currentUser();
+  if (!user) return redirect("/sign-up");
+
+  let sparks = 0;
+  let initialNotifications: any[] = [];
+  let initialUnreadCount = 0;
+
+  try {
+    const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any);
+    
+    // 🌟 THE TS FIX: Removed the generic <{...}> and cast as any instead
+    const result = await db
+      .prepare("SELECT sparks_balance FROM users WHERE id = ?")
+      .bind(user.id)
+      .first() as any;
       
-      {/* 🌟 CUSTOM ANIMATIONS FOR THE AUTH PAGE ONLY */}
-      <style>{`
-        @keyframes ai-scan {
-          0% { transform: translateY(-100%); opacity: 0; }
-          50% { opacity: 1; }
-          100% { transform: translateY(100%); opacity: 0; }
-        }
-        .animate-ai-scan {
-          animation: ai-scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
-        @keyframes slow-spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-slow-spin {
-          animation: slow-spin 10s linear infinite;
-        }
-      `}</style>
+    if (result) sparks = result.sparks_balance || 0;
 
-      {/* Subtle Background Glow */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-[var(--color-gold)] opacity-[0.03] blur-[100px] animate-pulse"></div>
+    // 2. Fetch Notifications for the Bell
+    const notifData = await getNotifications();
+    if (notifData.success) {
+      initialNotifications = notifData.notifications || [];
+      initialUnreadCount = notifData.unreadCount || 0;
+    }
+  } catch (error) {
+    console.error("Error fetching layout data:", error);
+  }
 
-      {/* 🌟 PREMIUM AI LOADING ANIMATION & LOGO */}
-      <div className="relative mb-10 flex flex-col items-center z-10">
+  return (
+    // THE MAGIC OVERRIDE: Added 'app-ui' to this top-level container
+    <div className="flex h-full w-full flex-col bg-[var(--color-cream)] app-ui">
+      
+      {/* Global Top Header - Adjusted padding slightly for mobile breathing room */}
+      <header className="flex items-center justify-between border-b border-[var(--rule)] bg-[var(--color-white)] px-4 py-3 sm:px-6 sm:py-4 shrink-0">
         
-        {/* Outer Glowing Ring (Rotating Aura) */}
-        <div className="absolute top-0 h-[56px] w-[180px] rounded-2xl bg-gradient-to-r from-[var(--color-gold-light)] via-amber-500 to-orange-500 opacity-30 blur-xl animate-slow-spin"></div>
+        {/* The Glowing Story Logo on Mobile */}
+        <div className="md:hidden flex items-center gap-2">
+          <StoryLogo />
+        </div>
+        
+        <div className="hidden md:block" /> {/* Spacer for desktop */}
 
-        <Link href="/" className="relative flex h-[56px] w-[180px] items-center justify-center rounded-xl bg-[var(--color-ink)] shadow-2xl border border-white/10 overflow-hidden transition-transform hover:scale-105 active:scale-95">
-
-          {/* The AI Scanner Laser */}
-          <div className="absolute inset-0 w-full h-full">
-            <div className="w-full h-[30%] bg-gradient-to-b from-transparent via-[var(--color-gold)] to-transparent opacity-20 animate-ai-scan"></div>
+        {/* Right Side UI Items */}
+        <div className="flex items-center gap-2 sm:gap-4">
+          
+          {/* THE UI FIX 1: Sleek, glowing amber Sparks pill */}
+          <div className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-3 py-1 sm:px-4 sm:py-1.5 shadow-[0_0_10px_rgba(245,158,11,0.1)]">
+            <Zap size={14} className="fill-amber-500 text-amber-500 animate-pulse" />
+            <span className="font-[family-name:var(--mono)] text-[13px] font-black text-amber-700">
+              {sparks}
+            </span>
+            {/* Desktop only text so it still looks full on PC */}
+            <span className="hidden sm:inline font-[family-name:var(--mono)] text-[12px] font-bold text-amber-700 ml-1">
+              SPARKS
+            </span>
           </div>
 
-          {/* Actual Logo */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo.png"
-            alt="PicFOMO"
-            className="relative z-10 h-[24px] w-auto object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.15)]"
+          {/* THE NOTIFICATION BELL */}
+          <NotificationBell 
+            initialNotifications={initialNotifications} 
+            initialUnreadCount={initialUnreadCount} 
           />
-        </Link>
 
-        {/* Fake System Status / Loading Text */}
-        <div className="mt-6 flex items-center gap-2.5 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-[var(--rule)] shadow-sm">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-gold)] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-gold)]"></span>
-          </span>
-          <span className="font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[2px] text-[var(--color-ink2)]">
-            Initializing Secure Matrix...
-          </span>
+          {/* THE UI FIX 2: Hidden on Mobile! Clerk Button only shows on Desktop */}
+          <div className="hidden md:block">
+            <UserButton />
+          </div>
+          
         </div>
+      </header>
 
-      </div>
-
-      {/* This renders the Clerk <SignIn /> or <SignUp /> box smoothly sliding in */}
-      <div className="relative z-10 w-full max-w-md animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out">
+      {/* The active page content gets injected here */}
+      <main className="flex-1 overflow-y-auto">
         {children}
-      </div>
-      
+      </main>
+
     </div>
   );
 }
