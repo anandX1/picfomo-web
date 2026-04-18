@@ -16,36 +16,31 @@ export default function HowItWorks() {
         No prompts. No technical knowledge. Just drop a selfie and watch the AI do the heavy lifting.
       </p>
 
-      {/* Video Placeholder Container 
+      {/* Video Container 
         aspect-[4/5] is perfect for mobile (taller than wide). 
         md:aspect-[16/9] makes it widescreen on desktop.
       */}
-      <div className="relative mx-auto w-full max-w-[900px] aspect-[4/5] overflow-hidden border border-[var(--rule)] bg-[var(--color-cream2)] shadow-[var(--shadow-lg)] md:aspect-video">
+      <div className="relative mx-auto w-full max-w-[1040px] aspect-[4/5] overflow-hidden border border-[var(--rule)] bg-[var(--color-ink)] shadow-[var(--shadow-2xl)] md:aspect-video rounded-xl">
         
-        {/* The actual HTML5 Video Tag */}
+        {/* The actual HTML5 Video Tag - Optimized for Mobile & Performance */}
         <video 
           autoPlay 
           loop 
           muted 
           playsInline 
-          className="h-full w-full object-cover opacity-90"
-          // poster="/your-placeholder-image.jpg" <-- Add an image here later so it doesn't show a blank box while loading
+          preload="auto"
+          className="h-full w-full object-cover opacity-95 transition-opacity duration-700"
         >
-          {/* Change this src later to point to your actual .mp4 file sitting in your public/ folder */}
-          <source src="/demo-video.mp4" type="video/mp4" />
+          {/* Cloudflare R2 Hosted Video */}
+          <source src="https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/picfomo_video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
 
         {/* Premium UI Overlays */}
-        <div className="pointer-events-none absolute inset-0 border-[4px] border-[var(--color-white)] opacity-20"></div>
-        <div className="absolute right-4 top-4 bg-[rgba(17,16,9,0.7)] px-3 py-1.5 font-[family-name:var(--mono)] text-[9px] uppercase tracking-[2px] text-white backdrop-blur-md">
+        <div className="pointer-events-none absolute inset-0 border-[2px] border-white/10 rounded-xl"></div>
+        <div className="absolute right-4 top-4 bg-black/60 px-3 py-1.5 font-[family-name:var(--mono)] text-[9px] uppercase tracking-[2px] text-white backdrop-blur-md rounded border border-white/10 shadow-lg">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse mr-2 mb-[1px]"></span>
           Live Demo
-        </div>
-
-        {/* Placeholder text for you while you don't have the video yet */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-[var(--color-ink3)] mix-blend-multiply">
-          <span className="mb-2 text-4xl">🎥</span>
-          <span className="font-[family-name:var(--mono)] text-[10px] uppercase tracking-[2px]">Put demo-video.mp4<br/>in your /public folder</span>
         </div>
 
       </div>
