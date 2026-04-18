@@ -30,22 +30,22 @@ export default function Hero() {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           {/* Live Counter Eyebrow */}
-          <div className="mb-6 inline-flex items-center gap-2 border border-[var(--color-gold-border)] bg-[var(--color-gold-pale)] px-3.5 py-1.5 font-[family-name:var(--mono)] text-[10px] uppercase tracking-[3px] text-[var(--color-gold)]">
+          <div className="mb-6 inline-flex items-center gap-2 border border-[var(--color-gold-border)] bg-[var(--color-gold-pale)] px-3.5 py-1.5 font-[family-name:var(--mono)] text-[12px] uppercase tracking-[3px] text-[var(--color-gold)]">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--color-red)]"></span>
-            14,837 portraits created today
+            28,398+ portraits created today
           </div>
 
           {/* Headline */}
           <h1 className="mb-5 font-[family-name:var(--display)] text-[clamp(52px,7vw,96px)] leading-[0.86] tracking-[-1px] text-[var(--color-ink)]">
             YOUR FACE.<br />
-            <span className="text-[var(--color-gold)]">47 WORLDS.</span><br />
+            <span className="text-[var(--color-gold)]">♾️ STYLES.</span><br />
             <span className="block font-[family-name:var(--serif)] text-[0.72em] font-normal italic text-[var(--color-ink3)]">
-              no photographer needed.
+              ALL IN ONE PLACE.
             </span>
           </h1>
 
-          <p className="mb-9 max-w-[440px] text-[16px] font-light leading-[1.75] text-[var(--color-ink2)]">
-            Drop a selfie. Pick a trending style — Ghibli, IPL cricket card, Bollywood poster. Get a portrait so stunning you'll actually change your DP.
+          <p className="mb-9 max-w-[440px] text-[20px] font-light leading-[1.75] text-[var(--color-ink2)]">
+            Pick a trending style — Ghibli, IPL cricket card, Bollywood poster. Drop a selfie. Get a portrait so stunning you'll actually change your Profile Picture.
           </p>
 
           {/* CTAs */}
