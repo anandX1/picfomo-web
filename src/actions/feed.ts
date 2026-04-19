@@ -2,11 +2,32 @@
 
 import { auth } from "@clerk/nextjs/server";
 
-export async function fetchFeedChunk(offset: number, limit: number = 15, searchQuery: string = "") {
+export async function fetchFeedChunk(
+  offset: number,
+  limit: number = 15,
+  searchQuery: string = "",
+  tab?: "trending" | "latest" | "portraits" | "art"
+) {
   const { userId } = await auth();
   const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
   
   const currentUserId = userId || 'guest';
+  const activeTab = tab || "latest";
+
+  let orderBy = "p.created_at DESC";
+  let whereExtra = "";
+
+  if (activeTab === "trending") {
+    orderBy = "((SELECT COUNT(*) FROM likes WHERE post_id = p.id) * 2 + (SELECT COUNT(*) FROM post_views WHERE post_id = p.id)) DESC, p.created_at DESC";
+  }
+
+  if (activeTab === "portraits") {
+    whereExtra = " AND p.style_id != 'schnell'";
+  }
+
+  if (activeTab === "art") {
+    whereExtra = " AND p.style_id = 'schnell'";
+  }
 
   // 🌟 FIX: Removed the complex "LIKE" joins that caused the 500 error.
   // We now score purely on safe engagement metrics (Likes & Views).
@@ -26,7 +47,7 @@ export async function fetchFeedChunk(offset: number, limit: number = 15, searchQ
     FROM posts p
     LEFT JOIN styles s ON p.style_id = s.id
     LEFT JOIN users u ON p.user_id = u.id
-    WHERE p.is_public = 1
+    WHERE p.is_public = 1${whereExtra}
   `;
 
   const binds: any[] = [currentUserId];
@@ -38,7 +59,7 @@ export async function fetchFeedChunk(offset: number, limit: number = 15, searchQ
     binds.push(searchWildcard, searchWildcard, searchWildcard);
   }
 
-  baseQuery += ` ORDER BY interest_score DESC, p.created_at DESC LIMIT ? OFFSET ?`;
+  baseQuery += ` ORDER BY ${orderBy} LIMIT ? OFFSET ?`;
   binds.push(limit, offset);
 
   try {

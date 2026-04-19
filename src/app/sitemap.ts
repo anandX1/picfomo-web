@@ -4,11 +4,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://picfomo.com';
 
   // ==========================================
-  // 1. STATIC CORE PAGES (High Priority)
+  // 1. STATIC CORE PAGES
   // ==========================================
   const staticPages = [
-    '',              // Homepage
-    '/explore',      // Public Feed
+    '',
+    '/explore',
     '/how-it-works',
     '/styles',
     '/creators',
@@ -18,12 +18,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
-    priority: route === '' ? 1.0 : 0.8, // Homepage is highest priority
+    priority: route === '' ? 1.0 : 0.8,
   }));
 
   // ==========================================
-  // 2. THE "PICOFME KILLER" SEO PAGES (Programmatic Categories)
-  // These act exactly like picofme's /resources/ pages to hijack long-tail searches!
+  // 2. PROGRAMMATIC SEO TRAP PAGES
   // ==========================================
   const seoTrapPages = [
     '/style/professional-linkedin-headshot',
@@ -40,44 +39,65 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
-    priority: 0.9, // Very high priority for search engines to beat competitors
+    priority: 0.9,
   }));
 
   // ==========================================
-  // 3. DYNAMIC PAGES (The Database Flywheel)
+  // 3. DYNAMIC PAGES (DB FLYWHEEL — ACTIVE)
   // ==========================================
   let dynamicPosts: MetadataRoute.Sitemap = [];
   let dynamicProfiles: MetadataRoute.Sitemap = [];
 
   try {
-    // 🌟 UNCOMMENT THIS when you are ready to connect it to your actual DB tables!
-    /*
     const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any);
 
-    // Fetch the latest 10,000 public generations (This makes every user generation an SEO page!)
-    const postsResult = await db.prepare("SELECT id, created_at FROM posts WHERE is_public = 1 ORDER BY created_at DESC LIMIT 10000").all();
-    
+    // 🌟 Fetch last 10,000 public posts WITH image_url for Google Image Search
+    const postsResult = await db.prepare(`
+      SELECT 
+        posts.id, 
+        posts.image_url, 
+        posts.created_at,
+        posts.title,
+        posts.description,
+        users.username
+      FROM posts 
+      JOIN users ON posts.user_id = users.id
+      WHERE posts.is_public = 1 
+      ORDER BY posts.created_at DESC 
+      LIMIT 10000
+    `).all();
+
     dynamicPosts = postsResult.results.map((post: any) => ({
-      url: `${baseUrl}/p/${post.id}`, // Assuming /p/[id] is your individual post route
+      url: `${baseUrl}/post/${post.id}`,                    // ✅ Fixed: /post/ not /p/
       lastModified: new Date(post.created_at),
       changeFrequency: 'weekly' as const,
       priority: 0.6,
+      // 🌟 This is the key unlock: tells Google Images to index your AI photos
+      images: post.image_url ? [{
+        url: post.image_url,
+        title: post.title || `AI Portrait by ${post.username || 'creator'} on PicFOMO`,
+        caption: post.description || 'AI-generated portrait created on PicFOMO',
+      }] : undefined,
     }));
 
-    // Fetch public Creator profiles
-    const usersResult = await db.prepare("SELECT username, created_at FROM users WHERE username IS NOT NULL").all();
-    
+    // 🌟 Public creator profiles
+    const usersResult = await db.prepare(`
+      SELECT username, updated_at 
+      FROM users 
+      WHERE username IS NOT NULL 
+      LIMIT 5000
+    `).all();
+
     dynamicProfiles = usersResult.results.map((user: any) => ({
-      url: `${baseUrl}/u/${user.username}`, // Your profile route
+      url: `${baseUrl}/u/${user.username}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     }));
-    */
+
   } catch (error) {
-    console.error("Error generating dynamic sitemap:", error);
+    console.error("Sitemap DB error:", error);
   }
 
-  // Combine everything into one massive sitemap for Google!
   return [...staticPages, ...seoTrapPages, ...dynamicPosts, ...dynamicProfiles];
 }
