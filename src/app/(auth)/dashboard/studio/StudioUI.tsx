@@ -133,7 +133,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
           // Add a subtle drop shadow to text for visibility
           ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
           ctx.shadowBlur = 10;
-          ctx.fillText("✨ PicFOMO.com", canvas.width - 30, canvas.height - 30);
+          ctx.fillText("PicFOMO.com", canvas.width - 30, canvas.height - 30);
           
           // Trigger Download
           const link = document.createElement("a");
