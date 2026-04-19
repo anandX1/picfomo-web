@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "PicFOMO — Your Best DP is 20 Seconds Away",
   description: "Drop your photo. Pick a trending style. Get a portrait so stunning you'll actually change your DP. No photographer needed.",
   icons: {
-    icon: "/favicon.ico", // Points to your public/favicon.ico
+    icon: "/favicon.png", // Points to your public/favicon.png
   },
   openGraph: {
     title: "PicFOMO — AI Portrait Generator",

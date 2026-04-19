@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-// Added Clock to the imports
 import { Heart, Share2, Zap, Users, X, Image as ImageIcon, Eye, Clock } from "lucide-react";
 import { likePost, mockRemixPost } from "@/actions/economy";
 import { toggleFollow, recordView } from "@/actions/social";
@@ -21,6 +20,10 @@ interface PostData {
   likes_count: number;
   views_count: number;
   followers_count: number;
+  // 🌟 Groq SEO fields
+  title: string | null;
+  description: string | null;
+  tags: string | null;
 }
 
 interface Props {
@@ -38,12 +41,10 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
   const [followersCount, setFollowersCount] = useState(post.followers_count || 0);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
 
-  // THE VIEWS ENGINE: Records a view when the page loads!
   useEffect(() => {
     if (currentUserId) {
       recordView(post.id);
     } else {
-      // 20-second hook for unauthenticated users
       const timer = setTimeout(() => setShowAuthModal(true), 20000);
       return () => clearTimeout(timer);
     }
@@ -94,7 +95,7 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
     const url = window.location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: `PicFOMO Generation`, url });
+        await navigator.share({ title: post.title || "PicFOMO Generation", url });
       } else if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(url);
         toast.success("Link copied to clipboard!");
@@ -106,10 +107,8 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
     }
   };
 
-  // THE TIME ENGINE
   const timeAgo = (dateString: string) => {
     if (!dateString) return '';
-    // Fix timezone strings coming from SQLite to work in JavaScript Date object
     const parsedDate = new Date(dateString.replace(' ', 'T') + 'Z'); 
     const now = new Date();
     const seconds = Math.abs(Math.round((now.getTime() - parsedDate.getTime()) / 1000));
@@ -130,12 +129,11 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
   return (
     <div className="min-h-screen bg-[var(--color-cream)] app-ui p-4 md:p-8">
       
-      {/* THE FANCY CONVERSION MODAL */}
+      {/* AUTH MODAL */}
       {showAuthModal && !currentUserId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md px-4 animate-in fade-in duration-300">
           <div className="relative w-full max-w-md overflow-hidden rounded-[24px] bg-[var(--color-white)] p-8 shadow-2xl border border-white/20">
             
-            {/* Ambient Glowing Orbs */}
             <div className="absolute -top-24 -left-24 h-48 w-48 rounded-full bg-blue-400 opacity-10 blur-3xl animate-pulse"></div>
             <div className="absolute -bottom-24 -right-24 h-48 w-48 rounded-full bg-[var(--color-gold)] opacity-10 blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
 
@@ -147,13 +145,12 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
             </button>
             
             <div className="relative z-10 flex flex-col items-center text-center">
-              {/* THE LOGO */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
-                 src="/logo.png" 
-                 alt="PicFOMO Logo" 
-                 className="mb-6 w-40 sm:w-48 h-auto rounded-2xl bg-gray-950 p-2 shadow-[0_8px_30px_rgb(0,0,0,0.2)] object-contain" 
-               />
+                src="/logo.png" 
+                alt="PicFOMO Logo" 
+                className="mb-6 w-40 sm:w-48 h-auto rounded-2xl bg-gray-950 p-2 shadow-[0_8px_30px_rgb(0,0,0,0.2)] object-contain" 
+              />
               
               <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-ink)] tracking-tight">
                 Unlock Your Aesthetic
@@ -177,7 +174,6 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
                 </div>
               </div>
               
-              {/* SHIMMERING BUTTON */}
               <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-full bg-gray-900 py-4 font-bold tracking-wide text-white transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(0,0,0,0.15)]">
                 <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-12deg)_translateX(-150%)] group-hover:duration-1000 group-hover:[transform:skew(-12deg)_translateX(150%)]">
                   <div className="relative h-full w-8 bg-white/20" />
@@ -200,7 +196,7 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
       <div className="mx-auto max-w-5xl">
         <div className="mb-6">
           <Link href="/explore" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-2 w-fit">
-             ← Back to Explore
+            ← Back to Explore
           </Link>
         </div>
 
@@ -209,7 +205,7 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
           {/* LEFT: The Big Image */}
           <div className="w-full md:w-[55%] bg-gray-100 flex items-center justify-center relative min-h-[400px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={post.image_url} alt="Aesthetic" className="w-full h-auto object-contain" />
+            <img src={post.image_url} alt={post.title || "Aesthetic"} className="w-full h-auto object-contain" />
           </div>
 
           {/* RIGHT: The Details & Actions */}
@@ -229,13 +225,36 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
                 </button>
               </div>
 
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{post.style_name || "Aesthetic Generation"}</h1>
-              
-              {post.prompt_used && (
-                <p className="text-gray-500 text-sm mb-3 leading-relaxed">{post.prompt_used}</p>
+              {/* 🌟 GROQ TITLE */}
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {post.title || post.style_name || "Aesthetic Generation"}
+              </h1>
+
+              {/* 🌟 GROQ DESCRIPTION */}
+              {post.description && (
+                <p className="text-gray-600 text-sm mb-2 leading-relaxed">{post.description}</p>
               )}
 
-              {/* NEW TIMESTAMP INJECTED HERE */}
+              {/* ORIGINAL PROMPT (shown smaller, as context) */}
+              {post.prompt_used && (
+                <p className="text-gray-400 text-xs mb-4 leading-relaxed italic">"{post.prompt_used}"</p>
+              )}
+
+              {/* 🌟 GROQ TAGS */}
+              {post.tags && (
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {post.tags.split(",").map((tag) => (
+                    <span 
+                      key={tag.trim()} 
+                      className="bg-gray-100 text-gray-600 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wide"
+                    >
+                      #{tag.trim()}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* TIMESTAMP */}
               <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-8 font-[family-name:var(--mono)]">
                 <Clock size={12} />
                 <span>Posted {timeAgo(post.created_at)}</span>
@@ -249,7 +268,9 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={post.profile_image_url} alt={displayUsername} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white font-bold">{displayUsername.charAt(0).toUpperCase()}</div>
+                      <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white font-bold">
+                        {displayUsername.charAt(0).toUpperCase()}
+                      </div>
                     )}
                   </div>
                   <div>

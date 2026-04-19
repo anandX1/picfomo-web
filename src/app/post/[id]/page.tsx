@@ -1,13 +1,11 @@
-
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import PostClient from "./PostClient";
-import { Metadata } from "next"; // <-- Needed for SEO
+import { Metadata } from "next";
 
 
 export const revalidate = 0;
 
-// THE SEO ENGINE: This generates the dynamic Twitter/WhatsApp preview cards!
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
   const postId = resolvedParams.id;
@@ -16,9 +14,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
   
-  // Quickly fetch just the data needed for the preview card
   const post = await db.prepare(`
-    SELECT posts.image_url, styles.name as style_name, users.username, users.display_name
+    SELECT posts.image_url, posts.title, posts.description, posts.tags,
+    styles.name as style_name, users.username, users.display_name
     FROM posts
     JOIN users ON posts.user_id = users.id
     LEFT JOIN styles ON posts.style_id = styles.id
@@ -30,24 +28,30 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const displayUsername = post.display_name || post.username || "A Creator";
   const style = post.style_name || "aesthetic";
   
-  // The exact text that appears in the WhatsApp/Twitter preview box
-  const title = `Stunning ${style} by ${displayUsername} on PicFOMO ✨`;
-  const description = `${displayUsername} generated this masterpiece on PicFOMO. Drop your photo, pick a trending style, and get your portrait in ~20 seconds.`;
+  // 🌟 Use Groq-generated title/description if available, fallback to template
+  const title = post.title 
+    ? `${post.title} — PicFOMO ✨` 
+    : `Stunning ${style} by ${displayUsername} on PicFOMO ✨`;
+
+  const description = post.description 
+    ? post.description 
+    : `${displayUsername} generated this masterpiece on PicFOMO. Drop your photo, pick a trending style, and get your portrait in ~20 seconds.`;
 
   return {
-    title: title,
-    description: description,
+    title,
+    description,
+    keywords: post.tags || undefined, // 🌟 Groq tags go into meta keywords
     openGraph: {
-      title: title,
-      description: description,
-      images: [post.image_url], // <-- This tells the app to embed the actual AI image!
+      title,
+      description,
+      images: [post.image_url],
       siteName: "PicFOMO",
       type: "website",
     },
     twitter: {
-      card: "summary_large_image", // <-- Forces Twitter to show the massive, full-width image
-      title: title,
-      description: description,
+      card: "summary_large_image",
+      title,
+      description,
       images: [post.image_url],
     }
   };
@@ -66,6 +70,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
   const post = await db.prepare(`
     SELECT 
       posts.id, posts.image_url, posts.created_at, posts.prompt_used, posts.user_id as creator_id,
+      posts.title, posts.description, posts.tags,
       users.username, users.display_name, users.profile_image_url,
       styles.name as style_name,
       (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) as likes_count,
