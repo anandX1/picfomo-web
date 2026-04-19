@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Lock, ScanFace, Sparkles } from "lucide-react";
+import Image from "next/image"; // 🌟 ADDED NEXT.JS IMAGE OPTIMIZATION
 
 // 🌟 THE REAL R2 ASSETS WITH FRAMING OFFSETS
 const RESULTS_DATA = [
@@ -151,16 +152,28 @@ function BeforeAfterSlider({ item, isMobile = false }: { item: any, isMobile?: b
         className={`group relative aspect-[3/4] w-full overflow-hidden rounded-[16px] shadow-[var(--shadow-md)] bg-gray-900 border border-[var(--rule)] ${!isMobile ? 'cursor-ew-resize' : ''} ${isDragging ? 'touch-none' : ''}`}
       >
         {/* AFTER IMAGE (Bottom Layer) */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={item.afterImage} alt="After" className={`absolute inset-0 h-full w-full object-cover ${item.objectPos}`} draggable={false} />
+        <Image 
+          src={item.afterImage} 
+          alt="After" 
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className={`object-cover ${item.objectPos}`} 
+          draggable={false} 
+        />
         
         {/* BEFORE IMAGE (Top Layer - Clipped) */}
         <div 
-          className="absolute inset-0 h-full w-full object-cover" 
+          className="absolute inset-0 h-full w-full" 
           style={{ clipPath: `polygon(0 0, ${position}% 0, ${position}% 100%, 0 100%)` }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.beforeImage} alt="Before" className={`absolute inset-0 h-full w-full object-cover filter blur-[2px] md:blur-0 ${item.objectPos}`} draggable={false} />
+          <Image 
+            src={item.beforeImage} 
+            alt="Before" 
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className={`object-cover filter blur-[2px] md:blur-0 ${item.objectPos}`} 
+            draggable={false} 
+          />
           
           {/* Dark overlay on 'Before' side to make it clear it's the raw input */}
           <div className="absolute inset-0 bg-black/20"></div>

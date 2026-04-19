@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image"; // 🌟 ADDED NEXT.JS IMAGE OPTIMIZATION
 
 // 🌟 REAL DATA: Using your actual Cloudflare R2 Studio assets!
 const COMMUNITY_POSTS = [
@@ -88,14 +89,15 @@ export default function Hero() {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-[var(--color-white)] to-transparent"></div>
 
           <div className="grid h-full grid-cols-2 gap-4">
+            {/* 🌟 Priority load ONLY the first 3 items in the column for LCP optimization */}
             <div className="animate-scroll-up flex flex-col gap-4 hover:[animation-play-state:paused]">
               {SCROLL_ITEMS.slice(0, SCROLL_ITEMS.length / 2).map((post, idx) => (
-                <LiveWallCard key={`col1-${idx}`} post={post} />
+                <LiveWallCard key={`col1-${idx}`} post={post} priority={idx < 3} />
               ))}
             </div>
             <div className="animate-scroll-down -mt-[300px] flex flex-col gap-4 hover:[animation-play-state:paused]">
               {SCROLL_ITEMS.slice(SCROLL_ITEMS.length / 2).map((post, idx) => (
-                <LiveWallCard key={`col2-${idx}`} post={post} />
+                <LiveWallCard key={`col2-${idx}`} post={post} priority={idx < 3} />
               ))}
             </div>
           </div>
@@ -113,9 +115,10 @@ export default function Hero() {
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-[var(--color-white)] to-transparent"></div>
 
         <div className="flex w-max animate-scroll-left gap-3">
+          {/* Priority load the first 4 visible items on mobile */}
           {SCROLL_ITEMS.map((post, idx) => (
             <div key={`mobile-scroll-${idx}`} className="w-[140px] shrink-0">
-              <LiveWallCard post={post} />
+              <LiveWallCard post={post} priority={idx < 4} />
             </div>
           ))}
         </div>
@@ -125,16 +128,18 @@ export default function Hero() {
   );
 }
 
-// Sub-component for individual portrait cards
-function LiveWallCard({ post }: { post: any }) {
+// 🌟 Sub-component updated to use Next.js <Image>
+function LiveWallCard({ post, priority = false }: { post: any, priority?: boolean }) {
   return (
     <Link href="/sign-up" className="group relative aspect-[3/4] w-full cursor-pointer overflow-hidden shadow-[var(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)] rounded-xl block">
       <div className="absolute inset-0 h-full w-full bg-gray-200">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img 
+        <Image 
           src={post.image_url} 
           alt={post.style} 
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          fill
+          priority={priority}
+          sizes="(max-width: 768px) 140px, 250px"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
       <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 z-20 bg-[var(--color-gold)] px-2.5 py-1 md:px-3 font-[family-name:var(--display)] text-[10px] md:text-[12px] tracking-[1px] text-[var(--color-ink)] shadow-sm">

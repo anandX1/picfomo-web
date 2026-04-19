@@ -19,16 +19,18 @@ export default function HowItWorks() {
       {/* Video Container 
         aspect-[4/5] is perfect for mobile (taller than wide). 
         md:aspect-[16/9] makes it widescreen on desktop.
+        (This strict aspect ratio prevents CLS!)
       */}
       <div className="relative mx-auto w-full max-w-[1040px] aspect-[4/5] overflow-hidden border border-[var(--rule)] bg-[var(--color-ink)] shadow-[var(--shadow-2xl)] md:aspect-video rounded-xl">
         
-        {/* The actual HTML5 Video Tag - Optimized for Mobile & Performance */}
+        {/* 🌟 OPTIMIZED VIDEO TAG: Added 'poster' and changed preload to 'metadata' */}
         <video 
           autoPlay 
           loop 
           muted 
           playsInline 
-          preload="auto"
+          preload="metadata"
+          poster="https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/picfomo_video_poster.jpg"
           className="h-full w-full object-cover opacity-95 transition-opacity duration-700"
         >
           {/* Cloudflare R2 Hosted Video */}
