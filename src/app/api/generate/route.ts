@@ -4,8 +4,20 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // === 1. GROQ SEO HELPER (Fortified & Cloudflare Safe) ===
 async function generateSEOData(prompt: string, apiKey: string) {
+  // 🔐 Guard: catch missing key BEFORE hitting Groq
+  if (!apiKey || apiKey === "undefined") {
+    console.error("🚨 GROQ_API_KEY is missing or undefined — skipping Groq call");
+    return { 
+      title: "PicFOMO Generation", 
+      description: "A stunning creation synthesized in the PicFOMO Studio.", 
+      tags: "ai, art, picfomo, portrait, synthesis" 
+    };
+  }
+
   try {
-    const safePrompt = prompt?.trim() ? prompt.trim() : "A highly detailed, aesthetic AI image generation.";
+    const safePrompt = prompt?.trim() 
+      ? prompt.trim().slice(0, 500) // truncate to avoid body size issues
+      : "A highly detailed, aesthetic AI image generation.";
 
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -14,43 +26,56 @@ async function generateSEOData(prompt: string, apiKey: string) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // 🌟 FIX 1: Upgraded model and removed strict json_object requirement to stop 400 errors
-        model: "llama-3.3-70b-versatile",
-        messages: [{
-          role: "system",
-          content: "You are an SEO expert for an AI image gallery. Output ONLY valid JSON. Do not use markdown blocks. Return a JSON object with exactly three keys: 'title' (catchy 3-5 words), 'description' (engaging 1-2 sentences), and 'tags' (a comma-separated string of 5 relevant tags)."
-        }, {
-          role: "user",
-          content: safePrompt 
-        }],
-        temperature: 0.2
+        model: "llama-3.1-8b-instant", // faster, cheaper, better JSON compliance on edge
+        max_tokens: 300,               // Groq needs this explicitly on edge runtimes
+        messages: [
+          {
+            role: "system",
+            content: `You are an SEO expert for an AI image gallery called PicFOMO. 
+Respond ONLY with a raw JSON object — no markdown, no backticks, no explanation.
+The JSON must have exactly these three keys:
+- "title": a catchy 3-5 word phrase
+- "description": 1-2 engaging sentences  
+- "tags": a comma-separated string of exactly 5 relevant tags`
+          },
+          {
+            role: "user",
+            content: `Generate SEO metadata for this image prompt: "${safePrompt}"`
+          }
+        ],
+        temperature: 0.3,
+        // NOTE: Do NOT add response_format: { type: "json_object" } —
+        // it causes 400 on Groq when the model isn't whitelisted for it
       })
     });
     
     if (!res.ok) {
-      // 🚨 EXTRACT EXACT ERROR BODY FROM GROQ FOR DEBUGGING
       const errorBody = await res.text();
-      console.warn(`Groq API failed with status: ${res.status}. Body: ${errorBody}`);
-      throw new Error(`Groq request failed: ${res.status}`);
+      console.error(`🚨 Groq 400 body (check this!): ${errorBody}`);
+      throw new Error(`Groq ${res.status}: ${errorBody}`);
     }
 
-    // 🌟 TS FIX: Cast as any to clear "Type unknown" errors in VS Code
     const data = (await res.json()) as any;
-    
     let content = data?.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new Error("Malformed Groq response structure");
+
+    if (!content) throw new Error("Empty Groq response");
+
+    // Strip markdown fences defensively
+    content = content.trim()
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+
+    const parsed = JSON.parse(content);
+
+    // Validate shape before returning
+    if (!parsed.title || !parsed.description || !parsed.tags) {
+      throw new Error("Groq returned malformed JSON shape");
     }
 
-    // 🌟 FIX 2: Defensively strip markdown if Groq disobeys and adds ```json
-    content = content.trim();
-    if (content.startsWith('```json')) {
-      content = content.replace(/```json/g, '').replace(/```/g, '').trim();
-    } else if (content.startsWith('```')) {
-      content = content.replace(/```/g, '').trim();
-    }
+    return parsed;
 
-    return JSON.parse(content);
   } catch (error) {
     console.error("Groq SEO Error (Using Safe Fallback):", error);
     return { 
@@ -73,7 +98,6 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
       headers: { "Ocp-Apim-Subscription-Key": apiKey }
     });
     
-    // 🌟 TS FIX: Cast as any
     const data = (await res.json()) as any;
 
     if (data.status === "COMPLETED" && data.output?.media_url?.[0]) {
@@ -94,7 +118,6 @@ export async function POST(req: Request) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // 🌟 TS FIX: Cast body as any to fix 'prompt does not exist on type unknown'
     const body = (await req.json()) as any;
     const { prompt, model, styleId, sourceImage } = body;
 
@@ -102,7 +125,9 @@ export async function POST(req: Request) {
     const db = envCtx.DB as D1Database;
     
     const PIXAZO_KEY = envCtx.PIXAZO_API_KEY || process.env.PIXAZO_API_KEY;
-    const GROQ_KEY = envCtx.GROQ_API_KEY || process.env.GROQ_API_KEY;
+    // 🌟 FIX: explicit undefined check + debug log (remove after confirming it works)
+    const GROQ_KEY = (envCtx.GROQ_API_KEY as string | undefined) ?? process.env.GROQ_API_KEY;
+    console.log("GROQ key loaded:", GROQ_KEY ? `${GROQ_KEY.slice(0, 8)}...` : "MISSING ❌");
 
     if (!GROQ_KEY) console.error("🚨 CRITICAL: GROQ_API_KEY is missing from Cloudflare environment!");
 
@@ -144,10 +169,9 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({ prompt: finalPrompt, num_steps: 4, height: 1024, width: 1024 })
           }),
-          generateSEOData(finalPrompt, GROQ_KEY) 
+          generateSEOData(finalPrompt, GROQ_KEY ?? "") 
         ]);
 
-        // 🌟 TS FIX: Cast as any
         const pixazoData = (await pixazoRes.json()) as any;
         if (!pixazoRes.ok) throw new Error(pixazoData.error || "Schnell API Failed");
         
@@ -171,10 +195,9 @@ export async function POST(req: Request) {
               guidance_scale: 4
             })
           }),
-          generateSEOData(finalPrompt, GROQ_KEY) 
+          generateSEOData(finalPrompt, GROQ_KEY ?? "") 
         ]);
 
-        // 🌟 TS FIX: Cast as any
         const startData = (await pixazoStartRes.json()) as any;
         if (!pixazoStartRes.ok || !startData.polling_url) throw new Error(startData.error || "FireRed queue failed");
 
