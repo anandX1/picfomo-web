@@ -72,12 +72,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(post.created_at),
       changeFrequency: 'weekly' as const,
       priority: 0.6,
-      // 🌟 This is the key unlock: tells Google Images to index your AI photos
-      images: post.image_url ? [{
-        url: post.image_url,
-        title: post.title || `AI Portrait by ${post.username || 'creator'} on PicFOMO`,
-        caption: post.description || 'AI-generated portrait created on PicFOMO',
-      }] : undefined,
+      // 🌟 THE FIX: Next.js strictly expects an array of strings here! No more [object Object] errors.
+      images: post.image_url ? [post.image_url] : undefined,
     }));
 
     // 🌟 Public creator profiles
