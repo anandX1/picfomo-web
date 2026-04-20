@@ -15,11 +15,10 @@ export async function fetchFeedChunk(
   const activeTab = tab || "latest";
 
   // ============================================================================
-  // 🌟 THE ALGORITHM: Exploration vs Exploitation (For Logged-in Users on Default Feed)
+  // 🌟 THE ALGORITHM: Exploration vs Exploitation (For Logged-in Users)
   // ============================================================================
   if (currentUserId !== 'guest' && !searchQuery && (activeTab === "latest" || activeTab === "trending")) {
     try {
-      // STEP 1: Find the user's top 5 favorite styles
       const { results: interests } = await db.prepare(`
         SELECT p.style_id, COUNT(*) as score
         FROM likes l
@@ -30,23 +29,21 @@ export async function fetchFeedChunk(
 
       const topStyles = interests.map((r: any) => r.style_id);
 
-      // If they have a history, run the personalized algorithm
       if (topStyles.length > 0) {
         const stylePlaceholders = topStyles.map(() => '?').join(',');
         
-        // --- EXPLOITATION: Fetch top 12 highly personalized posts ---
+        // 🌟 MASSIVE FIX: Using grouped LEFT JOINs stops D1 from reading 500k rows!
         const personalizedQuery = `
           SELECT 
-            p.id, p.image_url, p.user_id, p.created_at, p.tags, p.prompt_used,
-            s.name as style_name,
-            u.username, u.profile_image_url,
-            (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as likes_count,
-            (SELECT COUNT(*) FROM post_views WHERE post_id = p.id) as views_count,
+            p.id, p.image_url, p.user_id, p.created_at, p.tags, p.prompt_used, p.style_id,
+            s.name as style_name, u.username, u.profile_image_url,
+            COALESCE(l.likes_count, 0) as likes_count,
+            COALESCE(v.views_count, 0) as views_count,
             0 as remix_count,
-            (SELECT COUNT(*) FROM likes WHERE post_id = p.id AND user_id = ?) as is_liked_by_me,
+            CASE WHEN my_l.post_id IS NOT NULL THEN 1 ELSE 0 END as is_liked_by_me,
             (
               CASE WHEN p.style_id IN (${stylePlaceholders}) THEN 30 ELSE 0 END
-              + ((SELECT COUNT(*) FROM likes WHERE post_id = p.id) * 2)
+              + (COALESCE(l.likes_count, 0) * 2)
               + CASE WHEN f.id IS NOT NULL THEN 20 ELSE 0 END
               - (CAST((julianday('now') - julianday(p.created_at)) AS INTEGER) * 2)
             ) as relevance_score,
@@ -54,6 +51,9 @@ export async function fetchFeedChunk(
           FROM posts p
           LEFT JOIN styles s ON p.style_id = s.id
           LEFT JOIN users u ON p.user_id = u.id
+          LEFT JOIN (SELECT post_id, COUNT(*) as likes_count FROM likes GROUP BY post_id) l ON p.id = l.post_id
+          LEFT JOIN (SELECT post_id, COUNT(*) as views_count FROM post_views GROUP BY post_id) v ON p.id = v.post_id
+          LEFT JOIN likes my_l ON my_l.post_id = p.id AND my_l.user_id = ?
           LEFT JOIN follows f ON f.following_id = p.user_id AND f.follower_id = ?
           WHERE p.is_public = 1 AND p.user_id != ?
           ORDER BY relevance_score DESC
@@ -63,32 +63,27 @@ export async function fetchFeedChunk(
         const binds = [currentUserId, ...topStyles, currentUserId, currentUserId, offset];
         const { results: personalizedPosts } = await db.prepare(personalizedQuery).bind(...binds).all();
 
-        // --- EXPLORATION: Fetch 3 Wildcard (New/Inefficient) Posts ---
         const existingIds = personalizedPosts.map((p: any) => p.id);
-        // If no personalized posts found for some reason, just fallback to empty array for exclude logic
         const excludeIds = existingIds.length > 0 ? existingIds : ['dummy_id']; 
         const excludePlaceholders = excludeIds.map(() => '?').join(',');
 
         const wildcardQuery = `
           SELECT 
-            p.id, p.image_url, p.user_id, p.created_at, p.tags, p.prompt_used,
-            s.name as style_name,
-            u.username, u.profile_image_url,
-            (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as likes_count,
-            (SELECT COUNT(*) FROM post_views WHERE post_id = p.id) as views_count,
-            0 as remix_count,
-            0 as is_liked_by_me,
-            0 as relevance_score,
+            p.id, p.image_url, p.user_id, p.created_at, p.tags, p.prompt_used, p.style_id,
+            s.name as style_name, u.username, u.profile_image_url,
+            COALESCE(l.likes_count, 0) as likes_count,
+            COALESCE(v.views_count, 0) as views_count,
+            0 as remix_count, 0 as is_liked_by_me, 0 as relevance_score,
             1 as is_wildcard
           FROM posts p
           LEFT JOIN styles s ON p.style_id = s.id
           LEFT JOIN users u ON p.user_id = u.id
+          LEFT JOIN (SELECT post_id, COUNT(*) as likes_count FROM likes GROUP BY post_id) l ON p.id = l.post_id
+          LEFT JOIN (SELECT post_id, COUNT(*) as views_count FROM post_views GROUP BY post_id) v ON p.id = v.post_id
           LEFT JOIN post_views pv ON pv.post_id = p.id AND pv.user_id = ?
-          WHERE p.is_public = 1 
-            AND p.user_id != ? 
-            AND pv.id IS NULL -- User has NEVER seen this
+          WHERE p.is_public = 1 AND p.user_id != ? AND pv.id IS NULL 
             AND p.id NOT IN (${excludePlaceholders})
-            AND (SELECT COUNT(*) FROM post_views WHERE post_id = p.id) < 50 -- Brand new content
+            AND COALESCE(v.views_count, 0) < 50 
           ORDER BY p.created_at DESC
           LIMIT 3
         `;
@@ -96,10 +91,8 @@ export async function fetchFeedChunk(
         const wildcardBinds = [currentUserId, currentUserId, ...excludeIds];
         const { results: wildcardPosts } = await db.prepare(wildcardQuery).bind(...wildcardBinds).all();
 
-        // --- WEAVE THE FEED TOGETHER ---
         const mixedFeed = [...personalizedPosts];
         wildcardPosts.forEach((wildcard: any, index: number) => {
-          // Inject wildcards at positions 3, 7, and 11 (0-indexed)
           const insertAt = (index + 1) * 4 - 1; 
           if (insertAt < mixedFeed.length) {
             mixedFeed.splice(insertAt, 0, wildcard);
@@ -112,7 +105,6 @@ export async function fetchFeedChunk(
       }
     } catch (error) {
       console.error("Algorithm Engine Error:", error);
-      // Fails silently and falls through to the Standard Query below
     }
   }
 
@@ -124,34 +116,28 @@ export async function fetchFeedChunk(
   let whereExtra = "";
 
   if (activeTab === "trending") {
-    orderBy = "((SELECT COUNT(*) FROM likes WHERE post_id = p.id) * 2 + (SELECT COUNT(*) FROM post_views WHERE post_id = p.id)) DESC, p.created_at DESC";
+    orderBy = "(COALESCE(l.likes_count, 0) * 2 + COALESCE(v.views_count, 0)) DESC, p.created_at DESC";
   }
 
-  if (activeTab === "portraits") {
-    whereExtra = " AND p.style_id != 'schnell'";
-  }
-
-  if (activeTab === "art") {
-    whereExtra = " AND p.style_id = 'schnell'";
-  }
+  if (activeTab === "portraits") whereExtra = " AND p.style_id != 'schnell'";
+  if (activeTab === "art") whereExtra = " AND p.style_id = 'schnell'";
 
   let baseQuery = `
     SELECT 
-      p.id, p.image_url, p.user_id, p.created_at, p.tags, p.prompt_used,
-      s.name as style_name,
-      u.username, u.profile_image_url,
-      (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as likes_count,
-      (SELECT COUNT(*) FROM post_views WHERE post_id = p.id) as views_count,
+      p.id, p.image_url, p.user_id, p.created_at, p.tags, p.prompt_used, p.style_id,
+      s.name as style_name, u.username, u.profile_image_url,
+      COALESCE(l.likes_count, 0) as likes_count,
+      COALESCE(v.views_count, 0) as views_count,
       0 as remix_count,
-      (SELECT COUNT(*) FROM likes WHERE post_id = p.id AND user_id = ?) as is_liked_by_me,
-      (
-        ((SELECT COUNT(*) FROM likes WHERE post_id = p.id) * 10) + 
-        ((SELECT COUNT(*) FROM post_views WHERE post_id = p.id) * 1)
-      ) as interest_score,
+      CASE WHEN my_l.post_id IS NOT NULL THEN 1 ELSE 0 END as is_liked_by_me,
+      ((COALESCE(l.likes_count, 0) * 10) + (COALESCE(v.views_count, 0) * 1)) as interest_score,
       0 as is_wildcard
     FROM posts p
     LEFT JOIN styles s ON p.style_id = s.id
     LEFT JOIN users u ON p.user_id = u.id
+    LEFT JOIN (SELECT post_id, COUNT(*) as likes_count FROM likes GROUP BY post_id) l ON p.id = l.post_id
+    LEFT JOIN (SELECT post_id, COUNT(*) as views_count FROM post_views GROUP BY post_id) v ON p.id = v.post_id
+    LEFT JOIN likes my_l ON my_l.post_id = p.id AND my_l.user_id = ?
     WHERE p.is_public = 1${whereExtra}
   `;
 
