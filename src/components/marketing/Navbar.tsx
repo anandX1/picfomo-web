@@ -8,12 +8,12 @@ export default function Navbar() {
       <div className="flex items-center">
         <Link href="/" className="inline-block outline-none transition-transform hover:scale-105 active:scale-95">
           {/* 🌟 FIX: Locked background to bg-black so it doesn't invert in Dark Mode */}
-          <div className="flex h-[44px] items-center justify-center rounded-lg bg-black px-3.5 shadow-md">
+          <div className="flex h-[52px] items-center justify-center rounded-lg bg-black px-3.5 shadow-md">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/logo.png" 
               alt="PicFOMO" 
-              className="h-[28px] w-auto object-contain drop-shadow-sm" 
+              className="h-[36px] w-auto object-contain drop-shadow-sm" 
             />
           </div>
         </Link>
