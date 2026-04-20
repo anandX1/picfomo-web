@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 
 export default function UnifiedMVPLab() {
   // --- UI STATE ---
-  const [activeTab, setActiveTab] = useState<"styles" | "imagine">("styles");
+  const [activeTab, setActiveTab] = useState<"styles" | "imagine" | "collab">("styles");
   const [status, setStatus] = useState("Idle");
   const [logs, setLogs] = useState<string[]>([]);
   const [isTesting, setIsTesting] = useState(false);
@@ -25,6 +25,12 @@ export default function UnifiedMVPLab() {
   const [schHeight, setSchHeight] = useState(1024);
   const [schSteps, setSchSteps] = useState(4);
   const [finalImagineImage, setFinalImagineImage] = useState<string | null>(null);
+
+  // --- COLLAB / SWAP STATE ---
+  const [collabInputFile, setCollabInputFile] = useState<File | null>(null);
+  const [collabTargetFile, setCollabTargetFile] = useState<File | null>(null);
+  const [collabPrompt, setCollabPrompt] = useState("Swap face seamlessly, matching lighting and skin tone");
+  const [finalCollabImage, setFinalCollabImage] = useState<string | null>(null);
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -47,7 +53,6 @@ export default function UnifiedMVPLab() {
       setStatus("Processing Image...");
       addLog("📸 Reading uploaded image file...");
 
-      // 🌟 Convert uploaded file to Base64 to pass to backend testing route
       const base64Image = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -64,8 +69,8 @@ export default function UnifiedMVPLab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: stylePrompt,
-          model: "firered", // Triggers the non-schnell (FireRed) branch in backend
-          sourceImage: base64Image, // Passes the base64 selfie
+          model: "firered", 
+          sourceImage: base64Image,
           num_inference_steps: frNumSteps,
           guidance_scale: frGuidance
         })
@@ -132,6 +137,68 @@ export default function UnifiedMVPLab() {
     }
   };
 
+  // --- PIPELINE 3: COLLAB / SWAP ---
+  const runCollabPipeline = async () => {
+    if (!collabInputFile || !collabTargetFile) return alert("Please upload BOTH an Input Face and a Target Image!");
+    if (!collabPrompt) return alert("Please enter a swap prompt!");
+    
+    setIsTesting(true); 
+    setFinalCollabImage(null); 
+    setLogs([]);
+
+    try {
+      setStatus("Processing Images...");
+      addLog("📸 Reading Input Face and Target Base64...");
+
+      // Convert BOTH files to Base64
+      const inputBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(collabInputFile);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
+
+      const targetBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(collabTargetFile);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
+
+      setStatus("Generating via Secure API...");
+      addLog(`🚀 Sending Swap request to backend engine...`);
+
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: collabPrompt,
+          model: "swap", // We tell the backend this is a swap request
+          sourceImage: inputBase64, // The user's face
+          targetImage: targetBase64 // The image to swap into
+        })
+      });
+
+      const data = (await res.json()) as any;
+
+      if (!res.ok) throw new Error(data.error || "Failed to process Collab/Swap");
+      
+      if (data.output) {
+        setFinalCollabImage(data.output);
+        setStatus("Complete.");
+        addLog("🎉 SWAP SUCCESSFUL.");
+        if(data.post_id) addLog(`✅ Post ID: ${data.post_id}`);
+      } else {
+        throw new Error("No image URL returned in payload.");
+      }
+    } catch (error) {
+      setStatus("ERROR"); 
+      addLog(`🛑 FATAL: ${(error as Error).message}`);
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   return (
     <div className="p-4 md:p-10 max-w-6xl mx-auto bg-black text-white min-h-screen font-[family-name:var(--mono)] pb-24">
       <div className="mb-8 flex justify-between items-end">
@@ -142,7 +209,7 @@ export default function UnifiedMVPLab() {
       </div>
 
       {/* --- MASTER TABS --- */}
-      <div className="flex gap-4 mb-8 bg-gray-900 p-2 rounded-2xl w-fit">
+      <div className="flex gap-4 mb-8 bg-gray-900 p-2 rounded-2xl w-fit flex-wrap">
         <button 
           onClick={() => setActiveTab("styles")}
           className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === "styles" ? "bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.5)]" : "text-gray-400 hover:text-white"}`}
@@ -155,6 +222,12 @@ export default function UnifiedMVPLab() {
         >
           Imagine (Free APIs)
         </button>
+        <button 
+          onClick={() => setActiveTab("collab")}
+          className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === "collab" ? "bg-purple-600 text-white shadow-[0_0_15px_rgba(147,51,234,0.5)]" : "text-gray-400 hover:text-white"}`}
+        >
+          Collab (Swap)
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -162,7 +235,7 @@ export default function UnifiedMVPLab() {
         {/* --- LEFT: CONTROLS --- */}
         <div className="flex flex-col gap-6">
           
-          {activeTab === "styles" ? (
+          {activeTab === "styles" && (
             /* --- STYLES CONTROLS (FIRE-RED) --- */
             <div className="space-y-6 animate-in fade-in slide-in-from-left-4">
               <div className="border border-gray-800 p-4 rounded-xl bg-gray-900/50">
@@ -203,8 +276,9 @@ export default function UnifiedMVPLab() {
                 {isTesting ? "Applying Premium Style..." : "Generate Premium Style"}
               </button>
             </div>
-          ) : (
+          )}
             
+          {activeTab === "imagine" && (
             /* --- IMAGINE CONTROLS (SCHNELL / SDXL) --- */
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
               <div className="flex gap-4">
@@ -249,6 +323,34 @@ export default function UnifiedMVPLab() {
               </button>
             </div>
           )}
+
+          {activeTab === "collab" && (
+            /* --- COLLAB / SWAP CONTROLS --- */
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="border border-gray-800 p-4 rounded-xl bg-gray-900/50">
+                  <label className="block mb-2 font-bold text-sm text-purple-400">Input Image (Your Face)</label>
+                  <input type="file" accept="image/*" className="text-sm w-full" onChange={(e) => setCollabInputFile(e.target.files?.[0] || null)} />
+                </div>
+                <div className="border border-gray-800 p-4 rounded-xl bg-gray-900/50">
+                  <label className="block mb-2 font-bold text-sm text-pink-400">Target Image (The Scene)</label>
+                  <input type="file" accept="image/*" className="text-sm w-full" onChange={(e) => setCollabTargetFile(e.target.files?.[0] || null)} />
+                </div>
+              </div>
+              
+              <div className="border border-gray-800 rounded-xl bg-[#0a0a0a] overflow-hidden">
+                <div className="bg-gray-900 px-4 py-2 text-xs font-bold text-purple-400 border-b border-gray-800">SWAP PROMPT</div>
+                <textarea 
+                  value={collabPrompt} onChange={(e) => setCollabPrompt(e.target.value)}
+                  className="w-full h-24 p-4 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                />
+              </div>
+
+              <button onClick={runCollabPipeline} disabled={isTesting} className="w-full bg-purple-600 text-white font-bold py-4 rounded-xl hover:bg-purple-500 disabled:opacity-50 active:scale-95 shadow-[0_0_20px_rgba(147,51,234,0.3)]">
+                {isTesting ? "Swapping Faces..." : "Test Collab Engine"}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* --- RIGHT: UNIFIED LIVE TERMINAL --- */}
@@ -279,6 +381,12 @@ export default function UnifiedMVPLab() {
           <div className="animate-in fade-in zoom-in duration-500">
              <h3 className="text-sm font-bold text-blue-500 mb-2 uppercase text-center tracking-widest">Instant Output</h3>
              <img src={finalImagineImage} alt="Imagine" className="w-full rounded-xl border border-blue-500 shadow-[0_0_30px_rgba(37,99,235,0.2)]" />
+          </div>
+        )}
+        {activeTab === "collab" && finalCollabImage && (
+          <div className="animate-in fade-in zoom-in duration-500">
+             <h3 className="text-sm font-bold text-purple-500 mb-2 uppercase text-center tracking-widest">Collab Output</h3>
+             <img src={finalCollabImage} alt="Collab" className="w-full rounded-xl border border-purple-500 shadow-[0_0_30px_rgba(147,51,234,0.2)]" />
           </div>
         )}
       </div>
