@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Script from "next/script"; 
 import { compressAndUploadImage } from "@/lib/uploadImage";
+import { Sparkles, Image as ImageIcon, CheckCircle2, Download, Share, Link as LinkIcon, X, Zap, Loader2 } from "lucide-react";
 
 const NSFW_WORDS = ["nude", "naked", "nsfw", "porn", "blood", "gore", "explicit", "violence"];
 
@@ -22,7 +23,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0); 
   const [outputImage, setOutputImage] = useState<string | null>(null);
-  const [outputPostId, setOutputPostId] = useState<string | null>(null); // NEW: Track the post ID
+  const [outputPostId, setOutputPostId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // 🌟 PROGRESS BAR LOGIC
@@ -108,7 +109,6 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
   const handleDownload = async () => {
     if (!outputImage) return;
     try {
-      // Fetch image as blob to bypass cross-origin canvas issues
       const response = await fetch(outputImage);
       const blob = await response.blob();
       const imgUrl = URL.createObjectURL(blob);
@@ -122,20 +122,14 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
         const ctx = canvas.getContext("2d");
         
         if (ctx) {
-          // Draw original image
           ctx.drawImage(img, 0, 0);
-          
-          // Add PicFOMO Watermark
           ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
           ctx.font = "bold 36px sans-serif";
           ctx.textAlign = "right";
-          
-          // Add a subtle drop shadow to text for visibility
           ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
           ctx.shadowBlur = 10;
           ctx.fillText("PicFOMO.com", canvas.width - 30, canvas.height - 30);
           
-          // Trigger Download
           const link = document.createElement("a");
           link.download = `PicFOMO_${Date.now()}.jpg`;
           link.href = canvas.toDataURL("image/jpeg", 0.95);
@@ -163,7 +157,6 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
         console.log("Share cancelled", err);
       }
     } else {
-      // Fallback for Desktop
       navigator.clipboard.writeText(postUrl);
       alert("Link copied to clipboard! Share it anywhere.");
     }
@@ -173,31 +166,35 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
   const handleCollab = () => {
     const collabUrl = `${window.location.origin}/explore?remix=${outputPostId}`;
     navigator.clipboard.writeText(collabUrl);
-    alert("🤝 Collab link copied! Send it to a friend to remix your style.");
+    alert("Collab link copied! Send it to a friend to remix your style.");
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500 pb-20 px-4 mt-6 text-gray-900">
+    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 pb-20 px-4 mt-6 text-[var(--color-ink)]">
       
+      {/* 🌟 HEADER: Fully adaptive typography */}
       <div className="text-center md:text-left">
-        <h1 className="text-3xl font-extrabold flex items-center justify-center md:justify-start gap-2">
-          <span>✨</span> The Studio
+        <h1 className="text-4xl font-[family-name:var(--display)] flex items-center justify-center md:justify-start gap-3">
+          <Sparkles className="text-[var(--color-gold)]" size={32} /> The Studio
         </h1>
-        <p className="text-gray-500 mt-1 text-sm">Bring your imagination to reality.</p>
+        <p className="text-[var(--color-ink3)] mt-2 font-[family-name:var(--mono)] text-[11px] uppercase tracking-[2px]">
+          Bring your imagination to reality.
+        </p>
       </div>
 
-      <div className="flex bg-gray-100 p-1 rounded-xl w-full md:w-fit border border-gray-200">
-        <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === "styles" ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-gray-900"}`}>Premium Styles</button>
-        <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === "imagine" ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-gray-900"}`}>Imagine (Fast)</button>
+      {/* 🌟 TABS: Adaptive background & hover states */}
+      <div className="flex bg-[var(--color-cream)] p-1.5 rounded-xl w-full md:w-fit border border-[var(--rule)] shadow-sm">
+        <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink3)] hover:text-[var(--color-ink)]"}`}>Premium Styles</button>
+        <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink3)] hover:text-[var(--color-ink)]"}`}>Imagine (Fast)</button>
       </div>
 
       {outputImage && !isModalOpen && (
-        <div className="w-full aspect-square md:aspect-video relative rounded-3xl overflow-hidden shadow-xl border border-gray-200 bg-gray-50">
+        <div className="w-full aspect-square md:aspect-video relative rounded-3xl overflow-hidden shadow-[var(--shadow-lg)] border border-[var(--rule)] bg-[var(--color-cream)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={outputImage} alt="Result" className="absolute inset-0 h-full w-full object-contain" />
           
-          <button onClick={() => setOutputImage(null)} className="absolute top-4 right-4 bg-white/80 backdrop-blur-md p-2 rounded-full text-xs font-bold shadow-sm hover:bg-white">
-            Clear Result
+          <button onClick={() => setOutputImage(null)} className="absolute top-4 right-4 bg-[var(--color-white)]/80 backdrop-blur-md px-4 py-2 rounded-full text-[11px] uppercase tracking-widest font-bold text-[var(--color-ink)] shadow-sm hover:bg-[var(--color-white)] flex items-center gap-2 transition-colors">
+            <X size={14} /> Clear Result
           </button>
         </div>
       )}
@@ -205,24 +202,26 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
       {activeTab === "styles" && (
         <>
           {dynamicStyles.length === 0 ? (
-            <div className="text-center p-12 border-2 border-dashed border-gray-200 rounded-3xl text-gray-500">
+            <div className="text-center p-12 border-2 border-dashed border-[var(--rule)] rounded-3xl text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[12px] uppercase tracking-widest">
               No premium styles available right now. Check back soon!
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 animate-in slide-in-from-left-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in slide-in-from-left-4">
               {dynamicStyles.map((style) => (
-                <div key={style.id} onClick={() => openStyleModal(style)} className="group cursor-pointer relative aspect-[4/5] rounded-2xl overflow-hidden shadow-sm border border-gray-200 hover:shadow-md transition-all active:scale-95 bg-gray-100">
+                <div key={style.id} onClick={() => openStyleModal(style)} className="group cursor-pointer relative aspect-[4/5] rounded-[20px] overflow-hidden shadow-[var(--shadow-sm)] border border-[var(--rule)] hover:shadow-[var(--shadow-md)] hover:border-[var(--color-gold-border)] transition-all duration-300 active:scale-95 bg-[var(--color-cream2)]">
                   {style.mainImage && (
                     /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={style.mainImage} alt={style.name} className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={style.mainImage} alt={style.name} className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
-                    <div className="font-extrabold text-sm flex items-center gap-2">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <div className="font-[family-name:var(--display)] tracking-[0.5px] text-[16px] leading-tight flex items-center gap-2 drop-shadow-md">
                       {style.name}
-                      {style.badge && <span className="bg-white text-black text-[8px] px-1.5 py-0.5 rounded-sm font-bold tracking-widest">{style.badge}</span>}
+                      {style.badge && <span className="bg-white text-black text-[8px] font-sans px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">{style.badge}</span>}
                     </div>
-                    <div className="text-[10px] font-bold text-yellow-400 mt-0.5">{style.spark_cost} Sparks</div>
+                    <div className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-[var(--color-gold)] mt-1.5 flex items-center gap-1 drop-shadow-md">
+                      <Zap size={10} className="fill-[var(--color-gold)]" /> {style.spark_cost} Sparks
+                    </div>
                   </div>
                 </div>
               ))}
@@ -232,23 +231,23 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
       )}
 
       {activeTab === "imagine" && (
-        <div className="space-y-4 animate-in slide-in-from-right-4">
-          <div className="bg-white border border-gray-200 p-4 rounded-2xl shadow-sm">
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Prompt</label>
-              <span className="bg-blue-50 text-blue-600 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-blue-100">NSFW Protected</span>
+        <div className="space-y-4 animate-in slide-in-from-right-4 max-w-2xl">
+          <div className="bg-[var(--color-white)] border border-[var(--rule)] p-5 rounded-2xl shadow-[var(--shadow-sm)] transition-colors focus-within:border-[var(--color-gold-border)]">
+            <div className="flex justify-between items-center mb-3">
+              <label className="text-[11px] font-[family-name:var(--mono)] font-bold text-[var(--color-ink2)] uppercase tracking-wider">Prompt</label>
+              <span className="bg-green-500/10 text-green-600 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-1"><CheckCircle2 size={10} /> NSFW Protected</span>
             </div>
-            <textarea placeholder="A sleek futuristic car racing through neon streets..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-transparent text-gray-900 placeholder:text-gray-400 focus:outline-none resize-none h-24 text-sm md:text-base" />
+            <textarea placeholder="A sleek futuristic car racing through neon streets..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-transparent text-[var(--color-ink)] placeholder-[var(--color-ink3)] focus:outline-none resize-none h-24 text-sm md:text-[15px] leading-relaxed" />
           </div>
           
-          {error && <div className="text-red-500 text-xs font-bold text-center">{error}</div>}
+          {error && <div className="text-red-500 text-xs font-[family-name:var(--mono)] uppercase tracking-widest font-bold text-center">{error}</div>}
 
           <div>
-            <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-black text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all disabled:opacity-50 active:scale-[0.98] shadow-md">
-              {isGenerating ? "Synthesizing..." : "Generate (2 Sparks)"}
+            <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] text-[16px] py-4 rounded-xl hover:bg-[var(--color-gold)] hover:text-black transition-all disabled:opacity-50 active:scale-[0.98] shadow-[var(--shadow-md)] flex items-center justify-center gap-2">
+              {isGenerating ? <><Loader2 size={18} className="animate-spin" /> SYNTHESIZING...</> : <><Sparkles size={18} /> GENERATE (2 SPARKS)</>}
             </button>
-            <p className="text-center text-[10px] text-gray-400 mt-3 font-medium">
-              By generating, you accept our <a href="#" className="underline">Terms & Conditions</a>. AI generations are completely private and auto-deleted from our servers.
+            <p className="text-center text-[10px] text-[var(--color-ink3)] mt-3 font-medium">
+              By generating, you accept our Terms & Conditions. AI generations are completely private and auto-deleted.
             </p>
           </div>
         </div>
@@ -256,107 +255,104 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
 
       {/* 🌟 THE DYNAMIC MODAL 🌟 */}
       {isModalOpen && selectedStyle && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in">
-          <div className="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in">
+          <div className="bg-[var(--color-white)] w-full md:max-w-lg rounded-t-[32px] md:rounded-[32px] shadow-[var(--shadow-2xl)] overflow-hidden flex flex-col max-h-[90vh] relative border border-[var(--rule)]">
             
             {/* Modal Header */}
             {!isGenerating && !outputImage && (
-              <div className="flex justify-between items-center p-5 border-b border-gray-100">
-                <h2 className="font-extrabold text-lg flex items-center gap-2">{selectedStyle.name}</h2>
-                <button onClick={() => setIsModalOpen(false)} className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200">✕</button>
+              <div className="flex justify-between items-center p-6 border-b border-[var(--rule)] bg-[var(--color-cream)]">
+                <h2 className="font-[family-name:var(--display)] text-2xl flex items-center gap-3 text-[var(--color-ink)]">
+                  {selectedStyle.name}
+                </h2>
+                <button onClick={() => setIsModalOpen(false)} className="bg-[var(--color-white)] border border-[var(--rule)] p-2 rounded-full text-[var(--color-ink3)] hover:bg-[var(--color-cream2)] hover:text-[var(--color-ink)] transition-colors shadow-sm">
+                  <X size={18} />
+                </button>
               </div>
             )}
 
             {/* STATE 3: RESULT VIEW */}
             {outputImage ? (
-              <div className="animate-in zoom-in-95 duration-500 bg-gray-50 flex flex-col items-center">
-                <button onClick={() => { setIsModalOpen(false); setOutputImage(null); setOutputPostId(null); }} className="absolute top-4 right-4 bg-black/50 backdrop-blur-md p-2 rounded-full text-white z-10 hover:bg-black/80">✕</button>
+              <div className="animate-in zoom-in-95 duration-500 bg-[var(--color-cream)] flex flex-col items-center">
+                <button onClick={() => { setIsModalOpen(false); setOutputImage(null); setOutputPostId(null); }} className="absolute top-4 right-4 bg-black/50 backdrop-blur-md p-2 rounded-full text-white z-10 hover:bg-black/80 transition-colors shadow-lg"><X size={18} /></button>
                 
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={outputImage} alt="Result" className="w-full aspect-[4/5] object-contain bg-black" />
+                <img src={outputImage} alt="Result" className="w-full aspect-[4/5] object-contain bg-[#050505]" />
                 
-                <div className="p-6 w-full space-y-3 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-                  <h3 className="font-extrabold text-lg text-center text-green-600 mb-2">✨ Reality Synthesized</h3>
+                <div className="p-6 w-full space-y-4 bg-[var(--color-white)] border-t border-[var(--rule)]">
+                  <h3 className="font-[family-name:var(--display)] tracking-wide text-xl text-center text-[var(--color-ink)] mb-4 flex items-center justify-center gap-2">
+                    <Sparkles className="text-[var(--color-gold)]" size={20} /> Reality Synthesized
+                  </h3>
                   
-                  {/* 🚀 VIRAL ACTION BUTTONS ACTIVATED 🚀 */}
-                  <button onClick={handleDownload} className="w-full bg-black text-white font-bold py-3 rounded-xl shadow-lg hover:scale-105 transition-transform flex justify-center items-center gap-2">
-                    ⬇️ Download Image
+                  <button onClick={handleDownload} className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[1.5px] text-[15px] py-4 rounded-xl shadow-[var(--shadow-md)] hover:scale-[1.02] active:scale-[0.98] transition-transform flex justify-center items-center gap-2">
+                    <Download size={18} /> DOWNLOAD HIGH-RES
                   </button>
+                  
                   <div className="grid grid-cols-2 gap-3">
-                    <button onClick={handleShare} className="bg-blue-50 border border-blue-100 text-blue-600 font-bold py-3 rounded-xl hover:bg-blue-100 transition-colors">↗️ Share to Story</button>
-                    <button onClick={handleCollab} className="bg-purple-50 border border-purple-100 text-purple-600 font-bold py-3 rounded-xl hover:bg-purple-100 transition-colors">🤝 Collab Link</button>
+                    <button onClick={handleShare} className="bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-[11px] py-3.5 rounded-xl hover:bg-[var(--color-cream2)] transition-colors flex items-center justify-center gap-2 shadow-sm">
+                      <Share size={14} /> Share
+                    </button>
+                    <button onClick={handleCollab} className="bg-[var(--color-gold-pale)] border border-[var(--color-gold-border)] text-[var(--color-gold)] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-[11px] py-3.5 rounded-xl hover:bg-[var(--color-gold)] hover:text-black transition-colors flex items-center justify-center gap-2 shadow-sm">
+                      <LinkIcon size={14} /> Collab Link
+                    </button>
                   </div>
-
                 </div>
               </div>
             ) 
             
             /* STATE 2: GENERATING (PROGRESS BAR & ADS) */
             : isGenerating || isUploading ? (
-              <div className="p-8 py-10 flex flex-col items-center justify-center text-center space-y-6">
+              <div className="p-8 py-12 flex flex-col items-center justify-center text-center space-y-8 bg-[var(--color-white)]">
                 
-                {/* 🌟 RE-ADDED: ADSTERRA SOCIAL BAR (Full Screen Pop) 🌟 */}
-                <Script 
-                  id="adsterra-social-bar"
-                  src="//pl29173184.profitablecpmratenetwork.com/60/ab/b9/60abb92c67b12ba0a5b4574a79d2e149.js"
-                  strategy="afterInteractive"
-                />
+                <Script id="adsterra-social-bar" src="//pl29173184.profitablecpmratenetwork.com/60/ab/b9/60abb92c67b12ba0a5b4574a79d2e149.js" strategy="afterInteractive" />
 
-                <div className="text-4xl animate-bounce">⚡</div>
-                <h2 className="font-extrabold text-xl text-gray-900">Synthesizing Reality...</h2>
-                
-                <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden relative border border-gray-200">
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }}></div>
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[var(--color-gold)] opacity-20 blur-xl rounded-full animate-pulse"></div>
+                  <Zap size={48} className="text-[var(--color-gold)] animate-bounce relative z-10" />
                 </div>
-                <p className="font-bold text-gray-400">{progress}%</p>
+                
+                <h2 className="font-[family-name:var(--display)] text-3xl tracking-tight text-[var(--color-ink)]">Synthesizing Reality...</h2>
+                
+                <div className="w-full bg-[var(--color-cream2)] rounded-full h-3 overflow-hidden relative border border-[var(--rule)] shadow-inner">
+                  <div className="bg-[var(--color-gold)] h-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }}></div>
+                </div>
+                <p className="font-[family-name:var(--mono)] text-xs font-bold text-[var(--color-ink3)]">{progress}% Complete</p>
 
-                {/* 🌟 ADSTERRA NATIVE BANNER 🌟 */}
-                <div className="w-full min-h-[100px] border border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center justify-center overflow-hidden relative pt-4 pb-2">
-                  <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold absolute top-1 left-2">Sponsored</span>
-                  
-                  {/* Your exact Native Banner Code */}
+                {/* NATIVE AD */}
+                <div className="w-full min-h-[100px] border border-[var(--rule)] rounded-[16px] bg-[var(--color-cream)] flex flex-col items-center justify-center overflow-hidden relative pt-6 pb-2 shadow-sm">
+                  <span className="text-[9px] text-[var(--color-ink3)] uppercase tracking-[2px] font-bold absolute top-2 left-3">Sponsored</span>
                   <div id="container-b39280394b30c04b29a8908fb4b0bd64"></div> 
-                  <Script 
-                    id="adsterra-native-banner"
-                    src="//pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" 
-                    strategy="afterInteractive"
-                    data-cfasync="false"
-                  />
-                </div>
-
-                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-xs text-yellow-800 font-medium leading-relaxed text-left">
-                  <p>🛠️ <strong>We are in Beta!</strong></p>
-                  <p className="mt-1">High-end AI GPUs cost a fortune. We pay the server bills using the ads on this screen. Please bear with us and interact with the sponsors to keep PicFOMO free for everyone! ❤️</p>
+                  <Script id="adsterra-native-banner" src="//pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" strategy="afterInteractive" data-cfasync="false" />
                 </div>
               </div>
             ) 
             
             /* STATE 1: UPLOAD & CONFIRM */
             : (
-              <div className="flex flex-col h-full">
-                <div className="p-5 space-y-5 overflow-y-auto">
-                  <div className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer ${file ? 'border-green-400 bg-green-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}`}>
+              <div className="flex flex-col h-full bg-[var(--color-white)]">
+                <div className="p-6 space-y-6 overflow-y-auto">
+                  
+                  <div className={`border-2 border-dashed rounded-[20px] p-8 text-center transition-all duration-300 cursor-pointer ${file ? 'border-[var(--color-gold)] bg-[var(--color-gold-pale)] shadow-inner' : 'border-[var(--rule)] bg-[var(--color-cream)] hover:bg-[var(--color-cream2)]'}`}>
                     <input type="file" accept="image/jpeg, image/png, image/webp" className="hidden" id="modal-upload" onChange={(e) => setFile(e.target.files?.[0] || null)} disabled={isUploading || isGenerating} />
-                    <label htmlFor="modal-upload" className="cursor-pointer block">
-                      <div className="text-3xl mb-2">{file ? "✅" : "📸"}</div>
-                      <h3 className={`font-bold text-sm ${file ? 'text-green-700' : 'text-gray-700'}`}>{file ? file.name : "Tap to upload photo"}</h3>
-                      {!file && <p className="text-gray-400 text-xs mt-1">JPEG, PNG up to 10MB</p>}
+                    <label htmlFor="modal-upload" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
+                      {file ? <CheckCircle2 size={48} className="text-[var(--color-gold)] mb-4 drop-shadow-sm" /> : <ImageIcon size={48} className="text-[var(--color-ink3)] mb-4" />}
+                      <h3 className={`font-[family-name:var(--display)] text-xl tracking-wide ${file ? 'text-[var(--color-ink)]' : 'text-[var(--color-ink2)]'}`}>{file ? file.name : "Tap to upload photo"}</h3>
+                      {!file && <p className="text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[10px] mt-2 uppercase tracking-[2px]">JPEG, PNG up to 10MB</p>}
                     </label>
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-gray-500 mb-1 block">Additional Instructions (Optional)</label>
-                    <input type="text" placeholder="e.g., make the jacket blue..." value={prompt} onChange={(e) => setPrompt(e.target.value)} disabled={isUploading || isGenerating} className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl p-3 text-sm focus:outline-none focus:border-gray-400" />
+                    <label className="text-[11px] font-[family-name:var(--mono)] font-bold text-[var(--color-ink2)] uppercase tracking-wider mb-2 block">Additional Instructions (Optional)</label>
+                    <input type="text" placeholder="e.g., make the jacket blue..." value={prompt} onChange={(e) => setPrompt(e.target.value)} disabled={isUploading || isGenerating} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] rounded-xl p-4 text-[14px] focus:outline-none focus:border-[var(--color-gold-border)] transition-colors shadow-sm" />
                   </div>
 
-                  {error && <div className="text-red-500 text-xs font-bold text-center bg-red-50 p-2 rounded-lg">{error}</div>}
+                  {error && <div className="text-red-500 font-[family-name:var(--mono)] text-[10px] uppercase tracking-widest font-bold text-center bg-red-500/10 p-3 rounded-lg border border-red-500/20">{error}</div>}
                 </div>
 
-                <div className="p-5 border-t border-gray-100 bg-gray-50 mt-auto">
-                  <button onClick={handleGenerate} disabled={isGenerating || isUploading || !file} className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-extrabold py-4 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 shadow-lg shadow-orange-500/30 active:scale-95">
-                    {isUploading || isGenerating ? "Please Wait..." : `Generate (-${selectedStyle.spark_cost} Sparks) & Watch Ad`}
+                <div className="p-6 border-t border-[var(--rule)] bg-[var(--color-cream)] mt-auto">
+                  <button onClick={handleGenerate} disabled={isGenerating || isUploading || !file} className="w-full bg-[var(--color-gold)] text-black font-[family-name:var(--display)] tracking-[2px] text-[16px] py-4.5 rounded-xl hover:bg-[var(--color-gold-light)] hover:shadow-[0_8px_30px_rgba(245,158,11,0.3)] transition-all disabled:opacity-50 shadow-md active:scale-95 flex items-center justify-center gap-2">
+                    {isUploading || isGenerating ? <><Loader2 size={18} className="animate-spin" /> INITIALIZING...</> : <><Sparkles size={18} /> GENERATE (-{selectedStyle.spark_cost} SPARKS)</>}
                   </button>
-                  <p className="text-center text-[10px] text-gray-500 mt-3 font-medium">By generating, you accept our Terms & Conditions. AI generations are completely private.</p>
+                  <p className="text-center text-[10px] text-[var(--color-ink3)] mt-4 font-medium">By generating, you accept our Terms. AI generations are auto-deleted.</p>
                 </div>
               </div>
             )}

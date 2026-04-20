@@ -10,7 +10,7 @@ const RESULTS_DATA = [
   {
     id: "kohli",
     name: "Virat Kohli",
-    style: "Mythic Marble",
+    style: "Old Money Luxury",
     beforeImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/Screenshot%202026-04-18%20211937.png",
     afterImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/Gemini_Generated_Image_m4gtnjm4gtnjm4gt.png",
     match: "99.8%",
@@ -20,7 +20,7 @@ const RESULTS_DATA = [
   {
     id: "cr7",
     name: "Cristiano Ronaldo",
-    style: "Old Money Luxury",
+    style: "Luxury Mythic Marble",
     beforeImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/OIP.webp",
     afterImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/Gemini_Generated_Image_ufc3etufc3etufc3.png",
     match: "99.6%",
