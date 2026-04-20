@@ -36,7 +36,59 @@ export default function UnifiedMVPLab() {
 
   // --- PIPELINE 1: FIRE-RED V1.1 (Styles) ---
   const runStylesPipeline = async () => {
-    alert("CTO Note: FireRed Styles are being migrated to the secure backend. Please use the 'Imagine (Free APIs)' tab for now!");
+    if (!file) return alert("Please upload a selfie first!");
+    if (!stylePrompt) return alert("Please enter a style prompt!");
+    
+    setIsTesting(true); 
+    setFinalStyleImage(null); 
+    setLogs([]);
+
+    try {
+      setStatus("Processing Image...");
+      addLog("📸 Reading uploaded image file...");
+
+      // 🌟 Convert uploaded file to Base64 to pass to backend testing route
+      const base64Image = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
+
+      setStatus("Generating via Secure API...");
+      addLog(`🚀 Sending FireRed V1.1 request to backend engine...`);
+      addLog(`⚙️ Steps: ${frNumSteps} | Guidance: ${frGuidance}`);
+
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: stylePrompt,
+          model: "firered", // Triggers the non-schnell (FireRed) branch in backend
+          sourceImage: base64Image, // Passes the base64 selfie
+          num_inference_steps: frNumSteps,
+          guidance_scale: frGuidance
+        })
+      });
+
+      const data = (await res.json()) as any;
+
+      if (!res.ok) throw new Error(data.error || "Failed to generate style");
+      
+      if (data.output) {
+        setFinalStyleImage(data.output);
+        setStatus("Complete.");
+        addLog("🎉 INSTANT GENERATION SUCCESSFUL.");
+        addLog(`✅ Post ID: ${data.post_id}`);
+      } else {
+        throw new Error("No image URL returned in payload.");
+      }
+    } catch (error) {
+      setStatus("ERROR"); 
+      addLog(`🛑 FATAL: ${(error as Error).message}`);
+    } finally {
+      setIsTesting(false);
+    }
   };
 
   // --- PIPELINE 2: FLUX SCHNELL (Imagine) ---
@@ -115,7 +167,7 @@ export default function UnifiedMVPLab() {
             <div className="space-y-6 animate-in fade-in slide-in-from-left-4">
               <div className="border border-gray-800 p-4 rounded-xl bg-gray-900/50">
                 <label className="block mb-2 font-bold text-sm text-red-400">Upload Selfie</label>
-                <input type="file" className="text-sm" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                <input type="file" accept="image/*" className="text-sm" onChange={(e) => setFile(e.target.files?.[0] || null)} />
               </div>
               
               <div className="border border-gray-800 rounded-xl bg-[#0a0a0a] overflow-hidden">
