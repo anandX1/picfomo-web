@@ -61,9 +61,10 @@ export default function Hero() {
 
           {/* CTAs - Forced Side-by-Side on Mobile */}
           <div className="flex flex-row items-center gap-4 md:gap-5">
+            {/* 🌟 FIX: Updated button text to var(--color-white) so it adapts properly and stays legible in Dark Mode */}
             <Link
               href="/sign-up"
-              className="flex items-center justify-center gap-2 bg-[var(--color-ink)] px-5 py-3.5 md:px-8 md:py-4 font-[family-name:var(--display)] text-[14px] md:text-[18px] tracking-[1px] md:tracking-[2px] text-[var(--color-gold-light)] shadow-[var(--shadow-md)] transition-all hover:-translate-y-0.5 hover:bg-[var(--color-gold)] hover:text-[var(--color-ink)] hover:shadow-[var(--shadow-lg)]"
+              className="flex items-center justify-center gap-2 bg-[var(--color-ink)] px-5 py-3.5 md:px-8 md:py-4 font-[family-name:var(--display)] text-[14px] md:text-[18px] tracking-[1px] md:tracking-[2px] text-[var(--color-white)] shadow-[var(--shadow-md)] transition-all hover:-translate-y-0.5 hover:bg-[var(--color-gold)] hover:text-[var(--color-ink)] hover:shadow-[var(--shadow-lg)] rounded-xl"
             >
               Create Free Portrait <span className="hidden sm:inline">→</span>
             </Link>
@@ -132,7 +133,8 @@ export default function Hero() {
 function LiveWallCard({ post, priority = false }: { post: any, priority?: boolean }) {
   return (
     <Link href="/sign-up" className="group relative aspect-[3/4] w-full cursor-pointer overflow-hidden shadow-[var(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)] rounded-xl block">
-      <div className="absolute inset-0 h-full w-full bg-gray-200">
+      {/* 🌟 FIX: Removed hardcoded bg-gray-200, replaced with adaptive cream background */}
+      <div className="absolute inset-0 h-full w-full bg-[var(--color-cream2)]">
         <Image 
           src={post.image_url} 
           alt={post.style} 
@@ -145,7 +147,8 @@ function LiveWallCard({ post, priority = false }: { post: any, priority?: boolea
       <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 z-20 bg-[var(--color-gold)] px-2.5 py-1 md:px-3 font-[family-name:var(--display)] text-[10px] md:text-[12px] tracking-[1px] text-[var(--color-ink)] shadow-sm">
         {post.style}
       </div>
-      <div className="absolute inset-0 z-10 flex items-center justify-center border-2 border-[var(--color-gold)] bg-[rgba(200,151,31,0.12)] opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+      {/* 🌟 FIX: Replaced hardcoded rgba background with dynamic var(--color-gold-pale) for perfect dark mode glow */}
+      <div className="absolute inset-0 z-10 flex items-center justify-center border-2 border-[var(--color-gold)] bg-[var(--color-gold-pale)] opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
         <span className="bg-[var(--color-gold)] px-4 py-1.5 font-[family-name:var(--display)] text-[12px] md:text-[14px] tracking-[1.5px] text-[var(--color-ink)] shadow-lg">
           TRY THIS →
         </span>

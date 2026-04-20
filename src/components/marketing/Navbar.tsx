@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Navbar() {
   return (
-    <nav className="sticky top-0 z-[100] flex h-[64px] items-center justify-between border-b border-[var(--rule)] bg-[rgba(250,250,248,0.92)] px-5 backdrop-blur-md md:px-10">
+    <nav className="sticky top-0 z-[100] flex h-[64px] items-center justify-between border-b border-[var(--rule)] bg-[var(--color-white)]/90 px-5 backdrop-blur-md md:px-10">
       
       {/* 🌟 BRAND LOGO */}
       <div className="flex items-center">
@@ -41,7 +41,8 @@ export default function Navbar() {
         <Link href="/sign-in" className="text-[12px] font-medium text-[var(--color-ink3)] transition-colors hover:text-[var(--color-ink)]">
           Sign in
         </Link>
-        <Link href="/sign-up" className="rounded-md bg-[var(--color-ink)] px-5 py-2 font-[family-name:var(--display)] text-[14px] tracking-[1.5px] text-[var(--color-gold-light)] shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--color-gold)] hover:text-[var(--color-ink)] hover:shadow-md">
+        {/* 🌟 FIX: Updated to text-[var(--color-white)] so it flips to Black text on White bg in Dark Mode! */}
+        <Link href="/sign-up" className="rounded-md bg-[var(--color-ink)] px-5 py-2 font-[family-name:var(--display)] text-[14px] tracking-[1.5px] text-[var(--color-white)] shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--color-gold)] hover:text-[var(--color-ink)] hover:shadow-md">
           TRY FREE →
         </Link>
       </div>
