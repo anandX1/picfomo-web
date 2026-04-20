@@ -1,22 +1,69 @@
 @import "tailwindcss";
 
-@theme {
-  /* PicFOMO Premium Palette */
-  --color-white: #FAFAF8;
-  --color-cream: #F5F1EA;
-  --color-cream2: #EDE8DE;
-  --color-ink: #111009;
-  --color-ink2: #3A3830;
-  --color-ink3: #8A8478;
-  --color-gold: #C8971F;
-  --color-gold-light: #F0C84A;
-  --color-gold-pale: #FBF3DC;
-  --color-gold-border: rgba(200, 151, 31, 0.2);
-  
-  /* System Colors */
-  --color-red: #D94035;
-  --color-grn: #2E7D52;
+@layer base {
+  :root {
+    /* ☀️ LIGHT MODE (SYSTEM DEFAULT) */
+    --color-white: #FAFAF8;
+    --color-cream: #F5F1EA;
+    --color-cream2: #EDE8DE;
+    --color-ink: #111009;
+    --color-ink2: #3A3830;
+    --color-ink3: #8A8478;
+    
+    --color-gold: #C8971F;
+    --color-gold-light: #F0C84A;
+    --color-gold-pale: #FBF3DC;
+    --color-gold-border: rgba(200, 151, 31, 0.2);
+    
+    --color-red: #D94035;
+    --color-grn: #2E7D52;
 
+    --rule: rgba(17, 16, 9, 0.08);
+    --rule2: rgba(17, 16, 9, 0.04);
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* 🌙 DARK MODE (SYSTEM RECOGNIZED) */
+      --color-white: #0A0A0A;      /* White backgrounds turn into Deep Black */
+      --color-cream: #121212;      /* Cream turns into dark elevated panels */
+      --color-cream2: #1A1A1A;     /* Hover states go slightly lighter */
+      --color-ink: #FAFAF8;        /* Ink Text turns into Off-White */
+      --color-ink2: #D4D4D4;       /* Secondary text */
+      --color-ink3: #9CA3AF;       /* Muted text */
+      
+      --color-gold: #D4A936;       /* Slightly brighter gold for dark contrast */
+      --color-gold-light: #F2D263;
+      --color-gold-pale: #302610;  /* Dark tinted gold for soft backgrounds */
+      --color-gold-border: rgba(212, 169, 54, 0.25);
+      
+      --color-red: #EF4444;
+      --color-grn: #22C55E;
+
+      --rule: rgba(250, 250, 248, 0.12); /* White lines on black bg */
+      --rule2: rgba(250, 250, 248, 0.06);
+      
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+      --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  body {
+    background-color: var(--color-white);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+}
+
+@theme {
   /* --- TAILWIND V4 NATIVE ANIMATIONS --- */
   --animate-scroll-up: scroll-up 25s linear infinite;
   --animate-scroll-down: scroll-down 30s linear infinite;
@@ -38,20 +85,6 @@
   }
 }
 
-@layer base {
-  :root {
-    --rule: rgba(17, 16, 9, 0.08);
-    --rule2: rgba(17, 16, 9, 0.04);
-  }
-
-  body {
-    background-color: var(--color-white);
-    color: var(--color-ink);
-    -webkit-font-smoothing: antialiased;
-    scroll-behavior: smooth;
-  }
-}
-
 @layer utilities {
   .c-ghibli { background: linear-gradient(160deg, #2d5a3d, #4a8c63, #2d5a3d); }
   .c-ipl { background: linear-gradient(160deg, #1c3d5c, #2d6194, #1c3d5c); }
@@ -60,7 +93,6 @@
   .c-wedding { background: linear-gradient(160deg, #5c3d1c, #a86e33, #5c2d0a); }
 
   /* --- THE SOCIAL UI OVERRIDE --- */
-  /* Any element wrapped in .app-ui will automatically strip away the fancy marketing styles */
   .app-ui .font-\[family-name\:var\(--mono\)\] {
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   }
