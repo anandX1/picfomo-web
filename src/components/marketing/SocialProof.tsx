@@ -100,11 +100,11 @@ export default function SocialProof() {
           <MessageCircle size={14} className="text-[var(--color-gold)]" />
           [ THE WALL OF FOMO ]
         </div>
-        <h2 className="mb-6 font-[family-name:var(--display)] text-[clamp(36px,5vw,64px)] leading-[0.9] tracking-[-0.5px] text-white">
+        <h2 className="mb-6 font-[family-name:var(--display)] text-[clamp(36px,5vw,64px)] leading-[0.9] tracking-[-0.5px] text-[var(--color-white)]">
           DON'T JUST TAKE<br />
           OUR WORD FOR IT.
         </h2>
-        <p className="max-w-[500px] text-[15px] md:text-[18px] font-light leading-[1.7] text-gray-400">
+        <p className="max-w-[500px] text-[15px] md:text-[18px] font-light leading-[1.7] text-[var(--color-white)]/70">
           Thousands of people are already upgrading their digital identity. Read the timeline.
         </p>
       </div>
@@ -139,23 +139,23 @@ export default function SocialProof() {
 // Sub-component for the individual review cards
 function ReviewCard({ review }: { review: any }) {
   return (
-    <div className="relative w-[300px] md:w-[400px] shrink-0 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-[var(--color-gold-border)]">
+    <div className="relative w-[300px] md:w-[400px] shrink-0 rounded-2xl border border-[var(--color-white)]/10 bg-[var(--color-white)]/5 p-6 backdrop-blur-md transition-all duration-300 hover:bg-[var(--color-white)]/10 hover:border-[var(--color-gold-border)]">
       
       {/* Quote Icon Background */}
-      <Quote size={80} className="absolute -right-4 -top-4 text-white/5 rotate-12" />
+      <Quote size={80} className="absolute -right-4 -top-4 text-[var(--color-white)]/5 rotate-12" />
 
       {/* User Info Header */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Simulated colorful avatar */}
+          {/* Simulated colorful avatar (Keep text-white hardcoded here because it's on a colorful gradient) */}
           <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${review.avatar} text-[14px] font-bold text-white shadow-inner`}>
             {review.name.charAt(0)}
           </div>
           <div>
-            <div className="font-[family-name:var(--display)] text-[15px] tracking-[0.5px] text-white">
+            <div className="font-[family-name:var(--display)] text-[15px] tracking-[0.5px] text-[var(--color-white)]">
               {review.name}
             </div>
-            <div className="font-[family-name:var(--mono)] text-[11px] text-gray-400">
+            <div className="font-[family-name:var(--mono)] text-[11px] text-[var(--color-white)]/50">
               {review.handle}
             </div>
           </div>
@@ -170,7 +170,7 @@ function ReviewCard({ review }: { review: any }) {
       </div>
 
       {/* The Review Content */}
-      <p className="relative z-10 text-[14px] md:text-[15px] font-light leading-[1.6] text-gray-300">
+      <p className="relative z-10 text-[14px] md:text-[15px] font-light leading-[1.6] text-[var(--color-white)]/80">
         "{review.text}"
       </p>
 
