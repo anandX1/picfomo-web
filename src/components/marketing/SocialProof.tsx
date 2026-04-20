@@ -70,8 +70,9 @@ const SCROLL_ROW_1 = [...REVIEWS_ROW_1, ...REVIEWS_ROW_1];
 const SCROLL_ROW_2 = [...REVIEWS_ROW_2, ...REVIEWS_ROW_2];
 
 export default function SocialProof() {
+  // 🌟 FIX: Removed bg-[var(--color-ink)], using bg-[var(--color-white)] so it matches the theme flow
   return (
-    <section className="relative overflow-hidden bg-[var(--color-ink)] py-20 md:py-32" id="testimonials">
+    <section className="relative overflow-hidden bg-[var(--color-white)] py-20 md:py-32" id="testimonials">
       
       {/* 🌟 CUSTOM ANIMATIONS */}
       <style>{`
@@ -92,7 +93,7 @@ export default function SocialProof() {
       `}</style>
 
       {/* Decorative Background Glows */}
-      <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-[var(--color-gold)] opacity-[0.03] blur-[120px]"></div>
+      <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-[var(--color-gold)] opacity-[0.05] blur-[120px]"></div>
 
       {/* Header Area */}
       <div className="relative z-10 mx-auto mb-16 flex max-w-[1120px] flex-col items-center px-6 text-center md:mb-20">
@@ -100,11 +101,13 @@ export default function SocialProof() {
           <MessageCircle size={14} className="text-[var(--color-gold)]" />
           [ THE WALL OF FOMO ]
         </div>
-        <h2 className="mb-6 font-[family-name:var(--display)] text-[clamp(36px,5vw,64px)] leading-[0.9] tracking-[-0.5px] text-[var(--color-white)]">
+        
+        {/* 🌟 FIX: Standardized text color to var(--color-ink) */}
+        <h2 className="mb-6 font-[family-name:var(--display)] text-[clamp(36px,5vw,64px)] leading-[0.9] tracking-[-0.5px] text-[var(--color-ink)]">
           DON'T JUST TAKE<br />
           OUR WORD FOR IT.
         </h2>
-        <p className="max-w-[500px] text-[15px] md:text-[18px] font-light leading-[1.7] text-[var(--color-white)]/70">
+        <p className="max-w-[500px] text-[15px] md:text-[18px] font-light leading-[1.7] text-[var(--color-ink2)]">
           Thousands of people are already upgrading their digital identity. Read the timeline.
         </p>
       </div>
@@ -128,9 +131,9 @@ export default function SocialProof() {
 
       </div>
 
-      {/* Fade masks for the edges of the screen to make it look like they are fading in/out */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-12 md:w-32 bg-gradient-to-r from-[var(--color-ink)] to-transparent"></div>
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-12 md:w-32 bg-gradient-to-l from-[var(--color-ink)] to-transparent"></div>
+      {/* 🌟 FIX: Updated fade masks to use var(--color-white) so they blend perfectly */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-12 md:w-32 bg-gradient-to-r from-[var(--color-white)] to-transparent"></div>
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-12 md:w-32 bg-gradient-to-l from-[var(--color-white)] to-transparent"></div>
 
     </section>
   );
@@ -138,24 +141,25 @@ export default function SocialProof() {
 
 // Sub-component for the individual review cards
 function ReviewCard({ review }: { review: any }) {
+  // 🌟 FIX: Cards now use var(--color-cream) for perfect elevation in Light and Dark mode
   return (
-    <div className="relative w-[300px] md:w-[400px] shrink-0 rounded-2xl border border-[var(--color-white)]/10 bg-[var(--color-white)]/5 p-6 backdrop-blur-md transition-all duration-300 hover:bg-[var(--color-white)]/10 hover:border-[var(--color-gold-border)]">
+    <div className="relative w-[300px] md:w-[400px] shrink-0 rounded-2xl border border-[var(--rule)] bg-[var(--color-cream)] p-6 shadow-[var(--shadow-sm)] transition-all duration-300 hover:bg-[var(--color-cream2)] hover:border-[var(--color-gold-border)] hover:shadow-[var(--shadow-md)]">
       
       {/* Quote Icon Background */}
-      <Quote size={80} className="absolute -right-4 -top-4 text-[var(--color-white)]/5 rotate-12" />
+      <Quote size={80} className="absolute -right-4 -top-4 text-[var(--rule)] rotate-12" />
 
       {/* User Info Header */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Simulated colorful avatar (Keep text-white hardcoded here because it's on a colorful gradient) */}
           <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${review.avatar} text-[14px] font-bold text-white shadow-inner`}>
             {review.name.charAt(0)}
           </div>
           <div>
-            <div className="font-[family-name:var(--display)] text-[15px] tracking-[0.5px] text-[var(--color-white)]">
+            {/* 🌟 FIX: Text uses standard ink colors */}
+            <div className="font-[family-name:var(--display)] text-[15px] tracking-[0.5px] text-[var(--color-ink)]">
               {review.name}
             </div>
-            <div className="font-[family-name:var(--mono)] text-[11px] text-[var(--color-white)]/50">
+            <div className="font-[family-name:var(--mono)] text-[11px] text-[var(--color-ink3)]">
               {review.handle}
             </div>
           </div>
@@ -170,7 +174,7 @@ function ReviewCard({ review }: { review: any }) {
       </div>
 
       {/* The Review Content */}
-      <p className="relative z-10 text-[14px] md:text-[15px] font-light leading-[1.6] text-[var(--color-white)]/80">
+      <p className="relative z-10 text-[14px] md:text-[15px] font-light leading-[1.6] text-[var(--color-ink2)]">
         "{review.text}"
       </p>
 
