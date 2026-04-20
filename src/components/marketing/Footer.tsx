@@ -11,7 +11,8 @@ export default function Footer() {
           {/* 🌟 NEW BRAND LOGO */}
           <div className="md:col-span-1">
             <Link href="/" className="mb-5 inline-block outline-none transition-opacity hover:opacity-80">
-              <div className="flex h-[36px] items-center justify-center rounded-md bg-[var(--color-ink)] px-3 shadow-sm">
+              {/* 🌟 FIX: Locked background to bg-black so it doesn't invert in Dark Mode */}
+              <div className="flex h-[36px] items-center justify-center rounded-md bg-black px-3 shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src="/logo.png" 

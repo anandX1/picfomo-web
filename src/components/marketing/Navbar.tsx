@@ -7,7 +7,8 @@ export default function Navbar() {
       {/* 🌟 BRAND LOGO */}
       <div className="flex items-center">
         <Link href="/" className="inline-block outline-none transition-transform hover:scale-105 active:scale-95">
-          <div className="flex h-[38px] items-center justify-center rounded-lg bg-[var(--color-ink)] px-3.5 shadow-md">
+          {/* 🌟 FIX: Locked background to bg-black so it doesn't invert in Dark Mode */}
+          <div className="flex h-[38px] items-center justify-center rounded-lg bg-black px-3.5 shadow-md">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/logo.png" 
