@@ -21,8 +21,7 @@ const SCROLL_ITEMS = [...COMMUNITY_POSTS, ...COMMUNITY_POSTS];
 
 export default function Hero() {
   return (
-    // 🌟 FIX: overflow-x-hidden and flex-col pt-28 prevents the mobile "decapitation" bug!
-    <section className="relative mx-auto max-w-[1280px] px-6 pt-28 pb-16 lg:px-10 lg:py-20 overflow-x-hidden min-h-[90vh] flex flex-col lg:justify-center">
+    <section className="relative mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-20 overflow-hidden min-h-[90vh] flex items-center">
       
       {/* 🌟 1. DYNAMIC AURORA BACKGROUND */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
@@ -100,15 +99,14 @@ export default function Hero() {
         }
       `}</style>
 
-      {/* 🌟 FIX: Updated breakpoints to lg: to prevent horizontal tablet squishing */}
-      <div className="grid items-center gap-12 lg:grid-cols-[1fr_500px] xl:grid-cols-[1fr_600px] w-full relative z-10">
+      <div className="grid items-center gap-12 md:grid-cols-[1fr_520px] lg:grid-cols-[1fr_600px] md:gap-16 w-full relative z-10">
         
         {/* --- LEFT COLUMN: The Pitch (Centered on Mobile, Left on Desktop) --- */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center text-center lg:items-start lg:text-left"
+          className="flex flex-col items-center text-center md:items-start md:text-left"
         >
           {/* Live Counter Eyebrow */}
           <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[var(--color-gold-border)] bg-[var(--color-gold-pale)] px-4 py-1.5 font-[family-name:var(--mono)] text-[10px] md:text-[11px] font-bold uppercase tracking-[3px] text-[var(--color-gold)] shadow-sm backdrop-blur-md transition-transform hover:scale-105">
@@ -117,7 +115,7 @@ export default function Hero() {
           </div>
 
           {/* Headline */}
-          <h1 className="mb-5 font-[family-name:var(--display)] text-[clamp(46px,10vw,100px)] leading-[0.85] tracking-[-1.5px] text-[var(--color-ink)] flex flex-col items-center lg:items-start w-full">
+          <h1 className="mb-5 font-[family-name:var(--display)] text-[clamp(46px,10vw,100px)] leading-[0.85] tracking-[-1.5px] text-[var(--color-ink)] flex flex-col items-center md:items-start">
             YOUR FACE.<br />
             <span className="flex items-center gap-2 md:gap-3 mt-1">
               <span className="text-shimmer font-sans text-[1.1em] font-light leading-none -mt-2">∞</span>
@@ -134,7 +132,7 @@ export default function Hero() {
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-5 w-full sm:w-auto">
             <Link
               href="/sign-up"
               className="btn-magnetic flex w-full sm:w-auto items-center justify-center gap-2 bg-[var(--color-ink)] px-8 py-4 md:px-10 md:py-4.5 font-[family-name:var(--display)] text-[16px] md:text-[18px] tracking-[1.5px] text-[var(--color-white)] shadow-[var(--shadow-lg)] transition-all hover:-translate-y-1 hover:bg-[var(--color-gold)] hover:text-black hover:shadow-[0_10px_40px_rgba(245,158,11,0.3)] rounded-[14px]"
@@ -152,25 +150,6 @@ export default function Hero() {
               <span className="underline decoration-[var(--rule)] underline-offset-4">See how it works</span>
             </Link>
           </div>
-
-          {/* --- MOBILE ONLY: 3. CINEMATIC INFINITE MARQUEE --- */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative mt-12 block w-[calc(100%+3rem)] -mx-6 lg:hidden z-10"
-          >
-            <div className="mask-edges-x w-full overflow-hidden pb-8 pt-2">
-              <div className="flex w-max animate-scroll-left gap-4 pl-4">
-                {SCROLL_ITEMS.map((post, idx) => (
-                  <div key={`mobile-scroll-${idx}`} className="w-[160px] shrink-0">
-                    <LiveWallCard post={post} priority={idx < 4} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
         </motion.div>
 
         {/* --- DESKTOP RIGHT COLUMN: 2. SPATIAL UI 3D WALL --- */}
@@ -178,7 +157,7 @@ export default function Hero() {
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative hidden h-[700px] w-full lg:block perspective-container z-10"
+          className="relative hidden h-[700px] w-full md:block perspective-container z-10"
         >
           {/* True Alpha Masks (Works perfectly in Dark Mode) */}
           <div className="mask-edges-y h-full w-full">
@@ -199,6 +178,25 @@ export default function Hero() {
           </div>
         </motion.div>
       </div>
+
+      {/* --- MOBILE ONLY: 3. CINEMATIC INFINITE MARQUEE --- */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="relative mt-12 block w-[calc(100%+3rem)] -mx-6 md:hidden z-10"
+      >
+        {/* True Alpha Masks (Replaces the ugly hardcoded white gradients) */}
+        <div className="mask-edges-x w-full overflow-hidden pb-8 pt-2">
+          <div className="flex w-max animate-scroll-left gap-4 pl-4">
+            {SCROLL_ITEMS.map((post, idx) => (
+              <div key={`mobile-scroll-${idx}`} className="w-[160px] shrink-0">
+                <LiveWallCard post={post} priority={idx < 4} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
 
     </section>
   );
