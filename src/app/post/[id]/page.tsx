@@ -3,7 +3,6 @@ import { auth } from "@clerk/nextjs/server";
 import PostClient from "./PostClient";
 import { Metadata } from "next";
 
-
 export const revalidate = 0;
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -56,7 +55,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     }
   };
 }
-
 
 export default async function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
