@@ -182,10 +182,10 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
         </p>
       </div>
 
-      {/* 🌟 TABS: Fixed Contrast Issue! Uses var(--color-ink) for text on active, var(--color-ink3) for inactive */}
+      {/* 🌟 TABS: Fixed Contrast Issue! Uses var(--color-ink) with opacity for perfectly readable inactive states */}
       <div className="flex bg-[var(--color-cream)] p-1.5 rounded-xl w-full md:w-fit border border-[var(--rule)] shadow-sm">
-        <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink3)] hover:text-[var(--color-ink)]"}`}>Premium Styles</button>
-        <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink3)] hover:text-[var(--color-ink)]"}`}>Imagine (Fast)</button>
+        <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>Premium Styles</button>
+        <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>Imagine (Fast)</button>
       </div>
 
       {outputImage && !isModalOpen && (
@@ -213,16 +213,15 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={style.mainImage} alt={style.name} className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#000000]/90 via-[#000000]/20 to-transparent"></div>
                   
-                  {/* 🌟 STYLE CARDS FIX: Hardcoded to text-white so it never turns black against the dark image gradients! */}
+                  {/* 🌟 STYLE CARDS FIX: Uses absolute hex #FFFFFF so it NEVER maps to the Dark Mode black background! */}
                   <div className="absolute bottom-4 left-4 right-4 z-20">
-                    <div className="font-[family-name:var(--display)] tracking-[0.5px] text-[16px] leading-tight flex items-center gap-2 drop-shadow-md text-white">
+                    <div className="font-[family-name:var(--display)] tracking-[0.5px] text-[16px] leading-tight flex items-center gap-2 drop-shadow-md text-[#FFFFFF]">
                       {style.name}
-                      {style.badge && <span className="bg-white text-black text-[8px] font-sans px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">{style.badge}</span>}
+                      {style.badge && <span className="bg-[#FFFFFF] text-[#000000] text-[8px] font-sans px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">{style.badge}</span>}
                     </div>
-                    {/* 🌟 Fixed typo 'text-whitetems-center' to 'text-white flex items-center' */}
-                    <div className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-white flex items-center gap-1 drop-shadow-md mt-1.5">
+                    <div className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-[#FFFFFF] flex items-center gap-1 drop-shadow-md mt-1.5">
                       <Zap size={10} className="fill-[var(--color-gold)] text-[var(--color-gold)]" /> {style.spark_cost} Sparks
                     </div>
                   </div>
@@ -276,7 +275,8 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
             {/* STATE 3: RESULT VIEW */}
             {outputImage ? (
               <div className="animate-in zoom-in-95 duration-500 bg-[var(--color-cream)] flex flex-col items-center">
-                <button onClick={() => { setIsModalOpen(false); setOutputImage(null); setOutputPostId(null); }} className="absolute top-4 right-4 bg-black/50 backdrop-blur-md p-2 rounded-full text-white z-10 hover:bg-black/80 transition-colors shadow-lg"><X size={18} /></button>
+                {/* 🌟 FIX: Absolute hex colors for modal overlay buttons so they stay crisp */}
+                <button onClick={() => { setIsModalOpen(false); setOutputImage(null); setOutputPostId(null); }} className="absolute top-4 right-4 bg-[#000000]/50 backdrop-blur-md p-2 rounded-full text-[#FFFFFF] z-10 hover:bg-[#000000]/80 transition-colors shadow-lg"><X size={18} /></button>
                 
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={outputImage} alt="Result" className="w-full aspect-[4/5] object-contain bg-[#050505]" />
