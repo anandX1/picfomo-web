@@ -1,8 +1,9 @@
 "use client";
 
 import { useTransition } from "react";
-import { Globe, Lock, Trash2, Shield, Loader2 } from "lucide-react";
+import { Globe, Lock, Trash2, Shield, Loader2, DatabaseBackup } from "lucide-react";
 import { purchasePrivacy, deletePost } from "@/actions/economy";
+import { toast } from "sonner"; // 🌟 ADDED: Smooth toast notifications!
 
 interface VaultPost {
   id: string;
@@ -19,8 +20,8 @@ export default function VaultClient({ initialPosts }: { initialPosts: VaultPost[
     
     startTransition(async () => {
       const res = await purchasePrivacy(postId);
-      if (res.success) alert("Asset Locked! 🔒");
-      else alert(res.message);
+      if (res.success) toast.success("Asset successfully locked! 🔒");
+      else toast.error(res.message);
     });
   };
 
@@ -29,76 +30,87 @@ export default function VaultClient({ initialPosts }: { initialPosts: VaultPost[
     
     startTransition(async () => {
       const res = await deletePost(postId);
-      if (res.success) alert("Asset Deleted 🗑️");
-      else alert(res.message);
+      if (res.success) toast.success("Asset permanently deleted. 🗑️");
+      else toast.error(res.message);
     });
   };
 
   if (initialPosts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 text-center opacity-60">
-        <span className="mb-4 text-4xl opacity-50">🗄️</span>
-        <p className="font-medium text-[13px] text-[var(--color-ink2)]">Your vault is empty.</p>
-        <p className="text-[12px] text-[var(--color-ink3)] mt-1">Head to the Studio to create your first aesthetic.</p>
+      <div className="flex flex-col items-center justify-center py-32 text-center text-[var(--color-ink3)]">
+        <DatabaseBackup size={64} className="mb-6 opacity-20" />
+        <h3 className="font-[family-name:var(--display)] text-3xl tracking-wide text-[var(--color-ink)] mb-2">VAULT IS EMPTY</h3>
+        <p className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-widest">Head to the Studio to create your first aesthetic.</p>
       </div>
     );
   }
 
   return (
-    <div className="columns-2 gap-4 sm:columns-3 lg:columns-4 xl:columns-5">
+    <div className="columns-2 gap-3 sm:columns-3 lg:columns-4 xl:columns-5 md:gap-5 pb-20">
       {initialPosts.map((post) => {
         const isPublic = post.is_public === 1;
 
         return (
-          <div key={post.id} className="group relative mb-4 break-inside-avoid overflow-hidden rounded-[12px] bg-[var(--rule)] shadow-sm">
-            
-            {/* The Image */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={post.image_url} 
-              alt="Vault Asset" 
-              className={`w-full object-cover transition-transform duration-500 ${isPending ? 'opacity-50' : 'group-hover:scale-105'}`} 
-              loading="lazy" 
-            />
-
-            {/* Top Right Status Indicator (Always Visible) */}
-            <div className="absolute top-2 right-2">
-              <div className={`flex items-center justify-center h-8 w-8 rounded-full backdrop-blur-md ${isPublic ? 'bg-black/30 text-white' : 'bg-[var(--color-gold)] text-[var(--color-ink)]'}`}>
-                {isPublic ? <Globe size={14} /> : <Lock size={14} />}
-              </div>
-            </div>
-
-            {/* Hover Control Overlay */}
-            <div className="absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-200 flex flex-col items-center justify-center gap-3 group-hover:opacity-100">
+          <div key={post.id} className="break-inside-avoid mb-4 md:mb-6">
+            <div className="group relative overflow-hidden rounded-[20px] bg-[var(--color-cream)] border border-[var(--rule)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all flex flex-col">
               
-              {isPublic && (
-                <button 
-                  onClick={() => handleMakePrivate(post.id)}
-                  disabled={isPending}
-                  className="flex items-center gap-2 rounded-full bg-[var(--color-gold)] px-4 py-2 text-[12px] font-bold text-[var(--color-ink)] shadow-lg transition-transform hover:scale-105 disabled:opacity-50"
-                >
-                  <Shield size={14} className="fill-[var(--color-ink)]" />
-                  MAKE PRIVATE (22 ⚡)
-                </button>
-              )}
+              {/* 🌟 IMAGE SECTION */}
+              <div className="relative aspect-auto w-full bg-[var(--color-cream2)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={post.image_url} 
+                  alt="Vault Asset" 
+                  className={`w-full h-auto object-cover transition-transform duration-700 ${isPending ? 'opacity-50' : 'group-hover:scale-[1.02]'}`} 
+                  loading="lazy" 
+                />
 
-              <button 
-                onClick={() => handleDelete(post.id)}
-                disabled={isPending}
-                className="flex items-center gap-2 rounded-full bg-red-500/90 backdrop-blur-sm px-4 py-2 text-[12px] font-bold text-white shadow-lg transition-transform hover:scale-105 hover:bg-red-600 disabled:opacity-50"
-              >
-                <Trash2 size={14} />
-                DELETE
-              </button>
+                {/* 🌟 STATUS BADGE: Floating Frost Glass */}
+                <div className="absolute top-3 right-3 z-10 pointer-events-none">
+                  {isPublic ? (
+                    <div className="flex items-center gap-1.5 bg-[#000000]/60 backdrop-blur-md border border-[#FFFFFF]/20 text-[#FFFFFF] px-3 py-1.5 rounded-full text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest shadow-lg">
+                      <Globe size={12} /> Public
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 bg-[var(--color-gold)] text-black border border-yellow-300/30 px-3 py-1.5 rounded-full text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest shadow-lg">
+                      <Lock size={12} /> Private
+                    </div>
+                  )}
+                </div>
+
+                {/* Loading Overlay */}
+                {isPending && (
+                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                    <Loader2 className="animate-spin text-[var(--color-gold)]" size={32} />
+                  </div>
+                )}
+              </div>
+
+              {/* 🌟 MOBILE-OPTIMIZED ACTION BAR: Permanently visible beneath the image! */}
+              <div className="flex items-center justify-between p-3 bg-[var(--color-cream)] border-t border-[var(--rule)]">
+                {isPublic ? (
+                  <button 
+                    onClick={() => handleMakePrivate(post.id)}
+                    disabled={isPending}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-[var(--color-gold-pale)] hover:bg-[var(--color-gold)] text-[var(--color-gold)] hover:text-black border border-[var(--color-gold-border)] rounded-xl py-2.5 px-2 text-[9px] md:text-[10px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest transition-all disabled:opacity-50 active:scale-95 mr-2 shadow-sm"
+                  >
+                    <Shield size={14} /> Make Private (22 ⚡)
+                  </button>
+                ) : (
+                  <div className="flex-1 flex items-center gap-2 text-[var(--color-ink3)] text-[10px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest px-2">
+                    <Lock size={14} /> Asset Secured
+                  </div>
+                )}
+
+                <button 
+                  onClick={() => handleDelete(post.id)}
+                  disabled={isPending}
+                  className="flex items-center justify-center p-2.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 rounded-xl transition-all disabled:opacity-50 active:scale-95 group/del shadow-sm"
+                >
+                  <Trash2 size={16} className="transition-transform group-hover/del:scale-110" />
+                </button>
+              </div>
 
             </div>
-
-            {/* Loading Spinner Overlay */}
-            {isPending && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10">
-                <Loader2 className="animate-spin text-white" size={24} />
-              </div>
-            )}
           </div>
         );
       })}
