@@ -35,7 +35,7 @@ export default function SettingsClient({ initialData }: Props) {
   return (
     <div className="flex flex-col xl:flex-row gap-8 items-start">
       
-      {/* LEFT COLUMN: PicFOMO Custom Identity Form */}
+      {/* LEFT COLUMN: PicFOMO Custom Identity Form (Fully Adaptive to Light/Dark Mode) */}
       <div className="w-full xl:w-1/3 flex-shrink-0">
         <div className="bg-[var(--color-cream)] rounded-[24px] border border-[var(--rule)] p-6 md:p-8 shadow-[var(--shadow-sm)] transition-shadow hover:shadow-[var(--shadow-md)]">
           <h2 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)] mb-2">Public Profile</h2>
@@ -104,35 +104,37 @@ export default function SettingsClient({ initialData }: Props) {
         </div>
       </div>
 
-      {/* RIGHT COLUMN: Clerk Native UI (Themed dynamically!) */}
+      {/* RIGHT COLUMN: Clerk Native UI (Forced to Light Mode Fallback for guaranteed visibility) */}
       <div className="w-full xl:w-2/3">
-        <div className="bg-[var(--color-cream)] rounded-[24px] border border-[var(--rule)] shadow-[var(--shadow-sm)] overflow-hidden flex justify-center p-4 md:p-8 transition-shadow hover:shadow-[var(--shadow-md)]">
+        {/* 🌟 FIX: Locked container to a bright white background and standard border so Clerk doesn't vanish in Dark Mode */}
+        <div className="bg-[#ffffff] rounded-[24px] border border-[#e5e7eb] shadow-sm overflow-hidden flex justify-center p-4 md:p-8">
           <UserProfile routing="hash" appearance={{
             variables: {
-              colorPrimary: 'var(--color-gold)',
-              colorBackground: 'transparent',
-              colorText: 'var(--color-ink)',
-              colorTextSecondary: 'var(--color-ink3)',
-              colorInputBackground: 'var(--color-white)',
-              colorInputText: 'var(--color-ink)',
-              colorDanger: 'var(--color-red)',
-              colorSuccess: 'var(--color-grn)',
+              // 🌟 FIX: Using strict Hex codes instead of CSS variables to bypass the bug
+              colorPrimary: '#D97706', // Amber 600
+              colorBackground: '#ffffff',
+              colorText: '#111827', // Gray 900
+              colorTextSecondary: '#6B7280', // Gray 500
+              colorInputBackground: '#F9FAFB', // Gray 50
+              colorInputText: '#111827',
+              colorDanger: '#EF4444',
+              colorSuccess: '#10B981',
               borderRadius: '12px',
             },
             elements: {
               card: "shadow-none w-full bg-transparent border-none",
-              navbar: "hidden md:flex border-r border-[var(--rule)]",
+              navbar: "hidden md:flex border-r border-[#e5e7eb]",
               rootBox: "w-full max-w-full flex justify-center",
-              headerTitle: "font-[family-name:var(--display)] text-2xl text-[var(--color-ink)] tracking-wide",
-              headerSubtitle: "font-[family-name:var(--mono)] text-[11px] uppercase tracking-[1px] text-[var(--color-ink3)]",
-              profileSectionTitleText: "font-[family-name:var(--mono)] text-[11px] font-bold text-[var(--color-ink2)] uppercase tracking-wider",
-              profileSectionPrimaryButton: "text-[var(--color-gold)] font-[family-name:var(--mono)] uppercase tracking-widest text-[10px] font-bold",
-              badge: "text-[var(--color-ink)] bg-[var(--rule)] border border-[var(--rule)]",
-              formButtonPrimary: "bg-[var(--color-ink)] text-[var(--color-white)] hover:bg-[var(--color-gold)] hover:text-black font-[family-name:var(--mono)] uppercase tracking-widest text-[11px] font-bold shadow-sm transition-all",
-              button: "font-[family-name:var(--mono)] uppercase tracking-widest text-[11px] font-bold text-[var(--color-ink2)] hover:bg-[var(--rule)]",
-              avatarImageActionsUpload: "text-[var(--color-gold)]",
-              profileSectionContent: "border-b border-[var(--rule)] pb-4",
-              formFieldInput: "border-[var(--rule)] focus:border-[var(--color-gold)] focus:ring-[var(--color-gold)]",
+              headerTitle: "font-[family-name:var(--display)] text-2xl text-[#111827] tracking-wide",
+              headerSubtitle: "font-[family-name:var(--mono)] text-[11px] uppercase tracking-[1px] text-[#6B7280]",
+              profileSectionTitleText: "font-[family-name:var(--mono)] text-[11px] font-bold text-[#374151] uppercase tracking-wider",
+              profileSectionPrimaryButton: "text-[#D97706] font-[family-name:var(--mono)] uppercase tracking-widest text-[10px] font-bold",
+              badge: "text-[#111827] bg-[#F3F4F6] border border-[#E5E7EB]",
+              formButtonPrimary: "bg-[#111827] text-white hover:bg-[#D97706] font-[family-name:var(--mono)] uppercase tracking-widest text-[11px] font-bold shadow-sm transition-all",
+              button: "font-[family-name:var(--mono)] uppercase tracking-widest text-[11px] font-bold text-[#4B5563] hover:bg-[#F3F4F6]",
+              avatarImageActionsUpload: "text-[#D97706]",
+              profileSectionContent: "border-b border-[#e5e7eb] pb-4",
+              formFieldInput: "border-[#e5e7eb] bg-[#f9fafb] focus:border-[#D97706] focus:ring-[#D97706] text-[#111827]",
             }
           }} />
         </div>
