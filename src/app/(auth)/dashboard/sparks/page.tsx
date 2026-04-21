@@ -13,9 +13,9 @@ export default async function SparksHubPage() {
 
   // 1. Fetch User Balance, Referral Code & UNCLAIMED SPARKS
   const user = await db
-    .prepare("SELECT sparks_balance, referral_code, unclaimed_sparks FROM users WHERE id = ?")
+    .prepare("SELECT sparks_balance, referral_code, unclaimed_sparks, login_streak FROM users WHERE id = ?")
     .bind(userId)
-    .first<{ sparks_balance: number, referral_code: string, unclaimed_sparks: number }>();
+    .first<{ sparks_balance: number, referral_code: string, unclaimed_sparks: number, login_streak: number }>();
 
   // 2. Fetch Ledger
   const { results: transactions } = await db
@@ -59,7 +59,8 @@ export default async function SparksHubPage() {
   return (
     <SparksHubClient 
       balance={user?.sparks_balance || 0}
-      unclaimedSparks={user?.unclaimed_sparks || 0} // Passing the vault!
+      unclaimedSparks={user?.unclaimed_sparks || 0} 
+      currentStreak={user?.login_streak || 0} // 🌟 Make sure this line is here!
       transactions={transactions}
       hasClaimedDaily={completedToday.length > 0}
       availableTasks={availableTasks as any[]}

@@ -1,36 +1,77 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-
 import { revalidatePath } from "next/cache";
 
-// 1. CLAIM DAILY LOGIN REWARD
+// 1. CLAIM DAILY LOGIN REWARD (Upgraded with Streak Tracking)
 export async function claimDailyLogin() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  try {
+    const { userId } = await auth();
+    if (!userId) return { success: false, message: "Unauthorized" };
 
-  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
+    const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
-  const existingClaim = await db
-    .prepare("SELECT id FROM task_completions WHERE user_id = ? AND task_key = 'daily_login' AND date(completed_at) = date('now')")
-    .bind(userId)
-    .first();
+    // 1. Check if already claimed today
+    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const existingClaim = await db.prepare(
+      "SELECT id FROM task_completions WHERE user_id = ? AND task_key = 'daily_login' AND date(completed_at) = ?"
+    ).bind(userId, today).first();
 
-  if (existingClaim) {
-    return { success: false, message: "Already claimed today" };
+    if (existingClaim) return { success: false, message: "Already claimed today" };
+
+    // 2. Fetch user's current streak data
+    const user = await db.prepare(
+      "SELECT login_streak, last_login_claim FROM users WHERE id = ?"
+    ).bind(userId).first<{ login_streak: number, last_login_claim: string }>();
+    
+    let currentStreak = user?.login_streak || 0;
+    const lastClaimDate = user?.last_login_claim;
+
+    // 3. Calculate Streak Logic
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    // If they claimed exactly yesterday, the streak continues. Otherwise, it resets to 1.
+    if (lastClaimDate === yesterdayStr) {
+      currentStreak += 1;
+    } else {
+      currentStreak = 1;
+    }
+
+    // Reset the visual loop back to 1 if they pass day 7
+    if (currentStreak > 7) {
+      currentStreak = 1;
+    }
+
+    // 4. Calculate Rewards (Day 7 gives 5 base + 20 bonus = 25 Sparks)
+    const isDay7 = currentStreak === 7;
+    const rewardAmount = isDay7 ? 25 : 5; 
+
+    // 5. Generate secure IDs for the database (Matching your schema)
+    const txId = `tx_${Date.now()}_daily_${Math.random().toString(36).substring(7)}`;
+    const taskId = `task_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+    // 6. Execute Database Batch (Updates everything safely in one go)
+    await db.batch([
+      // Log Task Completion
+      db.prepare("INSERT INTO task_completions (id, user_id, task_key) VALUES (?, ?, ?)").bind(taskId, userId, 'daily_login'),
+      // Update Wallet & Streak Memory
+      db.prepare("UPDATE users SET sparks_balance = sparks_balance + ?, login_streak = ?, last_login_claim = ? WHERE id = ?").bind(rewardAmount, currentStreak, today, userId),
+      // Add to Ledger
+      db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(txId, userId, rewardAmount, isDay7 ? 'Day 7 Login Bonus' : 'Daily Login Drop')
+    ]);
+
+    // Force UI refresh
+    revalidatePath("/dashboard/sparks");
+    revalidatePath("/sparks"); 
+
+    return { success: true, reward: rewardAmount, streak: currentStreak };
+
+  } catch (error: any) {
+    console.error("Daily claim error:", error);
+    return { success: false, message: "Server error processing claim." };
   }
-
-  const txId = `tx_${Date.now()}_daily_${Math.random().toString(36).substring(7)}`;
-  const taskId = `task_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-
-  await db.batch([
-    db.prepare("INSERT INTO task_completions (id, user_id, task_key) VALUES (?, ?, ?)").bind(taskId, userId, 'daily_login'),
-    db.prepare("UPDATE users SET sparks_balance = sparks_balance + 5 WHERE id = ?").bind(userId),
-    db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(txId, userId, 5, 'Daily Login Drop')
-  ]);
-
-  revalidatePath("/dashboard/sparks");
-  return { success: true };
 }
 
 // 2. JOIN PRO WAITLIST (Phantom Feature)
@@ -110,9 +151,8 @@ export async function likePost(postId: string) {
   }
 
   const notifId = `notif_${Date.now()}_like_${Math.random().toString(36).substring(7)}`;
-  const message = "Someone liked your post!"; // 🌟 FIX: Required by DB schema
+  const message = "Someone liked your post!"; 
 
-  // 🌟 FIX: Added user_id and message to the SQL query
   await db.batch([
     db.prepare("INSERT INTO likes (user_id, post_id) VALUES (?, ?)").bind(userId, postId),
     db.prepare("UPDATE users SET unclaimed_sparks = unclaimed_sparks + 1 WHERE id = ?").bind(creatorId),
@@ -149,10 +189,9 @@ export async function mockRemixPost(postId: string) {
 
   if (creatorId !== userId) {
     const notifId = `notif_${Date.now()}_remix_${Math.random().toString(36).substring(7)}`;
-    const message = "Someone remixed your style!"; // 🌟 FIX: Required by DB schema
+    const message = "Someone remixed your style!"; 
     
     batch.push(db.prepare("UPDATE users SET unclaimed_sparks = unclaimed_sparks + 2 WHERE id = ?").bind(creatorId));
-    // 🌟 FIX: Added user_id and message to the SQL query
     batch.push(db.prepare("INSERT INTO notifications (id, user_id, recipient_id, actor_id, type, message, post_id) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(notifId, creatorId, creatorId, userId, 'remix', message, postId));
   }
 
