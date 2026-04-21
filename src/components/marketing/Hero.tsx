@@ -21,7 +21,8 @@ const SCROLL_ITEMS = [...COMMUNITY_POSTS, ...COMMUNITY_POSTS];
 
 export default function Hero() {
   return (
-    <section className="relative mx-auto max-w-[1400px] px-6 py-12 md:px-10 lg:py-20 overflow-hidden min-h-[90vh] flex items-center justify-center">
+    // 🌟 FIX 1: Changed to overflow-x-hidden, pt-24, and flex-col to prevent the "Decapitation Bug" on mobile!
+    <section className="relative mx-auto max-w-[1400px] px-6 pt-24 pb-16 md:px-10 lg:pt-32 lg:pb-24 overflow-x-hidden min-h-[85dvh] flex flex-col lg:justify-center">
       
       {/* 🌟 1. DYNAMIC AURORA BACKGROUND */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
@@ -105,7 +106,7 @@ export default function Hero() {
         }
       `}</style>
 
-      {/* 🌟 FIX: Grid only triggers on lg (1024px+). Below that, it's a perfect single column. */}
+      {/* Grid wrapper for desktop splits */}
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_500px] xl:grid-cols-[1fr_600px] w-full relative z-10">
         
         {/* --- LEFT COLUMN: The Pitch --- */}
@@ -113,7 +114,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center text-center lg:items-start lg:text-left w-full pt-8 lg:pt-0"
+          className="flex flex-col items-center text-center lg:items-start lg:text-left w-full"
         >
           {/* Live Counter Eyebrow */}
           <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[var(--color-gold-border)] bg-[var(--color-gold-pale)] px-4 py-1.5 font-[family-name:var(--mono)] text-[10px] sm:text-[11px] font-bold uppercase tracking-[3px] text-[var(--color-gold)] shadow-sm backdrop-blur-md transition-transform hover:scale-105">
@@ -121,7 +122,7 @@ export default function Hero() {
             28,398+ portraits created today
           </div>
 
-          {/* Headline - 🌟 FIX: Fluid typography using vw for mobile so it never squishes! */}
+          {/* Headline */}
           <h1 className="mb-6 font-[family-name:var(--display)] text-[14vw] sm:text-[64px] lg:text-[clamp(60px,6.5vw,100px)] leading-[0.85] tracking-[-0.03em] text-[var(--color-ink)] flex flex-col items-center lg:items-start w-full">
             YOUR FACE.<br />
             <span className="flex items-center gap-2 sm:gap-3 mt-1 sm:mt-2">
@@ -140,9 +141,11 @@ export default function Hero() {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 w-full sm:w-auto">
+            
+            {/* 🌟 FIX 2: Hardcoded Gold Button with Black Text to defeat the Ghost Button bug! */}
             <Link
               href="/sign-up"
-              className="btn-magnetic flex w-full sm:w-auto items-center justify-center gap-2 bg-[var(--color-ink)] px-8 py-4 sm:px-10 sm:py-5 font-[family-name:var(--display)] text-[16px] sm:text-[18px] tracking-[1.5px] text-[var(--color-white)] shadow-[var(--shadow-lg)] transition-all hover:-translate-y-1 hover:bg-[var(--color-gold)] hover:text-black hover:shadow-[0_10px_40px_rgba(245,158,11,0.3)] rounded-[14px]"
+              className="btn-magnetic flex w-full sm:w-auto items-center justify-center gap-2 bg-[var(--color-gold)] px-8 py-4 sm:px-10 sm:py-5 font-[family-name:var(--display)] text-[16px] sm:text-[18px] tracking-[1.5px] text-black shadow-[0_4px_24px_rgba(245,158,11,0.4)] transition-all hover:-translate-y-1 hover:bg-[var(--color-gold-light)] hover:shadow-[0_10px_40px_rgba(245,158,11,0.6)] rounded-[14px]"
             >
               Create Free Portrait <span className="hidden sm:inline">→</span>
             </Link>
@@ -159,7 +162,6 @@ export default function Hero() {
           </div>
 
           {/* --- 🌟 MOBILE ONLY: 3. CINEMATIC INFINITE MARQUEE --- */}
-          {/* This is positioned immediately below the CTAs, exactly as requested, and hidden on desktop! */}
           <div className="relative mt-12 block w-[calc(100%+3rem)] -mx-6 lg:hidden z-10">
             <div className="mask-edges-x w-full overflow-hidden pb-8 pt-2">
               <div className="flex w-max animate-scroll-left-fast gap-4 pl-6">
@@ -175,7 +177,6 @@ export default function Hero() {
         </motion.div>
 
         {/* --- DESKTOP RIGHT COLUMN: 2. SPATIAL UI 3D WALL --- */}
-        {/* 🌟 FIX: Only shows on lg (1024px+) to prevent squishing the text on iPads/tablets! */}
         <motion.div
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
