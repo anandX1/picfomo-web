@@ -43,7 +43,7 @@ export default function SignInPage() {
           {/* Actual Logo */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/logo.png"
+            src="/logo2.png"
             alt="PicFOMO"
             className="relative z-10 h-[24px] w-auto object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.15)]"
           />
@@ -56,7 +56,7 @@ export default function SignInPage() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-gold)]"></span>
           </span>
           <span className="font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[2px] text-[var(--color-ink2)]">
-            Initializing Secure Matrix...
+            Initializing Your Dashboard...
           </span>
         </div>
 

@@ -184,8 +184,8 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
 
       {/* 🌟 TABS: Adaptive background & hover states */}
       <div className="flex bg-[var(--color-cream)] p-1.5 rounded-xl w-full md:w-fit border border-[var(--rule)] shadow-sm">
-        <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink3)] hover:text-[var(--color-ink)]"}`}>Premium Styles</button>
-        <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink3)] hover:text-[var(--color-ink)]"}`}>Imagine (Fast)</button>
+        <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-white)] text-[var(--color-white)] shadow-[var(--shadow-sm)]" : "text-[var(--color-white)] hover:text-[var(--color-white)]"}`}>Premium Styles</button>
+        <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-white)] text-[var(--color-white)] shadow-[var(--shadow-sm)]" : "text-[var(--color-white)] hover:text-[var(--color-white)]"}`}>Imagine (Fast)</button>
       </div>
 
       {outputImage && !isModalOpen && (
@@ -217,9 +217,9 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                   <div className="absolute bottom-4 left-4 right-4 text-white">
                     <div className="font-[family-name:var(--display)] tracking-[0.5px] text-[16px] leading-tight flex items-center gap-2 drop-shadow-md">
                       {style.name}
-                      {style.badge && <span className="bg-white text-black text-[8px] font-sans px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">{style.badge}</span>}
+                      {style.badge && <span className="bg-black text-white text-[8px] font-sans px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">{style.badge}</span>}
                     </div>
-                    <div className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-[var(--color-gold)] mt-1.5 flex items-center gap-1 drop-shadow-md">
+                    <div className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-whitetems-center gap-1 drop-shadow-md">
                       <Zap size={10} className="fill-[var(--color-gold)]" /> {style.spark_cost} Sparks
                     </div>
                   </div>
@@ -261,7 +261,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
             {/* Modal Header */}
             {!isGenerating && !outputImage && (
               <div className="flex justify-between items-center p-6 border-b border-[var(--rule)] bg-[var(--color-cream)]">
-                <h2 className="font-[family-name:var(--display)] text-2xl flex items-center gap-3 text-[var(--color-ink)]">
+                <h2 className="font-[family-name:var(--display)] text-2xl flex items-center gap-3 text-white">
                   {selectedStyle.name}
                 </h2>
                 <button onClick={() => setIsModalOpen(false)} className="bg-[var(--color-white)] border border-[var(--rule)] p-2 rounded-full text-[var(--color-ink3)] hover:bg-[var(--color-cream2)] hover:text-[var(--color-ink)] transition-colors shadow-sm">
