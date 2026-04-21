@@ -182,10 +182,10 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
         </p>
       </div>
 
-      {/* 🌟 TABS: Adaptive background & hover states */}
+      {/* 🌟 TABS: Fixed Contrast Issue! Uses var(--color-ink) for text on active, var(--color-ink3) for inactive */}
       <div className="flex bg-[var(--color-cream)] p-1.5 rounded-xl w-full md:w-fit border border-[var(--rule)] shadow-sm">
-        <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-white)] text-[var(--color-white)] shadow-[var(--shadow-sm)]" : "text-[var(--color-white)] hover:text-[var(--color-white)]"}`}>Premium Styles</button>
-        <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-white)] text-[var(--color-white)] shadow-[var(--shadow-sm)]" : "text-[var(--color-white)] hover:text-[var(--color-white)]"}`}>Imagine (Fast)</button>
+        <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink3)] hover:text-[var(--color-ink)]"}`}>Premium Styles</button>
+        <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink3)] hover:text-[var(--color-ink)]"}`}>Imagine (Fast)</button>
       </div>
 
       {outputImage && !isModalOpen && (
@@ -214,13 +214,16 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                     <img src={style.mainImage} alt={style.name} className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <div className="font-[family-name:var(--display)] tracking-[0.5px] text-[16px] leading-tight flex items-center gap-2 drop-shadow-md">
+                  
+                  {/* 🌟 STYLE CARDS FIX: Hardcoded to text-white so it never turns black against the dark image gradients! */}
+                  <div className="absolute bottom-4 left-4 right-4 z-20">
+                    <div className="font-[family-name:var(--display)] tracking-[0.5px] text-[16px] leading-tight flex items-center gap-2 drop-shadow-md text-white">
                       {style.name}
-                      {style.badge && <span className="bg-black text-white text-[8px] font-sans px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">{style.badge}</span>}
+                      {style.badge && <span className="bg-white text-black text-[8px] font-sans px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">{style.badge}</span>}
                     </div>
-                    <div className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-whitetems-center gap-1 drop-shadow-md">
-                      <Zap size={10} className="fill-[var(--color-gold)]" /> {style.spark_cost} Sparks
+                    {/* 🌟 Fixed typo 'text-whitetems-center' to 'text-white flex items-center' */}
+                    <div className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-white flex items-center gap-1 drop-shadow-md mt-1.5">
+                      <Zap size={10} className="fill-[var(--color-gold)] text-[var(--color-gold)]" /> {style.spark_cost} Sparks
                     </div>
                   </div>
                 </div>
@@ -261,7 +264,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
             {/* Modal Header */}
             {!isGenerating && !outputImage && (
               <div className="flex justify-between items-center p-6 border-b border-[var(--rule)] bg-[var(--color-cream)]">
-                <h2 className="font-[family-name:var(--display)] text-2xl flex items-center gap-3 text-white">
+                <h2 className="font-[family-name:var(--display)] text-2xl flex items-center gap-3 text-[var(--color-ink)]">
                   {selectedStyle.name}
                 </h2>
                 <button onClick={() => setIsModalOpen(false)} className="bg-[var(--color-white)] border border-[var(--rule)] p-2 rounded-full text-[var(--color-ink3)] hover:bg-[var(--color-cream2)] hover:text-[var(--color-ink)] transition-colors shadow-sm">
