@@ -12,28 +12,26 @@ export async function claimDailyLogin() {
     const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
     // 1. Check if already claimed today
-    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
     const existingClaim = await db.prepare(
-      "SELECT id FROM task_completions WHERE user_id = ? AND task_key = 'daily_login' AND date(completed_at) = ?"
-    ).bind(userId, today).first();
+      "SELECT id FROM task_completions WHERE user_id = ? AND task_key = 'daily_login' AND date(completed_at) = date('now')"
+    ).bind(userId).first();
 
     if (existingClaim) return { success: false, message: "Already claimed today" };
 
-    // 2. Fetch user's current streak data
+    // 2. Fetch user's current streak data (🌟 FIX: Using your existing streak_days column!)
     const user = await db.prepare(
-      "SELECT login_streak, last_login_claim FROM users WHERE id = ?"
-    ).bind(userId).first<{ login_streak: number, last_login_claim: string }>();
+      "SELECT streak_days FROM users WHERE id = ?"
+    ).bind(userId).first<{ streak_days: number }>();
     
-    let currentStreak = user?.login_streak || 0;
-    const lastClaimDate = user?.last_login_claim;
+    let currentStreak = user?.streak_days || 0;
 
-    // 3. Calculate Streak Logic
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    // 3. Calculate Streak Logic (🌟 FIX: Checking task_completions for yesterday!)
+    const yesterdayClaim = await db.prepare(
+      "SELECT id FROM task_completions WHERE user_id = ? AND task_key = 'daily_login' AND date(completed_at) = date('now', '-1 day')"
+    ).bind(userId).first();
 
     // If they claimed exactly yesterday, the streak continues. Otherwise, it resets to 1.
-    if (lastClaimDate === yesterdayStr) {
+    if (yesterdayClaim) {
       currentStreak += 1;
     } else {
       currentStreak = 1;
@@ -56,8 +54,8 @@ export async function claimDailyLogin() {
     await db.batch([
       // Log Task Completion
       db.prepare("INSERT INTO task_completions (id, user_id, task_key) VALUES (?, ?, ?)").bind(taskId, userId, 'daily_login'),
-      // Update Wallet & Streak Memory
-      db.prepare("UPDATE users SET sparks_balance = sparks_balance + ?, login_streak = ?, last_login_claim = ? WHERE id = ?").bind(rewardAmount, currentStreak, today, userId),
+      // Update Wallet & Streak Memory using streak_days
+      db.prepare("UPDATE users SET sparks_balance = sparks_balance + ?, streak_days = ? WHERE id = ?").bind(rewardAmount, currentStreak, userId),
       // Add to Ledger
       db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(txId, userId, rewardAmount, isDay7 ? 'Day 7 Login Bonus' : 'Daily Login Drop')
     ]);

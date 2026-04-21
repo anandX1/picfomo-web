@@ -11,11 +11,11 @@ export default async function SparksHubPage() {
 
   const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
 
-  // 1. Fetch User Balance, Referral Code & UNCLAIMED SPARKS
+  // 1. Fetch User Balance, Referral Code, UNCLAIMED SPARKS, and STREAK
   const user = await db
-    .prepare("SELECT sparks_balance, referral_code, unclaimed_sparks, login_streak FROM users WHERE id = ?")
+    .prepare("SELECT sparks_balance, referral_code, unclaimed_sparks, streak_days FROM users WHERE id = ?")
     .bind(userId)
-    .first<{ sparks_balance: number, referral_code: string, unclaimed_sparks: number, login_streak: number }>();
+    .first<{ sparks_balance: number, referral_code: string, unclaimed_sparks: number, streak_days: number }>();
 
   // 2. Fetch Ledger
   const { results: transactions } = await db
@@ -60,7 +60,7 @@ export default async function SparksHubPage() {
     <SparksHubClient 
       balance={user?.sparks_balance || 0}
       unclaimedSparks={user?.unclaimed_sparks || 0} 
-      currentStreak={user?.login_streak || 0} // 🌟 Make sure this line is here!
+      currentStreak={user?.streak_days || 0} // 🌟 FIX: Wired up to use your existing streak_days column
       transactions={transactions}
       hasClaimedDaily={completedToday.length > 0}
       availableTasks={availableTasks as any[]}
