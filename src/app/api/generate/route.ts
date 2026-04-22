@@ -2,6 +2,11 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
+// 🌟 BULLETPROOF URL CONSTANTS (Prevents Markdown Link Copy-Paste Errors)
+const PIXAZO_SCHNELL_URL = "https://gateway.pixazo.ai/flux-1-schnell/v1/getData";
+const PIXAZO_FIRERED_URL = "https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request";
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+
 // === 1. GROQ SEO HELPER (Fortified & Cloudflare Safe) ===
 async function generateSEOData(prompt: string, apiKey: string) {
   if (!apiKey || apiKey === "undefined") {
@@ -18,7 +23,7 @@ async function generateSEOData(prompt: string, apiKey: string) {
       ? prompt.trim().slice(0, 500)
       : "A highly detailed, aesthetic AI image generation.";
 
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const res = await fetch(GROQ_API_URL, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
@@ -48,6 +53,7 @@ The JSON must have exactly these three keys:
     
     if (!res.ok) {
       const errorBody = await res.text();
+      console.error(`🚨 Groq 400 body: ${errorBody}`);
       throw new Error(`Groq ${res.status}: ${errorBody}`);
     }
 
@@ -56,6 +62,7 @@ The JSON must have exactly these three keys:
 
     if (!content) throw new Error("Empty Groq response");
 
+    // Strip markdown fences defensively
     content = content.trim()
       .replace(/^```json\s*/i, "")
       .replace(/^```\s*/i, "")
@@ -71,7 +78,7 @@ The JSON must have exactly these three keys:
     return parsed;
 
   } catch (error) {
-    console.error("Groq SEO Error (Using Safe Fallback):", error);
+    console.error("Groq SEO Error:", error);
     return { 
       title: "PicFOMO Generation", 
       description: "A stunning creation synthesized in the PicFOMO Studio.", 
@@ -98,7 +105,6 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
       return data.output.media_url[0];
     }
     
-    // 🌟 NSFW & SAFETY CATCH
     if (data.status === "FAILED" || data.status === "ERROR") {
       if (data.error?.toLowerCase().includes("nsfw") || data.error?.toLowerCase().includes("safety")) {
          throw new Error("NSFW_VIOLATION");
@@ -118,31 +124,32 @@ export async function POST(req: Request) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = (await req.json()) as any;
-    
+    // 🌟 We now extract customBgImage & targetImage safely
     const { prompt, model, styleId, sourceImage, customBgImage, targetImage } = body;
 
     const envCtx = ((await getCloudflareContext({ async: true })).env as any);
-    const db = envCtx.DB as D1Database;
+    const db = envCtx.DB as any;
     
     const PIXAZO_KEY = envCtx.PIXAZO_API_KEY || process.env.PIXAZO_API_KEY;
     const GROQ_KEY = (envCtx.GROQ_API_KEY as string | undefined) ?? process.env.GROQ_API_KEY;
 
     if (!GROQ_KEY) console.error("🚨 CRITICAL: GROQ_API_KEY is missing from Cloudflare environment!");
 
-    let sparkCost = 2; 
+    // --- A. GET PRICING & PROMPTS ---
+    let sparkCost = 2; // Default for Schnell
     let finalPrompt = prompt;
     let targetBackgroundUrl = customBgImage || null;
 
     if (model !== "schnell" && model !== "swap") {
       if (styleId === "custom") {
-         sparkCost = 15; 
+         sparkCost = 15; // Custom background generations cost more
          if (!customBgImage) throw new Error("Custom background image required.");
       } else {
          const styleRecord = await db.prepare("SELECT spark_cost, description, preview_image_url FROM styles WHERE id = ?").bind(styleId).first();
          if (!styleRecord) throw new Error("Style not found or inactive.");
          
          sparkCost = styleRecord.spark_cost as number;
-         targetBackgroundUrl = styleRecord.preview_image_url as string; 
+         targetBackgroundUrl = styleRecord.preview_image_url as string; // 🌟 Figure 2!
          
          finalPrompt = `Place the person from Figure 1 into the scene from Figure 2. Preserve the exact facial features, skin tone, and identity of the person from Figure 1. Match the lighting direction, color temperature, and atmosphere of Figure 2. Natural seamless blend, photorealistic, no compositing artifacts. Style details: ${styleRecord.description}`;
          
@@ -150,6 +157,7 @@ export async function POST(req: Request) {
       }
     }
 
+    // --- B. SECURE BILLING ---
     const userWallet = await db.prepare("SELECT sparks_balance FROM users WHERE id = ?").bind(userId).first();
     const currentBalance = (userWallet?.sparks_balance as number) || 0;
 
@@ -157,6 +165,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
     }
 
+    // DEDUCT SPARKS AND LOG TRANSACTION
     const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
     const txReason = styleId === 'custom' ? 'Custom Background Generation' : 'Generated Portrait';
     
@@ -166,12 +175,13 @@ export async function POST(req: Request) {
     ]);
 
     try {
+      // --- C. AI GENERATION & SEO ---
       let outputImageUrl = "";
       let seoData = { title: "", description: "", tags: "" };
 
       if (model === "schnell") {
         const [pixazoRes, groqRes] = await Promise.all([
-          fetch("[https://gateway.pixazo.ai/flux-1-schnell/v1/getData](https://gateway.pixazo.ai/flux-1-schnell/v1/getData)", {
+          fetch(PIXAZO_SCHNELL_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -189,6 +199,7 @@ export async function POST(req: Request) {
         seoData = groqRes;
 
       } else {
+        // 🌟 FIRE-RED COMPOSITING (Dual Image)
         if (!sourceImage) throw new Error("Source face image required.");
         
         let apiImageUrls = [sourceImage, targetBackgroundUrl];
@@ -201,7 +212,7 @@ export async function POST(req: Request) {
         }
 
         const [pixazoStartRes, groqRes] = await Promise.all([
-          fetch("[https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request](https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request)", {
+          fetch(PIXAZO_FIRERED_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -224,6 +235,7 @@ export async function POST(req: Request) {
         seoData = groqRes;
       }
 
+      // --- D. SAVE TO DATABASE ---
       const postId = `post_${Date.now()}`;
       await db.prepare(`
         INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, title, description, tags, is_public)
@@ -242,6 +254,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
 
     } catch (aiError: any) {
+      // REFUND SPARKS ON FAILURE
       const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
       await db.batch([
         db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId),
@@ -259,6 +272,6 @@ export async function POST(req: Request) {
 
   } catch (serverError: any) {
     console.error("Server API Error:", serverError);
-    return NextResponse.json({ error: serverError.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
