@@ -8,44 +8,50 @@ const PIXAZO_FIRERED_URL = "https://gateway.pixazo.ai/firered-image-edit-v1-1/v1
 const GROQ_API_URL       = "https://api.groq.com/openai/v1/chat/completions";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FIRERED 1.1 — MENTAL MODEL (do not change image order without reading this)
+// FIRERED 1.1 — WHAT ACTUALLY WORKS (learned from real benchmark tests)
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// FireRed is a VIRTUAL TRY-ON model, not a face-swap model.
-// It was trained to: take outfit/bg from a reference → apply to a base person.
+// KEY FINDING from Wiro lab test (real before/after):
+//   guidance_scale = 1.5  → outfit changed, face preserved ✓
+//   guidance_scale = 3.5+ → identity lock wins, nothing changes ✗
 //
-// ALWAYS:
-//   image_urls[0] = USER PHOTO    → Figure 1 — the canvas, the identity anchor
-//   image_urls[1] = STYLE IMAGE   → Figure 2 — pure reference: outfit + bg
+// WHY: FireRed has a differentiable consistency loss baked into training.
+//   At high CFG, the consistency loss fights the prompt → stalemate.
+//   At low CFG (1.5), the trained editing pathways activate naturally
+//   and make targeted changes without triggering the preservation fight.
 //
-// PROMPT RULES:
-//   - 3 sentences max. Short = better.
-//   - Name WHAT changes (outfit, background)
-//   - Name WHAT stays (face, beard, glasses — be specific)
-//   - Never say "redraw", "recreate", "generate" — those lose identity
+// PROMPT VERB MATTERS:
+//   "Change the outfit to..."   → signals REPLACEMENT ✓
+//   "Dress the person in..."    → signals ADDITION on top ✗
+//   "Dress using Figure 2..."   → ambiguous ✗
+//
+// IMAGE ORDER (never changes):
+//   image_urls[0] = USER PHOTO   → Figure 1 (canvas, identity)
+//   image_urls[1] = STYLE IMAGE  → Figure 2 (outfit + bg reference)
+//
+// PROMPT STRUCTURE (from official templates + working community examples):
+//   "Change the outfit in Figure 1 to match the clothing in Figure 2.
+//    Change the background to match Figure 2.
+//    Keep the face, glasses, skin tone, and hair in Figure 1 unchanged."
 //
 // PARAMS:
-//   guidance_scale = 3.5  →  face preserved strongly, outfit transfers softly
-//   num_inference_steps = 35  →  slightly more = cleaner blending
+//   guidance_scale:      1.5   ← proven working value (Wiro benchmark)
+//   num_inference_steps: 30    ← official default
 //
 // ─────────────────────────────────────────────────────────────────────────────
 
 
 // ── 1. R2 UPLOAD ─────────────────────────────────────────────────────────────
 async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
-  // Already an HTTPS URL (style images from DB) — pass through unchanged
-  if (!base64Str.startsWith("data:image")) return base64Str;
-
-  const accountId  = env.R2_ACCOUNT_ID        || process.env.R2_ACCOUNT_ID;
-  const accessKey  = env.R2_ACCESS_KEY_ID      || process.env.R2_ACCESS_KEY_ID;
-  const secretKey  = env.R2_SECRET_ACCESS_KEY  || process.env.R2_SECRET_ACCESS_KEY;
-  const bucketName = env.R2_BUCKET_NAME        || process.env.R2_BUCKET_NAME;
-  const publicUrl  = env.NEXT_PUBLIC_R2_URL    || process.env.NEXT_PUBLIC_R2_URL;
+  if (!base64Str.startsWith("data:image")) return base64Str; // already a URL
 
   const S3 = new S3Client({
     region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId: accessKey!, secretAccessKey: secretKey! },
+    endpoint: `https://${env.R2_ACCOUNT_ID || process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId:     env.R2_ACCESS_KEY_ID     || process.env.R2_ACCESS_KEY_ID!,
+      secretAccessKey: env.R2_SECRET_ACCESS_KEY || process.env.R2_SECRET_ACCESS_KEY!,
+    },
   });
 
   const [header, base64Data] = base64Str.split(",");
@@ -56,8 +62,13 @@ async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
   const key = `uploads/picfomo_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-  await S3.send(new PutObjectCommand({ Bucket: bucketName, Key: key, ContentType: mimeType, Body: bytes }));
-  return `${publicUrl}/${key}`;
+  await S3.send(new PutObjectCommand({
+    Bucket:      env.R2_BUCKET_NAME     || process.env.R2_BUCKET_NAME,
+    Key:         key,
+    ContentType: mimeType,
+    Body:        bytes,
+  }));
+  return `${env.NEXT_PUBLIC_R2_URL || process.env.NEXT_PUBLIC_R2_URL}/${key}`;
 }
 
 
@@ -83,23 +94,18 @@ async function generateSEOData(prompt: string, apiKey: string) {
             role: "system",
             content:
               "You are an SEO expert for an AI image gallery called PicFOMO. " +
-              "Respond ONLY with a raw JSON object — no markdown, no backticks, no explanation. " +
+              "Respond ONLY with a raw JSON object — no markdown, no backticks. " +
               'Keys: "title" (3-5 words), "description" (1-2 sentences), "tags" (5 comma-separated tags).',
           },
           { role: "user", content: `SEO metadata for: "${prompt.slice(0, 400)}"` },
         ],
       }),
     });
-
     if (!res.ok) throw new Error(`Groq ${res.status}`);
     const data    = (await res.json()) as any;
     let   content = data?.choices?.[0]?.message?.content ?? "";
-    content = content
-      .trim()
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
+    content = content.trim()
+      .replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
     const parsed = JSON.parse(content);
     if (!parsed.title || !parsed.description || !parsed.tags) throw new Error("bad shape");
     return parsed;
@@ -115,10 +121,7 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string): Promise<str
     await new Promise((r) => setTimeout(r, 5000));
     const res  = await fetch(pollingUrl, { headers: { "Ocp-Apim-Subscription-Key": apiKey } });
     const data = (await res.json()) as any;
-
-    if (data.status === "COMPLETED" && data.output?.media_url?.[0]) {
-      return data.output.media_url[0];
-    }
+    if (data.status === "COMPLETED" && data.output?.media_url?.[0]) return data.output.media_url[0];
     if (data.status === "FAILED" || data.status === "ERROR") {
       if ((data.error ?? "").toLowerCase().match(/nsfw|safety/)) throw new Error("NSFW_VIOLATION");
       throw new Error(`Pixazo failed: ${data.error || "unknown"}`);
@@ -130,62 +133,53 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string): Promise<str
 
 // ── 4. PROMPT BUILDERS ────────────────────────────────────────────────────────
 //
-// KEY LESSON from testing:
-//   The face drifted when guidance_scale was 4.5.
-//   Fix: guidance_scale back to 3.5 + more explicit face-lock in the prompt.
-//   Being specific ("beard", "glasses") locks those features better than
-//   generic words like "identity" or "features".
+// Rule: use "Change" not "Dress". "Change" = replace. "Dress" = add on top.
+// Rule: always explicitly list what to keep (face, glasses, skin, hair).
+// Rule: keep it short — 2-3 sentences max. Long prompts lose specificity.
 //
 
 // PREMIUM STYLE MODE
-// Fig 1 = user photo (canvas — never changes)
-// Fig 2 = style image (outfit + bg reference)
-function buildStylePrompt(styleDescription?: string, userExtra?: string): string {
+// Figure 1 = user photo | Figure 2 = style card image
+function buildStylePrompt(styleDesc?: string, userExtra?: string): string {
   let p =
-    "Dress the person in Figure 1 in the exact outfit and clothing shown in Figure 2, " +
-    "and change the background to match Figure 2. " +
-    "Do not change the face, eyes, nose, beard, glasses, hair, or skin tone of the person in Figure 1 — " +
-    "only the clothing and background should change.";
+    "Change the outfit in Figure 1 to match the clothing worn in Figure 2. " +
+    "Change the background to match Figure 2. " +
+    "Keep the face, eyes, nose, beard, glasses, hair, and skin tone from Figure 1 completely unchanged.";
 
-  if (styleDescription?.trim()) p += ` Style context: ${styleDescription.trim()}.`;
-  if (userExtra?.trim())        p += ` ${userExtra.trim()}`;
+  if (styleDesc?.trim()) p += ` Style: ${styleDesc.trim()}.`;
+  if (userExtra?.trim()) p += ` ${userExtra.trim()}`;
   return p;
 }
 
 // CUSTOM BACKGROUND MODE
-// Fig 1 = user photo (canvas — keep the whole person)
-// Fig 2 = scene / environment reference (only bg extracted)
+// Figure 1 = user photo | Figure 2 = scene image (bg reference only)
 function buildCustomBgPrompt(userExtra?: string): string {
   let p =
-    "Replace only the background behind the person in Figure 1 with the environment from Figure 2. " +
+    "Change the background in Figure 1 to the environment shown in Figure 2. " +
     "Keep the person in Figure 1 — their face, clothing, pose, and all features — completely unchanged. " +
-    "Adjust the lighting on the person to match the environment in Figure 2 naturally.";
+    "Adjust the lighting on the person naturally to fit the new background.";
 
   if (userExtra?.trim()) p += ` ${userExtra.trim()}`;
   return p;
 }
 
 // SWAP / COLLAB MODE
-// Fig 1 = user photo (identity anchor)
-// Fig 2 = target look (outfit + bg reference)
+// Figure 1 = user photo | Figure 2 = target look
 function buildSwapPrompt(userExtra?: string): string {
   let p =
-    "Dress the person in Figure 1 in the exact outfit worn in Figure 2, " +
-    "and change the background to match Figure 2. " +
-    "Do not change the face, eyes, nose, beard, glasses, hair, or skin tone of the person in Figure 1 — " +
-    "only the clothing and background should change.";
+    "Change the outfit in Figure 1 to match the clothing worn in Figure 2. " +
+    "Change the background to match Figure 2. " +
+    "Keep the face, eyes, nose, beard, glasses, hair, and skin tone from Figure 1 completely unchanged.";
 
   if (userExtra?.trim()) p += ` ${userExtra.trim()}`;
   return p;
 }
 
-// Universal negative prompt
-// Blocks: identity drift, second-person hallucination, clothing retention
+// Negative prompt: block identity drift + extra-person hallucination
 const NEGATIVE_PROMPT =
   "changed face, different person, wrong identity, altered nose, altered eyes, " +
-  "altered beard, removed glasses, different skin tone, " +
-  "two people, multiple people, second person visible, extra person in background, " +
-  "keeping original clothing, same outfit as input";
+  "altered beard, removed glasses, changed skin tone, " +
+  "two people, multiple people, second person in background, extra person";
 
 
 // ── 5. MAIN ROUTE ─────────────────────────────────────────────────────────────
@@ -202,54 +196,44 @@ export async function POST(req: Request) {
     const PIXAZO_KEY = envCtx.PIXAZO_API_KEY  || process.env.PIXAZO_API_KEY;
     const GROQ_KEY   = (envCtx.GROQ_API_KEY as string | undefined) ?? process.env.GROQ_API_KEY;
 
-    if (!GROQ_KEY) console.error("🚨 GROQ_API_KEY missing from environment");
-
+    if (!GROQ_KEY) console.error("🚨 GROQ_API_KEY missing");
 
     // ── BUILD PAYLOAD ────────────────────────────────────────────────────────
     let sparkCost    = 2;
     let finalPrompt  = prompt as string;
     let apiImageUrls: string[] = [];
 
-    // All FireRed modes use the same params — face lock needs guidance LOW
-    const FIRERED_STEPS    = 35;   // slightly more steps = cleaner result
-    const FIRERED_GUIDANCE = 3.5;  // LOW = identity preserved, style applied softly
-                                   // (4.5 caused face drift in previous test)
+    // THE critical params — guidance 1.5 proven to unlock outfit change
+    // while face preservation stays intact (Wiro benchmark, March 2026)
+    const FIRERED_GUIDANCE = 1.5;
+    const FIRERED_STEPS    = 30;
 
     if (model !== "schnell") {
       if (!sourceImage) throw new Error("Source face image is required.");
-
-      // Convert user's base64 photo to a public HTTPS URL Pixazo can fetch
       const userFaceUrl = await uploadBase64ToR2(sourceImage, envCtx);
 
       if (model === "swap") {
-        // ── SWAP / COLLAB ────────────────────────────────────────────────────
         if (!targetImage) throw new Error("Target image required for swap.");
-        const targetUrl = await uploadBase64ToR2(targetImage, envCtx);
-
-        apiImageUrls = [userFaceUrl, targetUrl]; // [Fig1=user, Fig2=target]
-        finalPrompt  = buildSwapPrompt(prompt);
+        const targetUrl  = await uploadBase64ToR2(targetImage, envCtx);
+        apiImageUrls     = [userFaceUrl, targetUrl];
+        finalPrompt      = buildSwapPrompt(prompt);
 
       } else if (styleId === "custom") {
-        // ── CUSTOM BACKGROUND ────────────────────────────────────────────────
         sparkCost = 15;
         if (!customBgImage) throw new Error("Custom background image required.");
-        const customBgUrl = await uploadBase64ToR2(customBgImage, envCtx);
-
-        apiImageUrls = [userFaceUrl, customBgUrl]; // [Fig1=user, Fig2=scene]
+        const bgUrl  = await uploadBase64ToR2(customBgImage, envCtx);
+        apiImageUrls = [userFaceUrl, bgUrl];
         finalPrompt  = buildCustomBgPrompt(prompt);
 
       } else {
-        // ── PREMIUM STYLE ────────────────────────────────────────────────────
         const styleRecord = await db
           .prepare("SELECT spark_cost, description, preview_image_url FROM styles WHERE id = ?")
           .bind(styleId)
           .first();
         if (!styleRecord) throw new Error("Style not found.");
 
-        sparkCost = styleRecord.spark_cost as number;
-        const styleImageUrl = styleRecord.preview_image_url as string; // Already HTTPS — no upload
-
-        apiImageUrls = [userFaceUrl, styleImageUrl]; // [Fig1=user, Fig2=style]
+        sparkCost    = styleRecord.spark_cost as number;
+        apiImageUrls = [userFaceUrl, styleRecord.preview_image_url as string];
         finalPrompt  = buildStylePrompt(
           styleRecord.description as string | undefined,
           prompt
@@ -257,28 +241,17 @@ export async function POST(req: Request) {
       }
     }
 
-
     // ── BILLING ──────────────────────────────────────────────────────────────
-    const wallet  = await db
-      .prepare("SELECT sparks_balance FROM users WHERE id = ?")
-      .bind(userId)
-      .first();
+    const wallet  = await db.prepare("SELECT sparks_balance FROM users WHERE id = ?").bind(userId).first();
     const balance = (wallet?.sparks_balance as number) || 0;
-
-    if (balance < sparkCost) {
-      return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
-    }
+    if (balance < sparkCost) return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
 
     const txId     = `tx_${Date.now()}_gen_${Math.random().toString(36).slice(2)}`;
     const txReason = styleId === "custom" ? "Custom Background Generation" : "Generated Portrait";
-
     await db.batch([
-      db.prepare("UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ?")
-        .bind(sparkCost, userId),
-      db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)")
-        .bind(txId, userId, -sparkCost, txReason),
+      db.prepare("UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ?").bind(sparkCost, userId),
+      db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(txId, userId, -sparkCost, txReason),
     ]);
-
 
     // ── GENERATION ───────────────────────────────────────────────────────────
     try {
@@ -286,40 +259,26 @@ export async function POST(req: Request) {
       let seoData        = { title: "", description: "", tags: "" };
 
       if (model === "schnell") {
-        // ── FLUX SCHNELL (text-to-image, no face) ───────────────────────────
         const [pixazoRes, groqRes] = await Promise.all([
           fetch(PIXAZO_SCHNELL_URL, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Ocp-Apim-Subscription-Key": PIXAZO_KEY,
-            },
-            body: JSON.stringify({
-              prompt:    finalPrompt,
-              num_steps: 4,
-              height:    1024,
-              width:     1024,
-            }),
+            headers: { "Content-Type": "application/json", "Ocp-Apim-Subscription-Key": PIXAZO_KEY },
+            body: JSON.stringify({ prompt: finalPrompt, num_steps: 4, height: 1024, width: 1024 }),
           }),
           generateSEOData(finalPrompt, GROQ_KEY ?? ""),
         ]);
-
         const pData = (await pixazoRes.json()) as any;
         if (!pixazoRes.ok) throw new Error(pData.error || "Schnell API failed");
         outputImageUrl = pData.output;
         seoData        = groqRes;
 
       } else {
-        // ── FIRERED 1.1 (outfit transfer + bg change) ────────────────────────
         if (apiImageUrls.length < 2) throw new Error("Missing images for generation.");
 
-        const [pixazoStartRes, groqRes] = await Promise.all([
+        const [startRes, groqRes] = await Promise.all([
           fetch(PIXAZO_FIRERED_URL, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Ocp-Apim-Subscription-Key": PIXAZO_KEY,
-            },
+            headers: { "Content-Type": "application/json", "Ocp-Apim-Subscription-Key": PIXAZO_KEY },
             body: JSON.stringify({
               prompt:              finalPrompt,
               negative_prompt:     NEGATIVE_PROMPT,
@@ -331,66 +290,38 @@ export async function POST(req: Request) {
           generateSEOData(finalPrompt, GROQ_KEY ?? ""),
         ]);
 
-        const startData = (await pixazoStartRes.json()) as any;
-        if (!pixazoStartRes.ok || !startData.polling_url) {
-          throw new Error(startData.error || "FireRed queue failed — no polling URL returned");
-        }
-
+        const startData = (await startRes.json()) as any;
+        if (!startRes.ok || !startData.polling_url) throw new Error(startData.error || "FireRed queue failed");
         outputImageUrl = await pollPixazoStatus(startData.polling_url, PIXAZO_KEY);
         seoData        = groqRes;
       }
 
-
-      // ── SAVE TO DB ────────────────────────────────────────────────────────
+      // ── SAVE ──────────────────────────────────────────────────────────────
       const postId = `post_${Date.now()}`;
       await db
         .prepare(
           "INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, title, description, tags, is_public) " +
           "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)"
         )
-        .bind(
-          postId,
-          userId,
-          outputImageUrl,
-          finalPrompt,
-          styleId || "schnell",
-          seoData.title,
-          seoData.description,
-          seoData.tags
-        )
+        .bind(postId, userId, outputImageUrl, finalPrompt, styleId || "schnell",
+              seoData.title, seoData.description, seoData.tags)
         .run();
 
       return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
 
     } catch (aiError: any) {
-      // Refund sparks on any AI failure
       const refundId = `tx_${Date.now()}_refund_${Math.random().toString(36).slice(2)}`;
       await db.batch([
-        db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?")
-          .bind(sparkCost, userId),
-        db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)")
-          .bind(refundId, userId, sparkCost, "Refund: Generation Failed"),
+        db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId),
+        db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(refundId, userId, sparkCost, "Refund: Generation Failed"),
       ]);
-
-      console.error("AI Pipeline Error (refunded):", aiError);
-
-      if (aiError.message === "NSFW_VIOLATION") {
-        return NextResponse.json(
-          { error: "Image rejected: violates safety guidelines. Sparks refunded." },
-          { status: 400 }
-        );
-      }
-      return NextResponse.json(
-        { error: aiError.message || "Generation failed. Sparks refunded." },
-        { status: 500 }
-      );
+      if (aiError.message === "NSFW_VIOLATION")
+        return NextResponse.json({ error: "Image rejected: violates safety guidelines. Sparks refunded." }, { status: 400 });
+      return NextResponse.json({ error: aiError.message || "Generation failed. Sparks refunded." }, { status: 500 });
     }
 
   } catch (serverError: any) {
     console.error("Server Error:", serverError);
-    return NextResponse.json(
-      { error: serverError.message || "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: serverError.message || "Internal Server Error" }, { status: 500 });
   }
 }
