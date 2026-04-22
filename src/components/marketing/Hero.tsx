@@ -21,8 +21,6 @@ const SCROLL_ITEMS = [...COMMUNITY_POSTS, ...COMMUNITY_POSTS];
 
 export default function Hero() {
   return (
-    // 🌟 FIX: Changed justify-center to lg:justify-center.
-    // This stops the flexbox from pushing the headline off the top of the screen on mobile!
     <section className="relative mx-auto max-w-[1280px] px-6 pt-28 pb-12 lg:px-10 lg:py-20 overflow-x-hidden min-h-[90vh] flex flex-col lg:justify-center">
       
       {/* 🌟 1. DYNAMIC AURORA BACKGROUND */}
@@ -105,12 +103,9 @@ export default function Hero() {
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_500px] xl:grid-cols-[1fr_600px] w-full relative z-10">
         
         {/* --- LEFT COLUMN: The Pitch (Centered on Mobile, Left on Desktop) --- */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center text-center lg:items-start lg:text-left w-full"
-        >
+        {/* 🌟 FIX: Removed framer-motion here to guarantee the text renders on mobile! */}
+        <div className="flex flex-col items-center text-center lg:items-start lg:text-left w-full animate-in fade-in slide-in-from-bottom-8 duration-700">
+          
           {/* Live Counter Eyebrow */}
           <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[var(--color-gold-border)] bg-[var(--color-gold-pale)] px-4 py-1.5 font-[family-name:var(--mono)] text-[10px] md:text-[11px] font-bold uppercase tracking-[3px] text-[var(--color-gold)] shadow-sm backdrop-blur-md transition-transform hover:scale-105">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-red)] animate-heartbeat"></span>
@@ -136,11 +131,11 @@ export default function Hero() {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5 w-full sm:w-auto">
+            {/* 🌟 FIX: Explicitly set background to Gold (#F59E0B) and text to Black so it never disappears! */}
             <Link
               href="/sign-up"
-              className="btn-magnetic flex w-full sm:w-auto items-center justify-center gap-2 bg-[var(--color-ink)] px-8 py-4 md:px-10 md:py-4.5 font-[family-name:var(--display)] text-[16px] md:text-[18px] tracking-[1.5px] text-[var(--color-white)] shadow-[var(--shadow-lg)] transition-all hover:-translate-y-1 hover:bg-[var(--color-gold)] hover:text-[var(--color-ink)] hover:shadow-[0_10px_40px_rgba(245,158,11,0.3)] rounded-[14px]"
+              className="btn-magnetic flex w-full sm:w-auto items-center justify-center gap-2 bg-[#F59E0B] px-8 py-4 md:px-10 md:py-4.5 font-[family-name:var(--display)] text-[16px] md:text-[18px] tracking-[1.5px] text-black shadow-[0_4px_24px_rgba(245,158,11,0.4)] transition-all hover:-translate-y-1 hover:bg-[#FCD34D] hover:shadow-[0_10px_40px_rgba(245,158,11,0.6)] rounded-[14px]"
             >
-              {/* 🌟 FIX: Wrapped the text in a relative z-10 span so the CSS animation sweep NEVER covers the text */}
               <span className="relative z-10 flex items-center gap-2">Create Free Portrait <span className="hidden sm:inline">→</span></span>
             </Link>
             
@@ -156,13 +151,8 @@ export default function Hero() {
           </div>
 
           {/* --- MOBILE ONLY: 3. CINEMATIC INFINITE MARQUEE --- */}
-          {/* Aligns with the grid breakpoints properly */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative mt-12 block w-[calc(100%+3rem)] -mx-6 lg:hidden z-10"
-          >
+          {/* 🌟 FIX: Removed framer-motion here too so it renders instantly below your CTA */}
+          <div className="relative mt-12 block w-[calc(100%+3rem)] -mx-6 lg:hidden z-10">
             <div className="mask-edges-x w-full overflow-hidden pb-8 pt-2">
               <div className="flex w-max animate-scroll-left gap-4 pl-4">
                 {SCROLL_ITEMS.map((post, idx) => (
@@ -172,17 +162,12 @@ export default function Hero() {
                 ))}
               </div>
             </div>
-          </motion.div>
+          </div>
 
-        </motion.div>
+        </div>
 
         {/* --- DESKTOP RIGHT COLUMN: 2. SPATIAL UI 3D WALL --- */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative hidden h-[700px] w-full lg:block perspective-container z-10"
-        >
+        <div className="relative hidden h-[700px] w-full lg:block perspective-container z-10 animate-in fade-in slide-in-from-right-8 duration-1000 ease-out fill-mode-both">
           {/* True Alpha Masks (Works perfectly in Dark Mode) */}
           <div className="mask-edges-y h-full w-full">
             <div className="grid h-full grid-cols-2 gap-5 wall-3d">
@@ -200,7 +185,7 @@ export default function Hero() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
     </section>
