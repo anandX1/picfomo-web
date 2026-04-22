@@ -124,7 +124,6 @@ export async function POST(req: Request) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = (await req.json()) as any;
-    // 🌟 We now extract customBgImage & targetImage safely
     const { prompt, model, styleId, sourceImage, customBgImage, targetImage } = body;
 
     const envCtx = ((await getCloudflareContext({ async: true })).env as any);
@@ -135,25 +134,42 @@ export async function POST(req: Request) {
 
     if (!GROQ_KEY) console.error("🚨 CRITICAL: GROQ_API_KEY is missing from Cloudflare environment!");
 
-    // --- A. GET PRICING & PROMPTS ---
+    // --- A. GET PRICING, LOGIC, & PROMPTS ---
     let sparkCost = 2; // Default for Schnell
     let finalPrompt = prompt;
-    let targetBackgroundUrl = customBgImage || null;
+    let apiImageUrls: string[] = [];
 
-    if (model !== "schnell" && model !== "swap") {
-      if (styleId === "custom") {
-         sparkCost = 15; // Custom background generations cost more
-         if (!customBgImage) throw new Error("Custom background image required.");
-      } else {
+    if (model !== "schnell") {
+      if (model === "swap") {
+        if (!targetImage || !sourceImage) throw new Error("Target and source images required for swap.");
+        apiImageUrls = [targetImage, sourceImage];
+        finalPrompt = prompt || "Replace the face in Figure 1 with the face from Figure 2. Preserve Figure 1's background and clothing.";
+      } 
+      else if (styleId === "custom") {
+         sparkCost = 15; 
+         if (!customBgImage || !sourceImage) throw new Error("Face and custom background image required.");
+         
+         // 🌟 CUSTOM MODE: Base = User Face (Fig 1), Reference = Custom Background (Fig 2)
+         apiImageUrls = [sourceImage, customBgImage];
+         
+         finalPrompt = `Replace the entire background of Figure 1 with the exact scene and environment from Figure 2. Preserve the person in Figure 1 exactly, keeping their clothing, face, and pose unchanged. Adjust lighting to blend naturally.`;
+         
+         if (prompt) finalPrompt += ` Additional details: ${prompt}`;
+      } 
+      else {
          const styleRecord = await db.prepare("SELECT spark_cost, description, preview_image_url FROM styles WHERE id = ?").bind(styleId).first();
          if (!styleRecord) throw new Error("Style not found or inactive.");
          
          sparkCost = styleRecord.spark_cost as number;
-         targetBackgroundUrl = styleRecord.preview_image_url as string; // 🌟 Figure 2!
+         if (!sourceImage) throw new Error("Source face image required.");
          
-         finalPrompt = `Place the person from Figure 1 into the scene from Figure 2. Preserve the exact facial features, skin tone, and identity of the person from Figure 1. Match the lighting direction, color temperature, and atmosphere of Figure 2. Natural seamless blend, photorealistic, no compositing artifacts. Style details: ${styleRecord.description}`;
+         // 🌟 PREMIUM STYLE FIX: Base = Style Image (Fig 1), Reference = User Face (Fig 2)
+         apiImageUrls = [styleRecord.preview_image_url as string, sourceImage];
          
-         if (prompt) finalPrompt += `. Additional user details: ${prompt}`;
+         finalPrompt = `Replace the face of the person in Figure 1 with the exact facial features and identity of the person in Figure 2. Strictly preserve the original background, clothing, posture, lighting, and artistic style of Figure 1. Ensure seamless skin tone matching. Do not alter the scene or outfit of Figure 1.`;
+         
+         if (styleRecord.description) finalPrompt += ` Context: ${styleRecord.description}.`;
+         if (prompt) finalPrompt += ` User details: ${prompt}`;
       }
     }
 
@@ -200,16 +216,7 @@ export async function POST(req: Request) {
 
       } else {
         // 🌟 FIRE-RED COMPOSITING (Dual Image)
-        if (!sourceImage) throw new Error("Source face image required.");
-        
-        let apiImageUrls = [sourceImage, targetBackgroundUrl];
-        
-        if (model === "swap") {
-          if (!targetImage) throw new Error("Target image is missing for Collab Swap!");
-          apiImageUrls = [targetImage, sourceImage]; 
-        } else if (!targetBackgroundUrl) {
-          throw new Error("Target background required for this style.");
-        }
+        if (!apiImageUrls || apiImageUrls.length < 2) throw new Error("Missing required images for compositing.");
 
         const [pixazoStartRes, groqRes] = await Promise.all([
           fetch(PIXAZO_FIRERED_URL, {
