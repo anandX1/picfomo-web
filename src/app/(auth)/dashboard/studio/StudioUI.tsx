@@ -1,82 +1,109 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Script from "next/script"; 
 import { compressAndUploadImage } from "@/lib/uploadImage";
-import { Sparkles, Image as ImageIcon, CheckCircle2, Download, Share, Link as LinkIcon, X, Zap, Loader2 } from "lucide-react";
+import { Sparkles, Image as ImageIcon, CheckCircle2, Download, Share, Link as LinkIcon, X, Zap, Loader2, ChevronLeft, ScanFace, ImagePlus } from "lucide-react";
+import Image from "next/image";
 
 const NSFW_WORDS = ["nude", "naked", "nsfw", "porn", "blood", "gore", "explicit", "violence"];
 
+// Custom Style Object injected into the grid
+const CUSTOM_STYLE = {
+  id: "custom",
+  name: "Custom Universe",
+  description: "Upload any background scene and we will blend you into it.",
+  spark_cost: 15,
+  badge: "PRO",
+  mainImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/picfomo_custom_bg.jpg", // Add a cool placeholder image to your R2 bucket for this!
+};
+
 export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
+  // Combine custom card with DB styles
+  const allStyles = [CUSTOM_STYLE, ...dynamicStyles];
+
+  // --- APP STATE ---
   const [activeTab, setActiveTab] = useState<"styles" | "imagine">("styles");
+  const [view, setView] = useState<"grid" | "upload" | "generating" | "result">("grid");
+  const [selectedStyle, setSelectedStyle] = useState<any>(null);
   
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedStyle, setSelectedStyle] = useState(dynamicStyles[0] || null);
-  
-  // Form State
+  // --- FORM STATE ---
   const [prompt, setPrompt] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null); // The Face
+  const [customBgFile, setCustomBgFile] = useState<File | null>(null); // The Target Background (for Custom)
   
-  // Loading & Output States
-  const [isUploading, setIsUploading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  // --- GENERATION STATE ---
   const [progress, setProgress] = useState(0); 
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [outputPostId, setOutputPostId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sourcePreviewUrl, setSourcePreviewUrl] = useState<string | null>(null);
+
+  // Before/After Slider State for Result View
+  const [sliderPos, setSliderPos] = useState(50);
+  const sliderContainerRef = useRef<HTMLDivElement>(null);
 
   // 🌟 PROGRESS BAR LOGIC
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isGenerating) {
+    if (view === "generating") {
       setProgress(10);
       interval = setInterval(() => {
         setProgress((prev) => {
-          if (prev >= 85) return prev; 
-          return prev + Math.floor(Math.random() * 5) + 2; 
+          if (prev >= 90) return prev; 
+          return prev + Math.floor(Math.random() * 4) + 1; 
         });
-      }, 1000);
+      }, 800);
     } else {
       setProgress(0);
     }
     return () => clearInterval(interval);
-  }, [isGenerating]);
+  }, [view]);
 
-  const containsNSFW = (text: string) => {
-    return NSFW_WORDS.some(word => text.toLowerCase().includes(word));
-  };
+  const containsNSFW = (text: string) => NSFW_WORDS.some(word => text.toLowerCase().includes(word));
 
-  const openStyleModal = (style: any) => {
+  const openUploadView = (style: any) => {
     setSelectedStyle(style);
     setFile(null); 
+    setCustomBgFile(null);
     setError(null);
-    setIsModalOpen(true);
+    setView("upload");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleGenerate = async () => {
     setError(null);
-    setOutputImage(null);
-    setOutputPostId(null);
 
     if (!prompt && activeTab === "imagine") return setError("Please enter a prompt.");
     if (prompt && containsNSFW(prompt)) return setError("⚠️ Prompt rejected: Violates safety guidelines.");
-    if (activeTab === "styles" && !file) return setError("Please upload your photo.");
+    if (activeTab === "styles" && !file) return setError("Please upload your face photo.");
+    if (activeTab === "styles" && selectedStyle?.id === "custom" && !customBgFile) return setError("Please upload a target background image.");
 
     try {
-      let uploadedImageUrl = "";
+      setView("generating");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
+      let uploadedFaceUrl = "";
+      let uploadedBgUrl = "";
+
+      // 1. Upload Images to R2
       if (activeTab === "styles" && file) {
-        setIsUploading(true);
-        uploadedImageUrl = await compressAndUploadImage(file);
-        setIsUploading(false);
+        setSourcePreviewUrl(URL.createObjectURL(file)); // Save for before/after slider
+        uploadedFaceUrl = await compressAndUploadImage(file);
+      }
+      if (activeTab === "styles" && selectedStyle?.id === "custom" && customBgFile) {
+        uploadedBgUrl = await compressAndUploadImage(customBgFile);
       }
 
-      setIsGenerating(true);
-      
+      // 2. Call our new robust backend
       const payload = activeTab === "imagine" 
         ? { prompt, model: "schnell" } 
-        : { prompt, styleId: selectedStyle.id, sourceImage: uploadedImageUrl };
+        : { 
+            prompt, 
+            styleId: selectedStyle.id, 
+            sourceImage: uploadedFaceUrl,
+            customBgImage: uploadedBgUrl || undefined
+          };
 
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -93,19 +120,18 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
         setTimeout(() => {
           setOutputImage(data.output!);
           setOutputPostId(data.post_id || "picfomo_viral");
-          setIsGenerating(false);
-          if (activeTab === "imagine") setIsModalOpen(false); 
-        }, 500);
+          setView("result");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 800);
       }
 
     } catch (err: any) {
       setError(err.message);
-      setIsUploading(false);
-      setIsGenerating(false);
+      setView("upload"); // Kick them back to the upload screen so they can try again
     }
   };
 
-  // 🚀 VIRAL LOOP 1: WATERMARK DOWNLOAD LOGIC
+  // --- VIRAL LOOPS ---
   const handleDownload = async () => {
     if (!outputImage) return;
     try {
@@ -138,227 +164,309 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
         URL.revokeObjectURL(imgUrl);
       };
     } catch (error) {
-      console.error("Download failed", error);
       alert("Failed to download image. Try right-clicking and saving.");
     }
   };
 
-  // 🚀 VIRAL LOOP 2: NATIVE MOBILE SHARE
   const handleShare = async () => {
     const postUrl = `${window.location.origin}/post/${outputPostId}`;
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "My PicFOMO Creation",
-          text: "Check out what I generated on PicFOMO!",
-          url: postUrl,
-        });
-      } catch (err) {
-        console.log("Share cancelled", err);
-      }
+      try { await navigator.share({ title: "My PicFOMO Creation", url: postUrl }); } catch (err) {}
     } else {
       navigator.clipboard.writeText(postUrl);
       alert("Link copied to clipboard! Share it anywhere.");
     }
   };
 
-  // 🚀 VIRAL LOOP 3: COLLAB LINK
-  const handleCollab = () => {
-    const collabUrl = `${window.location.origin}/explore?remix=${outputPostId}`;
-    navigator.clipboard.writeText(collabUrl);
-    alert("Collab link copied! Send it to a friend to remix your style.");
+  const handleSliderMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!sliderContainerRef.current) return;
+    const rect = sliderContainerRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    setSliderPos((x / rect.width) * 100);
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 pb-20 px-4 mt-6 text-[var(--color-ink)]">
+    <div className="max-w-6xl mx-auto animate-in fade-in duration-500 pb-20 px-4 mt-6 text-[var(--color-ink)] min-h-[80vh]">
       
-      {/* 🌟 HEADER: Fully adaptive typography */}
-      <div className="text-center md:text-left">
-        <h1 className="text-4xl font-[family-name:var(--display)] flex items-center justify-center md:justify-start gap-3">
-          <Sparkles className="text-[var(--color-gold)]" size={32} /> The Studio
-        </h1>
-        <p className="text-[var(--color-ink3)] mt-2 font-[family-name:var(--mono)] text-[11px] uppercase tracking-[2px]">
-          Bring your imagination to reality.
-        </p>
-      </div>
+      {/* =========================================================================
+          VIEW 1: THE GRID (Selection)
+          ========================================================================= */}
+      {view === "grid" && (
+        <div className="animate-in fade-in slide-in-from-bottom-4">
+          <div className="text-center md:text-left mb-6">
+            <h1 className="text-4xl font-[family-name:var(--display)] flex items-center justify-center md:justify-start gap-3 tracking-tight">
+              <Sparkles className="text-[var(--color-gold)]" size={32} /> The Studio
+            </h1>
+            <p className="text-[var(--color-ink3)] mt-2 font-[family-name:var(--mono)] text-[11px] uppercase tracking-[2px] font-bold">
+              Bring your imagination to reality.
+            </p>
+          </div>
 
-      {/* 🌟 TABS: Fixed Contrast Issue! Uses var(--color-ink) with opacity for perfectly readable inactive states */}
-      <div className="flex bg-[var(--color-cream)] p-1.5 rounded-xl w-full md:w-fit border border-[var(--rule)] shadow-sm">
-        <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>Premium Styles</button>
-        <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>Imagine (Fast)</button>
-      </div>
+          <div className="flex bg-[var(--color-cream)] p-1.5 rounded-xl w-full md:w-fit border border-[var(--rule)] shadow-sm mb-8">
+            <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>Premium Styles</button>
+            <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>Imagine (Fast)</button>
+          </div>
 
-      {outputImage && !isModalOpen && (
-        <div className="w-full aspect-square md:aspect-video relative rounded-3xl overflow-hidden shadow-[var(--shadow-lg)] border border-[var(--rule)] bg-[var(--color-cream)]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={outputImage} alt="Result" className="absolute inset-0 h-full w-full object-contain" />
-          
-          <button onClick={() => setOutputImage(null)} className="absolute top-4 right-4 bg-[var(--color-white)]/80 backdrop-blur-md px-4 py-2 rounded-full text-[11px] uppercase tracking-widest font-bold text-[var(--color-ink)] shadow-sm hover:bg-[var(--color-white)] flex items-center gap-2 transition-colors">
-            <X size={14} /> Clear Result
-          </button>
-        </div>
-      )}
-
-      {activeTab === "styles" && (
-        <>
-          {dynamicStyles.length === 0 ? (
-            <div className="text-center p-12 border-2 border-dashed border-[var(--rule)] rounded-3xl text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[12px] uppercase tracking-widest">
-              No premium styles available right now. Check back soon!
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in slide-in-from-left-4">
-              {dynamicStyles.map((style) => (
-                <div key={style.id} onClick={() => openStyleModal(style)} className="group cursor-pointer relative aspect-[4/5] rounded-[20px] overflow-hidden shadow-[var(--shadow-sm)] border border-[var(--rule)] hover:shadow-[var(--shadow-md)] hover:border-[var(--color-gold-border)] transition-all duration-300 active:scale-95 bg-[var(--color-cream2)]">
-                  {style.mainImage && (
+          {activeTab === "styles" ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {allStyles.map((style) => (
+                <div key={style.id} onClick={() => openUploadView(style)} className={`group cursor-pointer relative aspect-[4/5] rounded-[24px] overflow-hidden shadow-sm border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-[var(--color-cream2)] ${style.id === 'custom' ? 'border-[var(--color-gold)] shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'border-[var(--rule)] hover:border-[var(--color-gold-border)]'}`}>
+                  {style.mainImage ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={style.mainImage} alt={style.name} className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-black flex items-center justify-center">
+                      <ImagePlus size={48} className="text-gray-600" />
+                    </div>
                   )}
+                  
                   <div className="absolute inset-0 bg-gradient-to-t from-[#000000]/90 via-[#000000]/20 to-transparent"></div>
                   
-                  {/* 🌟 STYLE CARDS FIX: Uses absolute hex #FFFFFF so it NEVER maps to the Dark Mode black background! */}
-                  <div className="absolute bottom-4 left-4 right-4 z-20">
-                    <div className="font-[family-name:var(--display)] tracking-[0.5px] text-[16px] leading-tight flex items-center gap-2 drop-shadow-md text-[#FFFFFF]">
+                  <div className="absolute bottom-5 left-5 right-5 z-20">
+                    <div className="font-[family-name:var(--display)] tracking-[0.5px] text-[18px] md:text-[22px] leading-tight flex flex-wrap items-center gap-2 drop-shadow-md text-[#FFFFFF]">
                       {style.name}
-                      {style.badge && <span className="bg-[#FFFFFF] text-[#000000] text-[8px] font-sans px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">{style.badge}</span>}
+                      {style.badge && <span className={`text-[9px] font-sans px-1.5 py-0.5 rounded font-bold tracking-widest uppercase ${style.id === 'custom' ? 'bg-[var(--color-gold)] text-black' : 'bg-[#FFFFFF] text-[#000000]'}`}>{style.badge}</span>}
                     </div>
-                    <div className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-[#FFFFFF] flex items-center gap-1 drop-shadow-md mt-1.5">
-                      <Zap size={10} className="fill-[var(--color-gold)] text-[var(--color-gold)]" /> {style.spark_cost} Sparks
+                    <div className="text-[11px] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-[#FFFFFF] flex items-center gap-1 drop-shadow-md mt-2 opacity-90">
+                      <Zap size={12} className="fill-[var(--color-gold)] text-[var(--color-gold)]" /> {style.spark_cost} Sparks
                     </div>
                   </div>
                 </div>
               ))}
             </div>
+          ) : (
+            <div className="max-w-2xl border border-[var(--rule)] bg-[var(--color-white)] p-6 rounded-3xl shadow-sm">
+               <div className="flex justify-between items-center mb-4">
+                  <label className="text-[12px] font-[family-name:var(--mono)] font-bold text-[var(--color-ink)] uppercase tracking-wider">Describe your vision</label>
+                  <span className="bg-green-500/10 text-green-600 text-[10px] px-2 py-1 rounded-md font-bold uppercase tracking-wider flex items-center gap-1"><CheckCircle2 size={12} /> NSFW Protected</span>
+                </div>
+                <textarea placeholder="A sleek futuristic car racing through neon streets..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] rounded-xl p-4 text-[var(--color-ink)] focus:outline-none focus:border-[var(--color-gold-border)] resize-none h-32 text-[15px] leading-relaxed shadow-inner" />
+                <button onClick={handleGenerate} className="mt-4 w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] text-[16px] py-4 rounded-xl hover:bg-[var(--color-gold)] hover:text-black transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2">
+                  <Sparkles size={18} /> GENERATE (2 SPARKS)
+                </button>
+            </div>
           )}
-        </>
+        </div>
       )}
 
-      {activeTab === "imagine" && (
-        <div className="space-y-4 animate-in slide-in-from-right-4 max-w-2xl">
-          <div className="bg-[var(--color-white)] border border-[var(--rule)] p-5 rounded-2xl shadow-[var(--shadow-sm)] transition-colors focus-within:border-[var(--color-gold-border)]">
-            <div className="flex justify-between items-center mb-3">
-              <label className="text-[11px] font-[family-name:var(--mono)] font-bold text-[var(--color-ink2)] uppercase tracking-wider">Prompt</label>
-              <span className="bg-green-500/10 text-green-600 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-1"><CheckCircle2 size={10} /> NSFW Protected</span>
-            </div>
-            <textarea placeholder="A sleek futuristic car racing through neon streets..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-transparent text-[var(--color-ink)] placeholder-[var(--color-ink3)] focus:outline-none resize-none h-24 text-sm md:text-[15px] leading-relaxed" />
-          </div>
-          
-          {error && <div className="text-red-500 text-xs font-[family-name:var(--mono)] uppercase tracking-widest font-bold text-center">{error}</div>}
+      {/* =========================================================================
+          VIEW 2: THE UPLOAD & CONFIGURE SCREEN (Full Screen Takeover)
+          ========================================================================= */}
+      {view === "upload" && selectedStyle && (
+        <div className="animate-in slide-in-from-right-8 duration-500 max-w-5xl mx-auto">
+          <button onClick={() => setView("grid")} className="mb-6 flex items-center gap-2 text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-ink)] transition-colors w-fit">
+            <ChevronLeft size={16} /> Back to Styles
+          </button>
 
-          <div>
-            <button onClick={handleGenerate} disabled={isGenerating} className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] text-[16px] py-4 rounded-xl hover:bg-[var(--color-gold)] hover:text-black transition-all disabled:opacity-50 active:scale-[0.98] shadow-[var(--shadow-md)] flex items-center justify-center gap-2">
-              {isGenerating ? <><Loader2 size={18} className="animate-spin" /> SYNTHESIZING...</> : <><Sparkles size={18} /> GENERATE (2 SPARKS)</>}
-            </button>
-            <p className="text-center text-[10px] text-[var(--color-ink3)] mt-3 font-medium">
-              By generating, you accept our Terms & Conditions. AI generations are completely private and auto-deleted.
-            </p>
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left: Style Info & Preview */}
+            <div className="w-full lg:w-1/3 flex flex-col gap-4">
+              <div className="relative aspect-[4/5] rounded-[24px] overflow-hidden shadow-lg border border-[var(--rule)] bg-[var(--color-cream2)]">
+                {selectedStyle.mainImage && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={selectedStyle.mainImage} alt={selectedStyle.name} className="absolute inset-0 w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6 text-white">
+                  <h2 className="font-[family-name:var(--display)] text-3xl tracking-wide mb-1">{selectedStyle.name}</h2>
+                  <p className="text-xs text-white/70 font-medium leading-relaxed">{selectedStyle.description}</p>
+                </div>
+              </div>
+              <div className="bg-[var(--color-cream)] border border-[var(--rule)] p-5 rounded-2xl flex items-center justify-between">
+                <span className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-widest text-[var(--color-ink2)]">Generation Cost</span>
+                <span className="font-[family-name:var(--display)] text-2xl flex items-center gap-1.5 text-[var(--color-ink)]"><Zap size={20} className="text-[var(--color-gold)] fill-[var(--color-gold)]" /> {selectedStyle.spark_cost}</span>
+              </div>
+            </div>
+
+            {/* Right: Upload Zones */}
+            <div className="w-full lg:w-2/3 flex flex-col gap-6">
+              
+              {/* FACE UPLOAD (Always Required) */}
+              <div className="bg-[var(--color-white)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm">
+                <h3 className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-4 flex items-center gap-2">
+                  <ScanFace className="text-[var(--color-gold)]" size={18} /> 1. Upload Your Face
+                </h3>
+                <div className={`relative border-2 border-dashed rounded-[20px] p-10 text-center transition-all cursor-pointer overflow-hidden ${file ? 'border-[var(--color-gold)] bg-[var(--color-gold-pale)]' : 'border-[var(--rule)] bg-[var(--color-cream)] hover:bg-[var(--color-cream2)]'}`}>
+                  <input type="file" accept="image/jpeg, image/png, image/webp" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                  <div className="flex flex-col items-center justify-center relative z-0">
+                    {file ? (
+                       <>
+                         <CheckCircle2 size={48} className="text-[var(--color-gold)] mb-4" />
+                         <h4 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)]">{file.name}</h4>
+                         <p className="text-[var(--color-ink3)] font-bold text-[11px] mt-2 uppercase tracking-widest">Tap to replace</p>
+                       </>
+                    ) : (
+                       <>
+                         <div className="bg-[var(--color-white)] p-4 rounded-full shadow-sm mb-4 border border-[var(--rule)]"><ImageIcon size={32} className="text-[var(--color-ink3)]" /></div>
+                         <h4 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)]">Select clear selfie</h4>
+                         <p className="text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[10px] mt-2 uppercase tracking-[2px] font-bold">Good lighting • No sunglasses • JPEG/PNG</p>
+                       </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* CUSTOM BACKGROUND UPLOAD (Only for Custom Style) */}
+              {selectedStyle.id === "custom" && (
+                <div className="bg-[var(--color-white)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm animate-in slide-in-from-top-4">
+                  <h3 className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-4 flex items-center gap-2">
+                    <ImagePlus className="text-[var(--color-gold)]" size={18} /> 2. Target Background
+                  </h3>
+                  <div className={`relative border-2 border-dashed rounded-[20px] p-8 text-center transition-all cursor-pointer overflow-hidden ${customBgFile ? 'border-[var(--color-gold)] bg-[var(--color-gold-pale)]' : 'border-[var(--rule)] bg-[var(--color-cream)] hover:bg-[var(--color-cream2)]'}`}>
+                    <input type="file" accept="image/jpeg, image/png, image/webp" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={(e) => setCustomBgFile(e.target.files?.[0] || null)} />
+                    <div className="flex flex-col items-center justify-center relative z-0">
+                      {customBgFile ? (
+                         <>
+                           <CheckCircle2 size={40} className="text-[var(--color-gold)] mb-3" />
+                           <h4 className="font-[family-name:var(--display)] text-xl text-[var(--color-ink)]">{customBgFile.name}</h4>
+                         </>
+                      ) : (
+                         <>
+                           <ImageIcon size={32} className="text-[var(--color-ink3)] mb-3" />
+                           <h4 className="font-[family-name:var(--display)] text-xl text-[var(--color-ink)]">Upload World / Scene</h4>
+                           <p className="text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[10px] mt-2 uppercase tracking-[2px] font-bold">The environment you want to be in.</p>
+                         </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* PROMPT OVERRIDE */}
+              <div className="bg-[var(--color-white)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm">
+                <label className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-3 flex items-center justify-between">
+                  Additional Details <span className="text-[9px] text-[var(--color-ink3)] tracking-widest">(Optional)</span>
+                </label>
+                <input type="text" placeholder="e.g., wearing a red leather jacket..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] rounded-xl p-4 text-[14px] focus:outline-none focus:border-[var(--color-gold-border)] transition-colors shadow-inner" />
+              </div>
+
+              {error && <div className="text-red-500 font-[family-name:var(--mono)] text-[11px] uppercase tracking-widest font-bold text-center bg-red-500/10 p-4 rounded-xl border border-red-500/20">{error}</div>}
+
+              <button 
+                onClick={handleGenerate} 
+                disabled={!file || (selectedStyle.id === "custom" && !customBgFile)} 
+                className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] text-[18px] py-5 rounded-2xl hover:bg-[var(--color-gold)] hover:text-black transition-all disabled:opacity-50 disabled:hover:bg-[var(--color-ink)] disabled:hover:text-[var(--color-white)] shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 mt-4"
+              >
+                <Sparkles size={20} /> INITIALIZE SYNTHESIS
+              </button>
+
+            </div>
           </div>
         </div>
       )}
 
-      {/* 🌟 THE DYNAMIC MODAL 🌟 */}
-      {isModalOpen && selectedStyle && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in">
-          <div className="bg-[var(--color-white)] w-full md:max-w-lg rounded-t-[32px] md:rounded-[32px] shadow-[var(--shadow-2xl)] overflow-hidden flex flex-col max-h-[90vh] relative border border-[var(--rule)]">
+      {/* =========================================================================
+          VIEW 3: GENERATING (The Immersive Ad Lounge)
+          ========================================================================= */}
+      {view === "generating" && (
+        <div className="animate-in zoom-in-95 duration-700 min-h-[70vh] flex flex-col items-center justify-center relative">
+          
+          <div className="absolute inset-0 bg-[var(--color-cream)] rounded-[40px] border border-[var(--rule)] shadow-2xl overflow-hidden flex flex-col md:flex-row">
             
-            {/* Modal Header */}
-            {!isGenerating && !outputImage && (
-              <div className="flex justify-between items-center p-6 border-b border-[var(--rule)] bg-[var(--color-cream)]">
-                <h2 className="font-[family-name:var(--display)] text-2xl flex items-center gap-3 text-[var(--color-ink)]">
-                  {selectedStyle.name}
-                </h2>
-                <button onClick={() => setIsModalOpen(false)} className="bg-[var(--color-white)] border border-[var(--rule)] p-2 rounded-full text-[var(--color-ink3)] hover:bg-[var(--color-cream2)] hover:text-[var(--color-ink)] transition-colors shadow-sm">
-                  <X size={18} />
+            {/* Left: The Matrix Loader */}
+            <div className="w-full md:w-1/2 p-10 md:p-16 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-[var(--rule)] bg-[var(--color-white)] relative">
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+              
+              <div className="relative flex items-center justify-center mb-10 z-10">
+                <div className="absolute inset-0 bg-[var(--color-gold)] opacity-20 blur-2xl rounded-full animate-pulse h-32 w-32 -ml-8 -mt-8"></div>
+                <div className="h-20 w-20 bg-black rounded-3xl border border-gray-800 shadow-2xl flex items-center justify-center rotate-3 animate-[spin_6s_linear_infinite_reverse]">
+                  <Zap size={32} className="text-[var(--color-gold)] fill-[var(--color-gold)]" />
+                </div>
+              </div>
+              
+              <h2 className="font-[family-name:var(--display)] text-4xl tracking-tight text-[var(--color-ink)] mb-6 relative z-10">Synthesizing...</h2>
+              
+              <div className="w-full max-w-xs bg-[var(--color-cream2)] rounded-full h-3 overflow-hidden relative shadow-inner z-10">
+                <div className="bg-[var(--color-gold)] h-full transition-all duration-700 ease-out relative" style={{ width: `${progress}%` }}>
+                  <div className="absolute top-0 right-0 bottom-0 w-10 bg-gradient-to-r from-transparent to-white/50"></div>
+                </div>
+              </div>
+              <p className="font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[3px] text-[var(--color-ink3)] mt-4 relative z-10">{progress}% Complete</p>
+            </div>
+
+            {/* Right: The Ad Lounge */}
+            <div className="w-full md:w-1/2 bg-[var(--color-cream2)] p-6 md:p-10 flex flex-col items-center justify-center relative">
+              <h3 className="font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[3px] text-[var(--color-ink3)] mb-6">Discover (Sponsored)</h3>
+              
+              {/* Native Ad Container */}
+              <div className="w-full max-w-sm aspect-video md:aspect-[4/3] bg-white rounded-2xl border border-[var(--rule)] shadow-sm overflow-hidden flex items-center justify-center">
+                 <div id="container-b39280394b30c04b29a8908fb4b0bd64" className="scale-90"></div>
+                 <Script id="adsterra-native-lounge" src="https://pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" strategy="afterInteractive" data-cfasync="false" async />
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          VIEW 4: RESULT (Before & After Cinematic Display)
+          ========================================================================= */}
+      {view === "result" && outputImage && (
+        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto flex flex-col items-center">
+          
+          <div className="w-full flex justify-between items-center mb-6 px-2">
+            <button onClick={() => setView("grid")} className="flex items-center gap-2 text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-ink)] transition-colors">
+              <ChevronLeft size={16} /> Studio Home
+            </button>
+            <div className="flex items-center gap-2 bg-green-500/10 text-green-600 px-3 py-1.5 rounded-full border border-green-500/20 font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-widest">
+              <CheckCircle2 size={14} /> Saved to Vault
+            </div>
+          </div>
+
+          <div className="w-full bg-[var(--color-white)] rounded-[32px] md:rounded-[40px] p-4 md:p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)] flex flex-col md:flex-row gap-8 items-center">
+            
+            {/* Left: The Before/After Slider */}
+            <div className="w-full md:w-1/2 aspect-[4/5] relative rounded-[24px] overflow-hidden shadow-inner border border-[var(--rule)] bg-black touch-none"
+                 ref={sliderContainerRef}
+                 onPointerMove={handleSliderMove}
+            >
+              {/* After Image (Background) */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={outputImage} alt="Synthesized Output" className="absolute inset-0 w-full h-full object-cover" />
+              
+              {/* Before Image (Foreground, Clipped) */}
+              <div className="absolute inset-0 w-full h-full border-r-2 border-white/50" style={{ clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` }}>
+                {sourcePreviewUrl && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={sourcePreviewUrl} alt="Original Input" className="absolute inset-0 w-full h-full object-cover filter blur-[2px]" />
+                )}
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="absolute top-4 left-4 bg-black/60 text-white text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest px-2.5 py-1 rounded backdrop-blur-md">Raw Input</div>
+              </div>
+
+              {/* Slider Handle */}
+              <div className="absolute top-0 bottom-0 w-1 bg-white/80 shadow-[0_0_10px_rgba(255,255,255,0.5)] cursor-ew-resize" style={{ left: `calc(${sliderPos}% - 2px)` }}>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-xl flex items-center justify-center">
+                  <span className="text-black text-[10px] font-[family-name:var(--mono)] font-bold tracking-tighter">&lt;|&gt;</span>
+                </div>
+              </div>
+
+              <div className="absolute top-4 right-4 bg-[var(--color-gold)] text-black text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest px-2.5 py-1 rounded shadow-lg">AI Output</div>
+            </div>
+
+            {/* Right: Actions */}
+            <div className="w-full md:w-1/2 flex flex-col gap-6 px-2 md:px-6">
+              <div>
+                <h2 className="font-[family-name:var(--display)] text-4xl md:text-5xl text-[var(--color-ink)] mb-3 tracking-tight">Masterpiece.</h2>
+                <p className="text-[var(--color-ink2)] text-[15px] leading-relaxed">Your identity has been successfully locked into the {selectedStyle?.name} universe.</p>
+              </div>
+
+              <div className="flex flex-col gap-4 mt-4">
+                <button onClick={handleDownload} className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] text-[18px] py-5 rounded-2xl hover:bg-[var(--color-gold)] hover:text-black transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2">
+                  <Download size={20} /> DOWNLOAD 4K
                 </button>
-              </div>
-            )}
-
-            {/* STATE 3: RESULT VIEW */}
-            {outputImage ? (
-              <div className="animate-in zoom-in-95 duration-500 bg-[var(--color-cream)] flex flex-col items-center">
-                {/* 🌟 FIX: Absolute hex colors for modal overlay buttons so they stay crisp */}
-                <button onClick={() => { setIsModalOpen(false); setOutputImage(null); setOutputPostId(null); }} className="absolute top-4 right-4 bg-[#000000]/50 backdrop-blur-md p-2 rounded-full text-[#FFFFFF] z-10 hover:bg-[#000000]/80 transition-colors shadow-lg"><X size={18} /></button>
                 
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={outputImage} alt="Result" className="w-full aspect-[4/5] object-contain bg-[#050505]" />
-                
-                <div className="p-6 w-full space-y-4 bg-[var(--color-white)] border-t border-[var(--rule)]">
-                  <h3 className="font-[family-name:var(--display)] tracking-wide text-xl text-center text-[var(--color-ink)] mb-4 flex items-center justify-center gap-2">
-                    <Sparkles className="text-[var(--color-gold)]" size={20} /> Reality Synthesized
-                  </h3>
-                  
-                  <button onClick={handleDownload} className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[1.5px] text-[15px] py-4 rounded-xl shadow-[var(--shadow-md)] hover:scale-[1.02] active:scale-[0.98] transition-transform flex justify-center items-center gap-2">
-                    <Download size={18} /> DOWNLOAD HIGH-RES
+                <div className="grid grid-cols-2 gap-4">
+                  <button onClick={handleShare} className="bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] font-[family-name:var(--mono)] uppercase tracking-[1.5px] font-bold text-[12px] py-4 rounded-2xl hover:bg-[var(--color-cream2)] transition-colors flex items-center justify-center gap-2 shadow-sm">
+                    <Share size={16} /> Share
                   </button>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <button onClick={handleShare} className="bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-[11px] py-3.5 rounded-xl hover:bg-[var(--color-cream2)] transition-colors flex items-center justify-center gap-2 shadow-sm">
-                      <Share size={14} /> Share
-                    </button>
-                    <button onClick={handleCollab} className="bg-[var(--color-gold-pale)] border border-[var(--color-gold-border)] text-[var(--color-gold)] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-[11px] py-3.5 rounded-xl hover:bg-[var(--color-gold)] hover:text-black transition-colors flex items-center justify-center gap-2 shadow-sm">
-                      <LinkIcon size={14} /> Collab Link
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) 
-            
-            /* STATE 2: GENERATING (PROGRESS BAR & ADS) */
-            : isGenerating || isUploading ? (
-              <div className="p-8 py-12 flex flex-col items-center justify-center text-center space-y-8 bg-[var(--color-white)]">
-                
-                <Script id="adsterra-social-bar" src="//pl29173184.profitablecpmratenetwork.com/60/ab/b9/60abb92c67b12ba0a5b4574a79d2e149.js" strategy="afterInteractive" />
-
-                <div className="relative flex items-center justify-center">
-                  <div className="absolute inset-0 bg-[var(--color-gold)] opacity-20 blur-xl rounded-full animate-pulse"></div>
-                  <Zap size={48} className="text-[var(--color-gold)] animate-bounce relative z-10" />
-                </div>
-                
-                <h2 className="font-[family-name:var(--display)] text-3xl tracking-tight text-[var(--color-ink)]">Synthesizing Reality...</h2>
-                
-                <div className="w-full bg-[var(--color-cream2)] rounded-full h-3 overflow-hidden relative border border-[var(--rule)] shadow-inner">
-                  <div className="bg-[var(--color-gold)] h-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }}></div>
-                </div>
-                <p className="font-[family-name:var(--mono)] text-xs font-bold text-[var(--color-ink3)]">{progress}% Complete</p>
-
-                {/* NATIVE AD */}
-                <div className="w-full min-h-[100px] border border-[var(--rule)] rounded-[16px] bg-[var(--color-cream)] flex flex-col items-center justify-center overflow-hidden relative pt-6 pb-2 shadow-sm">
-                  <span className="text-[9px] text-[var(--color-ink3)] uppercase tracking-[2px] font-bold absolute top-2 left-3">Sponsored</span>
-                  <div id="container-b39280394b30c04b29a8908fb4b0bd64"></div> 
-                  <Script id="adsterra-native-banner" src="//pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" strategy="afterInteractive" data-cfasync="false" />
-                </div>
-              </div>
-            ) 
-            
-            /* STATE 1: UPLOAD & CONFIRM */
-            : (
-              <div className="flex flex-col h-full bg-[var(--color-white)]">
-                <div className="p-6 space-y-6 overflow-y-auto">
-                  
-                  <div className={`border-2 border-dashed rounded-[20px] p-8 text-center transition-all duration-300 cursor-pointer ${file ? 'border-[var(--color-gold)] bg-[var(--color-gold-pale)] shadow-inner' : 'border-[var(--rule)] bg-[var(--color-cream)] hover:bg-[var(--color-cream2)]'}`}>
-                    <input type="file" accept="image/jpeg, image/png, image/webp" className="hidden" id="modal-upload" onChange={(e) => setFile(e.target.files?.[0] || null)} disabled={isUploading || isGenerating} />
-                    <label htmlFor="modal-upload" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
-                      {file ? <CheckCircle2 size={48} className="text-[var(--color-gold)] mb-4 drop-shadow-sm" /> : <ImageIcon size={48} className="text-[var(--color-ink3)] mb-4" />}
-                      <h3 className={`font-[family-name:var(--display)] text-xl tracking-wide ${file ? 'text-[var(--color-ink)]' : 'text-[var(--color-ink2)]'}`}>{file ? file.name : "Tap to upload photo"}</h3>
-                      {!file && <p className="text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[10px] mt-2 uppercase tracking-[2px]">JPEG, PNG up to 10MB</p>}
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-[family-name:var(--mono)] font-bold text-[var(--color-ink2)] uppercase tracking-wider mb-2 block">Additional Instructions (Optional)</label>
-                    <input type="text" placeholder="e.g., make the jacket blue..." value={prompt} onChange={(e) => setPrompt(e.target.value)} disabled={isUploading || isGenerating} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] rounded-xl p-4 text-[14px] focus:outline-none focus:border-[var(--color-gold-border)] transition-colors shadow-sm" />
-                  </div>
-
-                  {error && <div className="text-red-500 font-[family-name:var(--mono)] text-[10px] uppercase tracking-widest font-bold text-center bg-red-500/10 p-3 rounded-lg border border-red-500/20">{error}</div>}
-                </div>
-
-                <div className="p-6 border-t border-[var(--rule)] bg-[var(--color-cream)] mt-auto">
-                  <button onClick={handleGenerate} disabled={isGenerating || isUploading || !file} className="w-full bg-[var(--color-gold)] text-black font-[family-name:var(--display)] tracking-[2px] text-[16px] py-4.5 rounded-xl hover:bg-[var(--color-gold-light)] hover:shadow-[0_8px_30px_rgba(245,158,11,0.3)] transition-all disabled:opacity-50 shadow-md active:scale-95 flex items-center justify-center gap-2">
-                    {isUploading || isGenerating ? <><Loader2 size={18} className="animate-spin" /> INITIALIZING...</> : <><Sparkles size={18} /> GENERATE (-{selectedStyle.spark_cost} SPARKS)</>}
+                  {/* Upsell to Feed trigger (In the future, this can trigger the feed publish modal) */}
+                  <button onClick={() => alert('Publish to feed coming soon!')} className="bg-[var(--color-gold-pale)] border border-[var(--color-gold-border)] text-[var(--color-gold)] hover:bg-[var(--color-gold)] hover:text-black font-[family-name:var(--mono)] uppercase tracking-[1.5px] font-bold text-[12px] py-4 rounded-2xl transition-colors flex items-center justify-center gap-2 shadow-sm">
+                    <Zap size={16} /> Publish (+5⚡)
                   </button>
-                  <p className="text-center text-[10px] text-[var(--color-ink3)] mt-4 font-medium">By generating, you accept our Terms. AI generations are auto-deleted.</p>
                 </div>
               </div>
-            )}
+            </div>
 
           </div>
         </div>

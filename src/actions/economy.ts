@@ -315,3 +315,25 @@ export async function claimDividends() {
   revalidatePath("/dashboard/sparks");
   return { success: true, claimedAmount: amountToClaim };
 }
+
+// 10. PUBLISH POST TO FEED (Upsell Feature)
+export async function publishPostToFeed(postId: string) {
+  const { userId } = await auth();
+  if (!userId) return { success: false, message: "Unauthorized" };
+
+  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
+
+  const post = await db.prepare("SELECT user_id, is_public FROM posts WHERE id = ?").bind(postId).first<{ user_id: string; is_public: number }>();
+  
+  if (!post) return { success: false, message: "Post not found" };
+  if (post.user_id !== userId) return { success: false, message: "Not your post" };
+  if (post.is_public === 1) return { success: false, message: "Already public" };
+
+  // Flip it to public!
+  await db.prepare("UPDATE posts SET is_public = 1 WHERE id = ?").bind(postId).run();
+
+  // Force cache refresh so it appears immediately on the Explore feed
+  revalidatePath("/explore");
+  revalidatePath("/dashboard/vault");
+  return { success: true };
+}

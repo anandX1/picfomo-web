@@ -44,8 +44,6 @@ The JSON must have exactly these three keys:
           }
         ],
         temperature: 0.3,
-        // NOTE: Do NOT add response_format: { type: "json_object" } —
-        // it causes 400 on Groq when the model isn't whitelisted for it
       })
     });
     
@@ -86,7 +84,7 @@ The JSON must have exactly these three keys:
   }
 }
 
-// === 2. PIXAZO FIRE-RED POLLING HELPER (Fixed for Rate Limits) ===
+// === 2. PIXAZO FIRE-RED POLLING HELPER (Fixed for Rate Limits & Safety) ===
 async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
   let attempts = 0;
   const maxAttempts = 24; 
@@ -103,7 +101,12 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
     if (data.status === "COMPLETED" && data.output?.media_url?.[0]) {
       return data.output.media_url[0];
     }
+    
+    // 🌟 NSFW & SAFETY CATCH
     if (data.status === "FAILED" || data.status === "ERROR") {
+      if (data.error?.toLowerCase().includes("nsfw") || data.error?.toLowerCase().includes("safety")) {
+         throw new Error("NSFW_VIOLATION");
+      }
       throw new Error(`Pixazo Generation Failed: ${data.error || "Unknown Error"}`);
     }
     
@@ -119,28 +122,39 @@ export async function POST(req: Request) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = (await req.json()) as any;
-    const { prompt, model, styleId, sourceImage } = body;
+    
+    // 🌟 Extracted all required parameters, including Custom Image and Swap Target
+    const { prompt, model, styleId, sourceImage, customBgImage, targetImage } = body;
 
     const envCtx = ((await getCloudflareContext({ async: true })).env as any);
     const db = envCtx.DB as D1Database;
     
     const PIXAZO_KEY = envCtx.PIXAZO_API_KEY || process.env.PIXAZO_API_KEY;
-    // 🌟 FIX: explicit undefined check + debug log (remove after confirming it works)
     const GROQ_KEY = (envCtx.GROQ_API_KEY as string | undefined) ?? process.env.GROQ_API_KEY;
-    console.log("GROQ key loaded:", GROQ_KEY ? `${GROQ_KEY.slice(0, 8)}...` : "MISSING ❌");
 
     if (!GROQ_KEY) console.error("🚨 CRITICAL: GROQ_API_KEY is missing from Cloudflare environment!");
 
-    // --- A. GET PRICING & PROMPTS ---
+    // --- A. GET PRICING, PROMPTS & BACKGROUNDS ---
     let sparkCost = 2; // Default for Schnell
     let finalPrompt = prompt;
+    let targetBackgroundUrl = customBgImage || null;
 
-    if (model !== "schnell" && styleId) {
-      const styleRecord = await db.prepare("SELECT spark_cost, description FROM styles WHERE id = ?").bind(styleId).first();
-      if (!styleRecord) throw new Error("Style not found or inactive.");
-      
-      sparkCost = styleRecord.spark_cost as number;
-      finalPrompt = prompt ? `${styleRecord.description}. Additional details: ${prompt}` : (styleRecord.description as string);
+    if (model !== "schnell" && model !== "swap") {
+      if (styleId === "custom") {
+         sparkCost = 15; // Charge premium for custom background uploads
+         if (!customBgImage) throw new Error("Custom background image required.");
+      } else {
+         const styleRecord = await db.prepare("SELECT spark_cost, description, preview_image_url FROM styles WHERE id = ?").bind(styleId).first();
+         if (!styleRecord) throw new Error("Style not found or inactive.");
+         
+         sparkCost = styleRecord.spark_cost as number;
+         targetBackgroundUrl = styleRecord.preview_image_url as string; // Figure 2 Background
+         
+         // 🌟 THE BULLETPROOF IDENTITY PROMPT:
+         finalPrompt = `Place the person from Figure 1 into the scene from Figure 2. Preserve the exact facial features, skin tone, and identity of the person from Figure 1. Match the lighting direction, color temperature, and atmosphere of Figure 2. Natural seamless blend, photorealistic, no compositing artifacts. Style details: ${styleRecord.description}`;
+         
+         if (prompt) finalPrompt += `. Additional user details: ${prompt}`;
+      }
     }
 
     // --- B. SECURE BILLING ---
@@ -151,8 +165,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
     }
 
-    // DEDUCT SPARKS FIRST
-    await db.prepare("UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ?").bind(sparkCost, userId).run();
+    // 🌟 SMART UPDATE: DEDUCT SPARKS AND RECORD TRANSACTION FOR THE LEDGER
+    const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
+    const txReason = styleId === 'custom' ? 'Custom Background Generation' : 'Generated Portrait';
+    
+    await db.batch([
+      db.prepare("UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ?").bind(sparkCost, userId),
+      db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(txId, userId, -sparkCost, txReason)
+    ]);
 
     try {
       // --- C. AI GENERATION & SEO (CONCURRENT) ---
@@ -161,7 +181,7 @@ export async function POST(req: Request) {
 
       if (model === "schnell") {
         const [pixazoRes, groqRes] = await Promise.all([
-          fetch("https://gateway.pixazo.ai/flux-1-schnell/v1/getData", {
+          fetch("[https://gateway.pixazo.ai/flux-1-schnell/v1/getData](https://gateway.pixazo.ai/flux-1-schnell/v1/getData)", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -179,10 +199,21 @@ export async function POST(req: Request) {
         seoData = groqRes;
 
       } else {
-        if (!sourceImage) throw new Error("Source image required for this style.");
+        // 🌟 FIRE-RED COMPOSITING
+        if (!sourceImage) throw new Error("Source face image required.");
+        
+        let apiImageUrls = [sourceImage, targetBackgroundUrl];
+        
+        // Handle Explore Feed 'Collab Swap' specifically
+        if (model === "swap") {
+          if (!targetImage) throw new Error("Target image is missing for Collab Swap!");
+          apiImageUrls = [targetImage, sourceImage]; 
+        } else if (!targetBackgroundUrl) {
+          throw new Error("Target background required for this style.");
+        }
 
         const [pixazoStartRes, groqRes] = await Promise.all([
-          fetch("https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request", {
+          fetch("[https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request](https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request)", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -190,7 +221,7 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({
               prompt: finalPrompt,
-              image_urls: [sourceImage],
+              image_urls: apiImageUrls, // Passing Figure 1 & Figure 2
               num_inference_steps: 30,
               guidance_scale: 4
             })
@@ -205,12 +236,12 @@ export async function POST(req: Request) {
         seoData = groqRes;
       }
 
-      // --- D. SAVE TO DATABASE ---
+      // --- D. SAVE TO DATABASE (Private by Default for Upsell) ---
       const postId = `post_${Date.now()}`;
       await db.prepare(`
         INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, title, description, tags, is_public)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-      `).bind(
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0) 
+      `).bind( // 🌟 is_public is 0 so we can upsell it to the feed!
         postId, 
         userId, 
         outputImageUrl, 
@@ -224,8 +255,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
 
     } catch (aiError: any) {
-      await db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId).run();
+      // 🌟 SMART UPDATE: REFUND TRANSACTION RECORDING
+      const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
+      await db.batch([
+        db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId),
+        db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(refundTxId, userId, sparkCost, 'Refund: Generation Failed')
+      ]);
+      
       console.error("AI Pipeline Error (Refunded):", aiError);
+      
+      if (aiError.message === "NSFW_VIOLATION") {
+         return NextResponse.json({ error: "Upload rejected: Violates safety and community guidelines. Sparks refunded." }, { status: 400 });
+      }
+      
       return NextResponse.json({ error: aiError.message || "Generation failed. Sparks refunded." }, { status: 500 });
     }
 
