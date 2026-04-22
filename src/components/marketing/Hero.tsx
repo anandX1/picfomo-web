@@ -21,8 +21,8 @@ const SCROLL_ITEMS = [...COMMUNITY_POSTS, ...COMMUNITY_POSTS];
 
 export default function Hero() {
   return (
-    // 🌟 FIX 1: overflow-x-hidden, flex-col, and pt-24 safely pushes the content down so the text never gets cut off at the top of a phone screen.
-    <section className="relative mx-auto max-w-[1280px] px-6 pt-24 pb-12 lg:px-10 lg:py-20 overflow-x-hidden min-h-[90vh] flex flex-col justify-center">
+    // FIX: Changed from overflow-hidden to overflow-x-hidden, added flex-col and pt-28 to prevent text from being cut off on small mobile screens
+    <section className="relative mx-auto max-w-[1280px] px-6 pt-28 pb-12 lg:px-10 lg:py-20 overflow-x-hidden min-h-[90vh] flex flex-col justify-center">
       
       {/* 🌟 1. DYNAMIC AURORA BACKGROUND */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
@@ -100,7 +100,7 @@ export default function Hero() {
         }
       `}</style>
 
-      {/* 🌟 FIX 2: Upgraded breakpoints to lg: to prevent horizontal tablet squishing */}
+      {/* FIX: Shifted breakpoints from md to lg to prevent text compression on tablets */}
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_500px] xl:grid-cols-[1fr_600px] w-full relative z-10">
         
         {/* --- LEFT COLUMN: The Pitch (Centered on Mobile, Left on Desktop) --- */}
@@ -108,7 +108,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center text-center lg:items-start lg:text-left"
+          className="flex flex-col items-center text-center lg:items-start lg:text-left w-full"
         >
           {/* Live Counter Eyebrow */}
           <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[var(--color-gold-border)] bg-[var(--color-gold-pale)] px-4 py-1.5 font-[family-name:var(--mono)] text-[10px] md:text-[11px] font-bold uppercase tracking-[3px] text-[var(--color-gold)] shadow-sm backdrop-blur-md transition-transform hover:scale-105">
@@ -117,7 +117,7 @@ export default function Hero() {
           </div>
 
           {/* Headline */}
-          <h1 className="mb-5 font-[family-name:var(--display)] text-[clamp(46px,10vw,100px)] leading-[0.85] tracking-[-1.5px] text-[var(--color-ink)] flex flex-col items-center lg:items-start">
+          <h1 className="mb-5 font-[family-name:var(--display)] text-[clamp(46px,10vw,100px)] leading-[0.85] tracking-[-1.5px] text-[var(--color-ink)] flex flex-col items-center lg:items-start w-full">
             YOUR FACE.<br />
             <span className="flex items-center gap-2 md:gap-3 mt-1">
               <span className="text-shimmer font-sans text-[1.1em] font-light leading-none -mt-2">∞</span>
@@ -154,7 +154,7 @@ export default function Hero() {
           </div>
 
           {/* --- MOBILE ONLY: 3. CINEMATIC INFINITE MARQUEE --- */}
-          {/* 🌟 FIX 3: Changed md:hidden to lg:hidden to match the new grid breakpoint */}
+          {/* FIX: Changed from md:hidden to lg:hidden so it aligns with the grid breakpoints properly */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -175,7 +175,7 @@ export default function Hero() {
         </motion.div>
 
         {/* --- DESKTOP RIGHT COLUMN: 2. SPATIAL UI 3D WALL --- */}
-        {/* 🌟 FIX 4: Changed md:block to lg:block to match the new grid breakpoint */}
+        {/* FIX: Changed from md:block to lg:block */}
         <motion.div
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
