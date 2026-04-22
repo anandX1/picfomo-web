@@ -152,8 +152,8 @@ export async function POST(req: Request) {
     let finalPrompt = prompt;
     let apiImageUrls: string[] = [];
     
-    // 🌟 DYNAMIC NEGATIVE PROMPT
-    let negativePrompt = "wrong face, different identity, distorted features, skin color change, blurry face, artifacts, cheap composite, mismatched lighting";
+    // 🌟 ANTI-PLASTIC & ANTI-LEAK NEGATIVE PROMPT
+    let negativePrompt = "changing Figure 1 background, changing Figure 1 clothing, bringing background from Figure 2, bringing clothing from Figure 2, plastic skin, airbrushed, overly smooth, beauty filter, CGI, cartoon, missing glasses, distorted features";
 
     // --- A. GET PRICING, LOGIC, & PROMPTS ---
     if (model !== "schnell") {
@@ -161,14 +161,16 @@ export async function POST(req: Request) {
       let secureSourceFace = sourceImage;
       if (sourceImage) secureSourceFace = await uploadBase64ToR2(sourceImage, envCtx);
 
+      // 🌟 TEXTURE ANCHOR FOR QWEN
+      const textureAnchor = " Ensure photorealistic skin texture, visible pores, and natural skin imperfections. Do not smooth the face.";
+
       if (model === "swap") {
         if (!targetImage || !secureSourceFace) throw new Error("Target and source images required for swap.");
         let secureTarget = await uploadBase64ToR2(targetImage, envCtx);
         
-        // 🌟 FIGURE 1 = USER FACE, FIGURE 2 = TARGET SCENE
-        apiImageUrls = [secureSourceFace, secureTarget];
-        finalPrompt = prompt || `Take the user’s face from Image 1 into Image 2. Preserve identity, skin tone, features, and accessories. Match lighting, shadows, and expression for realism. Keep Image 2’s background, clothing, pose, and style intact. Final output must look like the user was originally photographed in Image 2.`;
-        negativePrompt += "low quality face swap, distorted features, mismatched lighting, identity loss, artifacts, blurry face";
+        // 🌟 QWEN RULE: FIGURE 1 = THE CANVAS/BACKGROUND. FIGURE 2 = THE FACE.
+        apiImageUrls = [secureTarget, secureSourceFace];
+        finalPrompt = prompt || `Replace the face of the person in Image 1 with the facial identity and features of the person in Image 2. CRITICAL: Keep the background, clothing, body shape, and lighting of Image 1 completely unchanged. Ensure the skin tone, facial hair, and glasses from Image 2 are perfectly preserved and blended naturally into Image 1.${textureAnchor}`;
       } 
       else if (styleId === "custom") {
          sparkCost = 15; 
@@ -176,10 +178,9 @@ export async function POST(req: Request) {
          
          let secureCustomBg = await uploadBase64ToR2(customBgImage, envCtx);
          
-         // 🌟 FIGURE 1 = USER FACE, FIGURE 2 = CUSTOM SCENE
-         apiImageUrls = [secureSourceFace, secureCustomBg];
-         finalPrompt = `Take the user's face from Figure 1 and seamlessly integrate it into Figure 2. Preserve the exact identity, skin tone, facial features, and accessories of the user from Figure 1. Match the lighting, shadows, and facial expression so it looks natural and realistic. Keep Figure 2's background, clothing, pose, and style fully intact — only replace the face. Final output must look like the user was originally photographed in Figure 2's style.`;
-         negativePrompt += ", changing Figure 2 clothing, changing Figure 2 background, bringing clothes from figure 1";
+         // 🌟 QWEN RULE: FIGURE 1 = THE CANVAS/BACKGROUND. FIGURE 2 = THE FACE.
+         apiImageUrls = [secureCustomBg, secureSourceFace];
+         finalPrompt = `Replace the face of the person in Image 1 with the facial identity and features of the person in Image 2. CRITICAL: Keep the background, clothing, body shape, and lighting of Image 1 completely unchanged. Ensure the skin tone, facial hair, and glasses from Image 2 are perfectly preserved and blended naturally into Image 1.${textureAnchor}`;
          if (prompt) finalPrompt += ` Additional details: ${prompt}`;
       } 
       else {
@@ -189,14 +190,13 @@ export async function POST(req: Request) {
          sparkCost = styleRecord.spark_cost as number;
          if (!secureSourceFace) throw new Error("Source face image required.");
          
-         // 🌟 PREMIUM FIX: FIGURE 1 = USER FACE, FIGURE 2 = STYLE IMAGE
-         apiImageUrls = [secureSourceFace, styleRecord.preview_image_url as string];
+         // 🌟 QWEN RULE: FIGURE 1 = THE CANVAS/BACKGROUND (Kimono). FIGURE 2 = THE FACE (Selfie).
+         apiImageUrls = [styleRecord.preview_image_url as string, secureSourceFace];
          
-         // 🌟 THE EXACT PROMPT YOU RECOMMENDED
-         finalPrompt = `Take the user's face from Figure 1 and seamlessly integrate it into Figure 2. Preserve the exact identity, skin tone, facial features, and accessories of the user from Figure 1. Match the lighting, shadows, and facial expression so it looks natural and realistic. Keep Figure 2's background, clothing, pose, and style fully intact — only replace the face. Final output must look like the user was originally photographed in Figure 2's style.`;
-         negativePrompt += ", changing Figure 2 clothing, changing Figure 2 background, bringing clothes from figure 1";
+         // 🌟 THE HYPER-OPTIMIZED QWEN PROMPT
+         finalPrompt = `Replace the face of the person in Figure 1 with the facial identity and features of the person in Figure 2. CRITICAL: Keep the background, clothing, body shape, and lighting of Figure 1 completely unchanged. Ensure the skin tone, facial hair, and glasses from Figure 2 are perfectly preserved and blended naturally into Figure 1.${textureAnchor}`;
          
-         if (styleRecord.description) finalPrompt += ` Style context: ${styleRecord.description}.`;
+         if (styleRecord.description) finalPrompt += ` Context: ${styleRecord.description}.`;
          if (prompt) finalPrompt += ` User details: ${prompt}`;
       }
     }
@@ -257,7 +257,7 @@ export async function POST(req: Request) {
               negative_prompt: negativePrompt, 
               image_urls: apiImageUrls, 
               num_inference_steps: 30,
-              guidance_scale: 4
+              guidance_scale: 3.5 // Kept at 3.5 for texture preservation!
             })
           }),
           generateSEOData(finalPrompt, GROQ_KEY ?? "") 
