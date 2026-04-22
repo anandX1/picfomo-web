@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Lock, ScanFace, Sparkles } from "lucide-react";
-import Image from "next/image"; // 🌟 ADDED NEXT.JS IMAGE OPTIMIZATION
+import Image from "next/image"; 
 
-// 🌟 THE REAL R2 ASSETS WITH FRAMING OFFSETS
+// 🌟 THE LOCAL ASSETS FOR MAXIMUM SPEED (LCP)
+// IMPORTANT: Put these 6 images inside your 'public/results/' folder!
 const RESULTS_DATA = [
   {
     id: "kohli",
     name: "Virat Kohli",
     style: "Old Money Luxury",
-    beforeImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/Screenshot%202026-04-18%20211937.png",
-    afterImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/Gemini_Generated_Image_m4gtnjm4gtnjm4gt.png",
+    beforeImage: "/results/kohli-before.png",
+    afterImage: "/results/kohli-after.png",
     match: "99.8%",
     time: "14.2s",
     objectPos: "object-center"
@@ -21,18 +22,18 @@ const RESULTS_DATA = [
     id: "cr7",
     name: "Cristiano Ronaldo",
     style: "Luxury Mythic Marble",
-    beforeImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/OIP.webp",
-    afterImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/Gemini_Generated_Image_ufc3etufc3etufc3.png",
+    beforeImage: "/results/cr7-before.webp",
+    afterImage: "/results/cr7-after.png",
     match: "99.6%",
     time: "16.1s",
-    objectPos: "object-top" // 🌟 FIX 1: Lowers CR7's face perfectly into frame
+    objectPos: "object-top" 
   },
   {
     id: "vintage",
     name: "Historical Photo",
     style: "Colorized Legacy",
-    beforeImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/McHugh-KIA-760x570.jpg",
-    afterImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/PicFOMO_1776528188854.jpg",
+    beforeImage: "/results/vintage-before.jpg",
+    afterImage: "/results/vintage-after.jpg",
     match: "99.9%",
     time: "18.5s",
     objectPos: "object-center"
@@ -65,8 +66,9 @@ export default function ResultsGrid() {
 
       {/* --- DESKTOP VIEW: 3 Sliders Side-by-Side --- */}
       <div className="hidden md:grid grid-cols-3 gap-6">
-        {RESULTS_DATA.map((item) => (
-          <BeforeAfterSlider key={item.id} item={item} />
+        {RESULTS_DATA.map((item, idx) => (
+          /* 🌟 LCP FIX: We explicitly tell Next.js to prioritize the loading of the first 3 desktop images */
+          <BeforeAfterSlider key={item.id} item={item} priority={idx < 3} />
         ))}
       </div>
 
@@ -81,7 +83,8 @@ export default function ResultsGrid() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <BeforeAfterSlider item={RESULTS_DATA[currentIndex]} isMobile={true} />
+              {/* 🌟 LCP FIX: The active mobile slide gets priority loading! */}
+              <BeforeAfterSlider item={RESULTS_DATA[currentIndex]} isMobile={true} priority={true} />
             </motion.div>
           </AnimatePresence>
         </div>
@@ -107,7 +110,7 @@ export default function ResultsGrid() {
 }
 
 // 🌟 THE MAGIC SLIDER COMPONENT
-function BeforeAfterSlider({ item, isMobile = false }: { item: any, isMobile?: boolean }) {
+function BeforeAfterSlider({ item, isMobile = false, priority = false }: { item: any, isMobile?: boolean, priority?: boolean }) {
   const [position, setPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -117,7 +120,6 @@ function BeforeAfterSlider({ item, isMobile = false }: { item: any, isMobile?: b
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
     
-    // 🌟 FIX 2: On mobile, we ONLY calculate slide position if the user is explicitly dragging the handle
     if (isMobile && !isDragging) return;
 
     const rect = containerRef.current.getBoundingClientRect();
@@ -152,10 +154,12 @@ function BeforeAfterSlider({ item, isMobile = false }: { item: any, isMobile?: b
         className={`group relative aspect-[3/4] w-full overflow-hidden rounded-[16px] shadow-[var(--shadow-md)] bg-gray-900 border border-[var(--rule)] ${!isMobile ? 'cursor-ew-resize' : ''} ${isDragging ? 'touch-none' : ''}`}
       >
         {/* AFTER IMAGE (Bottom Layer) */}
+        {/* 🌟 LCP FIX: Injecting the priority prop into the Next Image */}
         <Image 
           src={item.afterImage} 
           alt="After" 
           fill
+          priority={priority}
           sizes="(max-width: 768px) 100vw, 33vw"
           className={`object-cover ${item.objectPos}`} 
           draggable={false} 
@@ -166,10 +170,12 @@ function BeforeAfterSlider({ item, isMobile = false }: { item: any, isMobile?: b
           className="absolute inset-0 h-full w-full" 
           style={{ clipPath: `polygon(0 0, ${position}% 0, ${position}% 100%, 0 100%)` }}
         >
+          {/* 🌟 LCP FIX: Injecting the priority prop here too */}
           <Image 
             src={item.beforeImage} 
             alt="Before" 
             fill
+            priority={priority}
             sizes="(max-width: 768px) 100vw, 33vw"
             className={`object-cover filter blur-[2px] md:blur-0 ${item.objectPos}`} 
             draggable={false} 
@@ -179,7 +185,7 @@ function BeforeAfterSlider({ item, isMobile = false }: { item: any, isMobile?: b
           <div className="absolute inset-0 bg-black/20"></div>
         </div>
 
-        {/* 🌟 SLIDER LINE & INVISIBLE DRAG HANDLE FOR MOBILE */}
+        {/* SLIDER LINE & INVISIBLE DRAG HANDLE FOR MOBILE */}
         <div 
           className="absolute inset-y-0 z-40 flex items-center justify-center touch-none"
           style={{ left: `${position}%`, width: '48px', marginLeft: '-24px' }}
@@ -205,7 +211,7 @@ function BeforeAfterSlider({ item, isMobile = false }: { item: any, isMobile?: b
           </div>
         </div>
 
-        {/* 🌟 FLOATING TECH TAGS */}
+        {/* FLOATING TECH TAGS */}
         
         {/* Top Left: Raw Input */}
         <div className="absolute left-3 top-3 z-30 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 backdrop-blur-md border border-white/10 pointer-events-none">
