@@ -10,7 +10,6 @@ const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // === 1. BASE64 TO R2 INTERCEPTOR (The Pixazo Fix) ===
 async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
-  // If it's already an HTTP URL, just return it
   if (!base64Str.startsWith("data:image")) return base64Str;
 
   const accountId = env.R2_ACCOUNT_ID || process.env.R2_ACCOUNT_ID;
@@ -33,7 +32,6 @@ async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
   const mimeType = mimeMatch?.[1] || "image/jpeg";
   const ext = mimeType.split("/")[1] || "jpg";
 
-  // Convert base64 to binary Uint8Array for Cloudflare Edge
   const binaryString = atob(base64Data);
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++) {
@@ -153,11 +151,13 @@ export async function POST(req: Request) {
     let sparkCost = 2; 
     let finalPrompt = prompt;
     let apiImageUrls: string[] = [];
+    
+    // 🌟 DYNAMIC NEGATIVE PROMPT (Guards against identity and clothing drift)
+    let negativePrompt = "wrong face, different identity, distorted features, skin color change, blurry face, artifacts, cheap composite, mismatched lighting";
 
     // --- A. GET PRICING, LOGIC, & PROMPTS ---
     if (model !== "schnell") {
       
-      // 🌟 STEP 1: CONVERT ANY BASE64 TO SECURE R2 HTTP URLS
       let secureSourceFace = sourceImage;
       if (sourceImage) secureSourceFace = await uploadBase64ToR2(sourceImage, envCtx);
 
@@ -165,10 +165,9 @@ export async function POST(req: Request) {
         if (!targetImage || !secureSourceFace) throw new Error("Target and source images required for swap.");
         let secureTarget = await uploadBase64ToR2(targetImage, envCtx);
         
-        // 🌟 FIGURE 1 = SCENE/TARGET, FIGURE 2 = USER FACE
         apiImageUrls = [secureTarget, secureSourceFace];
-        finalPrompt = `Place the person from Figure 2 into the scene of Figure 1. Preserve the exact facial identity, skin tone, and features of the person from Figure 2. Keep the background, clothing, lighting, color grading, and composition of Figure 1 completely intact. Blend the person naturally into Figure 1's environment — match lighting direction and shadows seamlessly. Do not change the outfit or scene of Figure 1.`;
-        if (prompt) finalPrompt += ` Additional details: ${prompt}`;
+        finalPrompt = prompt || `Change the face of the person in Figure 1 to exactly match the facial identity and features of the person in Figure 2. You MUST strictly preserve the clothing, outfit, pose, and background of Figure 1. Do not bring any clothing from Figure 2.`;
+        negativePrompt += ", changing clothes, changing outfit, changing background, bringing clothes from figure 2";
       } 
       else if (styleId === "custom") {
          sparkCost = 15; 
@@ -176,9 +175,9 @@ export async function POST(req: Request) {
          
          let secureCustomBg = await uploadBase64ToR2(customBgImage, envCtx);
          
-         // 🌟 FIGURE 1 = SCENE/TARGET, FIGURE 2 = USER FACE
-         apiImageUrls = [secureCustomBg, secureSourceFace];
-         finalPrompt = `Place the person from Figure 2 into the scene of Figure 1. Preserve the exact facial identity, skin tone, and features of the person from Figure 2. Keep the background, clothing, lighting, color grading, and composition of Figure 1 completely intact. Blend the person naturally into Figure 1's environment — match lighting direction and shadows seamlessly. Do not change the outfit or scene of Figure 1.`;
+         apiImageUrls = [secureSourceFace, secureCustomBg];
+         finalPrompt = `Replace the background of Figure 1 with the exact scene and environment from Figure 2. Strictly preserve the person in Figure 1 exactly, keeping their clothing, face, and pose completely unchanged. Blend the lighting naturally.`;
+         negativePrompt += ", changing person, changing face, changing clothes, body distortion";
          if (prompt) finalPrompt += ` Additional details: ${prompt}`;
       } 
       else {
@@ -188,11 +187,14 @@ export async function POST(req: Request) {
          sparkCost = styleRecord.spark_cost as number;
          if (!secureSourceFace) throw new Error("Source face image required.");
          
-         // 🌟 FIGURE 1 = SCENE/TARGET, FIGURE 2 = USER FACE
+         // 🌟 PREMIUM FIX: Base = Style Image (Fig 1), Reference = User Face (Fig 2)
          apiImageUrls = [styleRecord.preview_image_url as string, secureSourceFace];
-         finalPrompt = `Place the person from Figure 2 into the scene of Figure 1. Preserve the exact facial identity, skin tone, and features of the person from Figure 2. Keep the background, clothing, lighting, color grading, and composition of Figure 1 completely intact. Blend the person naturally into Figure 1's environment — match lighting direction and shadows seamlessly. Do not change the outfit or scene of Figure 1.`;
          
-         if (styleRecord.description) finalPrompt += ` Style context: ${styleRecord.description}.`;
+         // 🌟 THE STRICT FACE-SWAP COMMAND
+         finalPrompt = `Change the face of the person in Figure 1 to exactly match the facial identity, skin tone, and features of the person in Figure 2. You MUST strictly preserve the clothing, outfit, hair style, pose, and background of Figure 1. Do NOT bring any clothing or background elements from Figure 2 into Figure 1.`;
+         negativePrompt += ", changing clothes, changing outfit, changing background, bringing clothes from figure 2";
+         
+         if (styleRecord.description) finalPrompt += ` Context: ${styleRecord.description}.`;
          if (prompt) finalPrompt += ` User details: ${prompt}`;
       }
     }
@@ -250,7 +252,7 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({
               prompt: finalPrompt,
-              negative_prompt: "wrong face, different identity, distorted features, skin color change, blurry face, artifacts, cheap composite, mismatched lighting",
+              negative_prompt: negativePrompt, // 🌟 INJECTED DYNAMIC NEGATIVE PROMPT
               image_urls: apiImageUrls, 
               num_inference_steps: 30,
               guidance_scale: 4
