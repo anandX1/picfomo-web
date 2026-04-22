@@ -152,8 +152,8 @@ export async function POST(req: Request) {
     let finalPrompt = prompt;
     let apiImageUrls: string[] = [];
     
-    // 🌟 ANTI-PLASTIC & ANTI-LEAK NEGATIVE PROMPT
-    let negativePrompt = "changing Figure 1 background, changing Figure 1 clothing, bringing background from Figure 2, bringing clothing from Figure 2, plastic skin, airbrushed, overly smooth, beauty filter, CGI, cartoon, missing glasses, distorted features";
+    // 🌟 NEW QWEN-OPTIMIZED NEGATIVE PROMPT
+    let negativePrompt = "retaining background from Figure 1, retaining clothing from Figure 1, changing facial identity, different person, distorted features, mismatched lighting, plastic skin, airbrushed, oversmoothed, CGI, cartoon";
 
     // --- A. GET PRICING, LOGIC, & PROMPTS ---
     if (model !== "schnell") {
@@ -162,15 +162,15 @@ export async function POST(req: Request) {
       if (sourceImage) secureSourceFace = await uploadBase64ToR2(sourceImage, envCtx);
 
       // 🌟 TEXTURE ANCHOR FOR QWEN
-      const textureAnchor = " Ensure photorealistic skin texture, visible pores, and natural skin imperfections. Do not smooth the face.";
+      const textureAnchor = " Ensure photorealistic, studio-quality lighting. Preserve highly detailed skin texture, visible pores, natural skin imperfections, and facial hair. Do not smooth or airbrush the face.";
 
       if (model === "swap") {
         if (!targetImage || !secureSourceFace) throw new Error("Target and source images required for swap.");
         let secureTarget = await uploadBase64ToR2(targetImage, envCtx);
         
-        // 🌟 QWEN RULE: FIGURE 1 = THE CANVAS/BACKGROUND. FIGURE 2 = THE FACE.
-        apiImageUrls = [secureTarget, secureSourceFace];
-        finalPrompt = prompt || `Replace the face of the person in Image 1 with the facial identity and features of the person in Image 2. CRITICAL: Keep the background, clothing, body shape, and lighting of Image 1 completely unchanged. Ensure the skin tone, facial hair, and glasses from Image 2 are perfectly preserved and blended naturally into Image 1.${textureAnchor}`;
+        // 🌟 RULE: FIGURE 1 = USER FACE, FIGURE 2 = STYLE/SCENE
+        apiImageUrls = [secureSourceFace, secureTarget];
+        finalPrompt = prompt || `Transform the person in Figure 1 by applying the exact outfit, background environment, pose, and artistic style of Figure 2. CRITICAL: The facial identity, skin tone, facial features, and glasses of the person in Figure 1 must remain 100% unchanged. Recreate the exact environment and clothing of Figure 2 around the user's face.${textureAnchor}`;
       } 
       else if (styleId === "custom") {
          sparkCost = 15; 
@@ -178,9 +178,8 @@ export async function POST(req: Request) {
          
          let secureCustomBg = await uploadBase64ToR2(customBgImage, envCtx);
          
-         // 🌟 QWEN RULE: FIGURE 1 = THE CANVAS/BACKGROUND. FIGURE 2 = THE FACE.
-         apiImageUrls = [secureCustomBg, secureSourceFace];
-         finalPrompt = `Replace the face of the person in Image 1 with the facial identity and features of the person in Image 2. CRITICAL: Keep the background, clothing, body shape, and lighting of Image 1 completely unchanged. Ensure the skin tone, facial hair, and glasses from Image 2 are perfectly preserved and blended naturally into Image 1.${textureAnchor}`;
+         apiImageUrls = [secureSourceFace, secureCustomBg];
+         finalPrompt = `Transform the person in Figure 1 by applying the exact background environment, lighting, and aesthetic of Figure 2. CRITICAL: The facial identity, skin tone, facial features, and glasses of the person in Figure 1 must remain 100% unchanged. The final image should look like the person from Figure 1 was photographed in the scene of Figure 2.${textureAnchor}`;
          if (prompt) finalPrompt += ` Additional details: ${prompt}`;
       } 
       else {
@@ -190,11 +189,11 @@ export async function POST(req: Request) {
          sparkCost = styleRecord.spark_cost as number;
          if (!secureSourceFace) throw new Error("Source face image required.");
          
-         // 🌟 QWEN RULE: FIGURE 1 = THE CANVAS/BACKGROUND (Kimono). FIGURE 2 = THE FACE (Selfie).
-         apiImageUrls = [styleRecord.preview_image_url as string, secureSourceFace];
+         // 🌟 RULE: FIGURE 1 = USER FACE, FIGURE 2 = STYLE/SCENE
+         apiImageUrls = [secureSourceFace, styleRecord.preview_image_url as string];
          
-         // 🌟 THE HYPER-OPTIMIZED QWEN PROMPT
-         finalPrompt = `Replace the face of the person in Figure 1 with the facial identity and features of the person in Figure 2. CRITICAL: Keep the background, clothing, body shape, and lighting of Figure 1 completely unchanged. Ensure the skin tone, facial hair, and glasses from Figure 2 are perfectly preserved and blended naturally into Figure 1.${textureAnchor}`;
+         // 🌟 THE HYPER-OPTIMIZED "IMPORT" QWEN PROMPT
+         finalPrompt = `Redraw the person from Figure 1 using the exact pose, outfit, background, and lighting environment of Figure 2. CRITICAL: You must strictly preserve the facial identity, skin tone, facial hair, and glasses of the person in Figure 1. Do not retain any clothing or background elements from Figure 1. The final image should be a seamless, high-quality portrait of the person from Figure 1 integrated perfectly into the scene of Figure 2.${textureAnchor}`;
          
          if (styleRecord.description) finalPrompt += ` Context: ${styleRecord.description}.`;
          if (prompt) finalPrompt += ` User details: ${prompt}`;
