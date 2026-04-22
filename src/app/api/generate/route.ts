@@ -152,7 +152,7 @@ export async function POST(req: Request) {
     let finalPrompt = prompt;
     let apiImageUrls: string[] = [];
     
-    // 🌟 DYNAMIC NEGATIVE PROMPT (Guards against identity and clothing drift)
+    // 🌟 DYNAMIC NEGATIVE PROMPT
     let negativePrompt = "wrong face, different identity, distorted features, skin color change, blurry face, artifacts, cheap composite, mismatched lighting";
 
     // --- A. GET PRICING, LOGIC, & PROMPTS ---
@@ -165,9 +165,10 @@ export async function POST(req: Request) {
         if (!targetImage || !secureSourceFace) throw new Error("Target and source images required for swap.");
         let secureTarget = await uploadBase64ToR2(targetImage, envCtx);
         
-        apiImageUrls = [secureTarget, secureSourceFace];
-        finalPrompt = prompt || `Change the face of the person in Figure 1 to exactly match the facial identity and features of the person in Figure 2. You MUST strictly preserve the clothing, outfit, pose, and background of Figure 1. Do not bring any clothing from Figure 2.`;
-        negativePrompt += ", changing clothes, changing outfit, changing background, bringing clothes from figure 2";
+        // 🌟 FIGURE 1 = USER FACE, FIGURE 2 = TARGET SCENE
+        apiImageUrls = [secureSourceFace, secureTarget];
+        finalPrompt = prompt || `Take the user's face from Figure 1 and seamlessly integrate it into Figure 2. Preserve the exact identity, skin tone, facial features, and accessories of the user from Figure 1. Match the lighting, shadows, and facial expression so it looks natural and realistic. Keep Figure 2's background, clothing, pose, and style fully intact — only replace the face. Final output must look like the user was originally photographed in Figure 2's style.`;
+        negativePrompt += ", changing Figure 2 clothing, changing Figure 2 background, bringing clothes from figure 1";
       } 
       else if (styleId === "custom") {
          sparkCost = 15; 
@@ -175,9 +176,10 @@ export async function POST(req: Request) {
          
          let secureCustomBg = await uploadBase64ToR2(customBgImage, envCtx);
          
+         // 🌟 FIGURE 1 = USER FACE, FIGURE 2 = CUSTOM SCENE
          apiImageUrls = [secureSourceFace, secureCustomBg];
-         finalPrompt = `Replace the background of Figure 1 with the exact scene and environment from Figure 2. Strictly preserve the person in Figure 1 exactly, keeping their clothing, face, and pose completely unchanged. Blend the lighting naturally.`;
-         negativePrompt += ", changing person, changing face, changing clothes, body distortion";
+         finalPrompt = `Take the user's face from Figure 1 and seamlessly integrate it into Figure 2. Preserve the exact identity, skin tone, facial features, and accessories of the user from Figure 1. Match the lighting, shadows, and facial expression so it looks natural and realistic. Keep Figure 2's background, clothing, pose, and style fully intact — only replace the face. Final output must look like the user was originally photographed in Figure 2's style.`;
+         negativePrompt += ", changing Figure 2 clothing, changing Figure 2 background, bringing clothes from figure 1";
          if (prompt) finalPrompt += ` Additional details: ${prompt}`;
       } 
       else {
@@ -187,14 +189,14 @@ export async function POST(req: Request) {
          sparkCost = styleRecord.spark_cost as number;
          if (!secureSourceFace) throw new Error("Source face image required.");
          
-         // 🌟 PREMIUM FIX: Base = Style Image (Fig 1), Reference = User Face (Fig 2)
-         apiImageUrls = [styleRecord.preview_image_url as string, secureSourceFace];
+         // 🌟 PREMIUM FIX: FIGURE 1 = USER FACE, FIGURE 2 = STYLE IMAGE
+         apiImageUrls = [secureSourceFace, styleRecord.preview_image_url as string];
          
-         // 🌟 THE STRICT FACE-SWAP COMMAND
-         finalPrompt = `Change the face of the person in Figure 1 to exactly match the facial identity, skin tone, and features of the person in Figure 2. You MUST strictly preserve the clothing, outfit, hair style, pose, and background of Figure 1. Do NOT bring any clothing or background elements from Figure 2 into Figure 1.`;
-         negativePrompt += ", changing clothes, changing outfit, changing background, bringing clothes from figure 2";
+         // 🌟 THE EXACT PROMPT YOU RECOMMENDED
+         finalPrompt = `Take the user's face from Figure 1 and seamlessly integrate it into Figure 2. Preserve the exact identity, skin tone, facial features, and accessories of the user from Figure 1. Match the lighting, shadows, and facial expression so it looks natural and realistic. Keep Figure 2's background, clothing, pose, and style fully intact — only replace the face. Final output must look like the user was originally photographed in Figure 2's style.`;
+         negativePrompt += ", changing Figure 2 clothing, changing Figure 2 background, bringing clothes from figure 1";
          
-         if (styleRecord.description) finalPrompt += ` Context: ${styleRecord.description}.`;
+         if (styleRecord.description) finalPrompt += ` Style context: ${styleRecord.description}.`;
          if (prompt) finalPrompt += ` User details: ${prompt}`;
       }
     }
@@ -252,7 +254,7 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({
               prompt: finalPrompt,
-              negative_prompt: negativePrompt, // 🌟 INJECTED DYNAMIC NEGATIVE PROMPT
+              negative_prompt: negativePrompt, 
               image_urls: apiImageUrls, 
               num_inference_steps: 30,
               guidance_scale: 4
