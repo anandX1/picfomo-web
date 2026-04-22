@@ -167,8 +167,8 @@ export async function POST(req: Request) {
         
         // 🌟 FIGURE 1 = USER FACE, FIGURE 2 = TARGET SCENE
         apiImageUrls = [secureSourceFace, secureTarget];
-        finalPrompt = prompt || `Take the user's face from Figure 1 and seamlessly integrate it into Figure 2. Preserve the exact identity, skin tone, facial features, and accessories of the user from Figure 1. Match the lighting, shadows, and facial expression so it looks natural and realistic. Keep Figure 2's background, clothing, pose, and style fully intact — only replace the face. Final output must look like the user was originally photographed in Figure 2's style.`;
-        negativePrompt += ", changing Figure 2 clothing, changing Figure 2 background, bringing clothes from figure 1";
+        finalPrompt = prompt || `Take the user’s face from Image 1 into Image 2. Preserve identity, skin tone, features, and accessories. Match lighting, shadows, and expression for realism. Keep Image 2’s background, clothing, pose, and style intact. Final output must look like the user was originally photographed in Image 2.`;
+        negativePrompt += "low quality face swap, distorted features, mismatched lighting, identity loss, artifacts, blurry face";
       } 
       else if (styleId === "custom") {
          sparkCost = 15; 
