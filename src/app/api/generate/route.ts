@@ -1,27 +1,66 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-// 🌟 BULLETPROOF URL CONSTANTS (Prevents Markdown Link Copy-Paste Errors)
+// 🌟 BULLETPROOF URL CONSTANTS
 const PIXAZO_SCHNELL_URL = "https://gateway.pixazo.ai/flux-1-schnell/v1/getData";
 const PIXAZO_FIRERED_URL = "https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request";
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-// === 1. GROQ SEO HELPER (Fortified & Cloudflare Safe) ===
+// === 1. BASE64 TO R2 INTERCEPTOR (The Pixazo Fix) ===
+async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
+  // If it's already an HTTP URL, just return it
+  if (!base64Str.startsWith("data:image")) return base64Str;
+
+  const accountId = env.R2_ACCOUNT_ID || process.env.R2_ACCOUNT_ID;
+  const accessKey = env.R2_ACCESS_KEY_ID || process.env.R2_ACCESS_KEY_ID;
+  const secretKey = env.R2_SECRET_ACCESS_KEY || process.env.R2_SECRET_ACCESS_KEY;
+  const bucketName = env.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME;
+  const publicUrl = env.NEXT_PUBLIC_R2_URL || process.env.NEXT_PUBLIC_R2_URL;
+
+  const S3 = new S3Client({
+    region: "auto",
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: accessKey!,
+      secretAccessKey: secretKey!,
+    },
+  });
+
+  const [header, base64Data] = base64Str.split(",");
+  const mimeMatch = header.match(/data:([^;]+);base64/);
+  const mimeType = mimeMatch?.[1] || "image/jpeg";
+  const ext = mimeType.split("/")[1] || "jpg";
+
+  // Convert base64 to binary Uint8Array for Cloudflare Edge
+  const binaryString = atob(base64Data);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  const key = `uploads/picfomo_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+
+  const command = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+    ContentType: mimeType,
+    Body: bytes,
+  });
+
+  await S3.send(command);
+  return `${publicUrl}/${key}`;
+}
+
+// === 2. GROQ SEO HELPER ===
 async function generateSEOData(prompt: string, apiKey: string) {
   if (!apiKey || apiKey === "undefined") {
-    console.error("🚨 GROQ_API_KEY is missing or undefined — skipping Groq call");
-    return { 
-      title: "PicFOMO Generation", 
-      description: "A stunning creation synthesized in the PicFOMO Studio.", 
-      tags: "ai, art, picfomo, portrait, synthesis" 
-    };
+    return { title: "PicFOMO Synthesis", description: "A stunning creation synthesized in the PicFOMO Studio.", tags: "ai, art, picfomo, portrait, synthesis" };
   }
 
   try {
-    const safePrompt = prompt?.trim() 
-      ? prompt.trim().slice(0, 500)
-      : "A highly detailed, aesthetic AI image generation.";
+    const safePrompt = prompt?.trim() ? prompt.trim().slice(0, 500) : "A highly detailed, aesthetic AI image generation.";
 
     const res = await fetch(GROQ_API_URL, {
       method: "POST",
@@ -42,52 +81,29 @@ The JSON must have exactly these three keys:
 - "description": 1-2 engaging sentences  
 - "tags": a comma-separated string of exactly 5 relevant tags`
           },
-          {
-            role: "user",
-            content: `Generate SEO metadata for this image prompt: "${safePrompt}"`
-          }
+          { role: "user", content: `Generate SEO metadata for this image prompt: "${safePrompt}"` }
         ],
         temperature: 0.3,
       })
     });
     
-    if (!res.ok) {
-      const errorBody = await res.text();
-      console.error(`🚨 Groq 400 body: ${errorBody}`);
-      throw new Error(`Groq ${res.status}: ${errorBody}`);
-    }
+    if (!res.ok) throw new Error(`Groq HTTP ${res.status}`);
 
     const data = (await res.json()) as any;
     let content = data?.choices?.[0]?.message?.content;
-
     if (!content) throw new Error("Empty Groq response");
 
-    // Strip markdown fences defensively
-    content = content.trim()
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
-
+    content = content.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
     const parsed = JSON.parse(content);
-
-    if (!parsed.title || !parsed.description || !parsed.tags) {
-      throw new Error("Groq returned malformed JSON shape");
-    }
-
+    if (!parsed.title || !parsed.description || !parsed.tags) throw new Error("Groq returned malformed JSON shape");
     return parsed;
 
   } catch (error) {
-    console.error("Groq SEO Error:", error);
-    return { 
-      title: "PicFOMO Generation", 
-      description: "A stunning creation synthesized in the PicFOMO Studio.", 
-      tags: "ai, art, picfomo, synthesis" 
-    };
+    return { title: "PicFOMO Synthesis", description: "A stunning creation synthesized in the PicFOMO Studio.", tags: "ai, art, picfomo, synthesis" };
   }
 }
 
-// === 2. PIXAZO FIRE-RED POLLING HELPER ===
+// === 3. PIXAZO FIRE-RED POLLING HELPER ===
 async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
   let attempts = 0;
   const maxAttempts = 24; 
@@ -117,7 +133,7 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
   throw new Error("Generation timed out. The model is currently overloaded. Please try again.");
 }
 
-// === 3. THE MAIN API ROUTE ===
+// === 4. THE MAIN API ROUTE ===
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
@@ -134,26 +150,35 @@ export async function POST(req: Request) {
 
     if (!GROQ_KEY) console.error("🚨 CRITICAL: GROQ_API_KEY is missing from Cloudflare environment!");
 
-    // --- A. GET PRICING, LOGIC, & PROMPTS ---
-    let sparkCost = 2; // Default for Schnell
+    let sparkCost = 2; 
     let finalPrompt = prompt;
     let apiImageUrls: string[] = [];
 
+    // --- A. GET PRICING, LOGIC, & PROMPTS ---
     if (model !== "schnell") {
+      
+      // 🌟 STEP 1: CONVERT ANY BASE64 TO SECURE R2 HTTP URLS
+      let secureSourceFace = sourceImage;
+      if (sourceImage) secureSourceFace = await uploadBase64ToR2(sourceImage, envCtx);
+
       if (model === "swap") {
-        if (!targetImage || !sourceImage) throw new Error("Target and source images required for swap.");
-        apiImageUrls = [targetImage, sourceImage];
-        finalPrompt = prompt || "Replace the face in Figure 1 with the face from Figure 2. Preserve Figure 1's background and clothing.";
+        if (!targetImage || !secureSourceFace) throw new Error("Target and source images required for swap.");
+        let secureTarget = await uploadBase64ToR2(targetImage, envCtx);
+        
+        // 🌟 FIGURE 1 = SCENE/TARGET, FIGURE 2 = USER FACE
+        apiImageUrls = [secureTarget, secureSourceFace];
+        finalPrompt = `Place the person from Figure 2 into the scene of Figure 1. Preserve the exact facial identity, skin tone, and features of the person from Figure 2. Keep the background, clothing, lighting, color grading, and composition of Figure 1 completely intact. Blend the person naturally into Figure 1's environment — match lighting direction and shadows seamlessly. Do not change the outfit or scene of Figure 1.`;
+        if (prompt) finalPrompt += ` Additional details: ${prompt}`;
       } 
       else if (styleId === "custom") {
          sparkCost = 15; 
-         if (!customBgImage || !sourceImage) throw new Error("Face and custom background image required.");
+         if (!customBgImage || !secureSourceFace) throw new Error("Face and custom background image required.");
          
-         // 🌟 CUSTOM MODE: Base = User Face (Fig 1), Reference = Custom Background (Fig 2)
-         apiImageUrls = [sourceImage, customBgImage];
+         let secureCustomBg = await uploadBase64ToR2(customBgImage, envCtx);
          
-         finalPrompt = `Replace the entire background of Figure 1 with the exact scene and environment from Figure 2. Preserve the person in Figure 1 exactly, keeping their clothing, face, and pose unchanged. Adjust lighting to blend naturally.`;
-         
+         // 🌟 FIGURE 1 = SCENE/TARGET, FIGURE 2 = USER FACE
+         apiImageUrls = [secureCustomBg, secureSourceFace];
+         finalPrompt = `Place the person from Figure 2 into the scene of Figure 1. Preserve the exact facial identity, skin tone, and features of the person from Figure 2. Keep the background, clothing, lighting, color grading, and composition of Figure 1 completely intact. Blend the person naturally into Figure 1's environment — match lighting direction and shadows seamlessly. Do not change the outfit or scene of Figure 1.`;
          if (prompt) finalPrompt += ` Additional details: ${prompt}`;
       } 
       else {
@@ -161,14 +186,13 @@ export async function POST(req: Request) {
          if (!styleRecord) throw new Error("Style not found or inactive.");
          
          sparkCost = styleRecord.spark_cost as number;
-         if (!sourceImage) throw new Error("Source face image required.");
+         if (!secureSourceFace) throw new Error("Source face image required.");
          
-         // 🌟 PREMIUM STYLE FIX: Base = Style Image (Fig 1), Reference = User Face (Fig 2)
-         apiImageUrls = [styleRecord.preview_image_url as string, sourceImage];
+         // 🌟 FIGURE 1 = SCENE/TARGET, FIGURE 2 = USER FACE
+         apiImageUrls = [styleRecord.preview_image_url as string, secureSourceFace];
+         finalPrompt = `Place the person from Figure 2 into the scene of Figure 1. Preserve the exact facial identity, skin tone, and features of the person from Figure 2. Keep the background, clothing, lighting, color grading, and composition of Figure 1 completely intact. Blend the person naturally into Figure 1's environment — match lighting direction and shadows seamlessly. Do not change the outfit or scene of Figure 1.`;
          
-         finalPrompt = `Replace the face of the person in Figure 1 with the exact facial features and identity of the person in Figure 2. Strictly preserve the original background, clothing, posture, lighting, and artistic style of Figure 1. Ensure seamless skin tone matching. Do not alter the scene or outfit of Figure 1.`;
-         
-         if (styleRecord.description) finalPrompt += ` Context: ${styleRecord.description}.`;
+         if (styleRecord.description) finalPrompt += ` Style context: ${styleRecord.description}.`;
          if (prompt) finalPrompt += ` User details: ${prompt}`;
       }
     }
@@ -181,7 +205,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
     }
 
-    // DEDUCT SPARKS AND LOG TRANSACTION
     const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
     const txReason = styleId === 'custom' ? 'Custom Background Generation' : 'Generated Portrait';
     
@@ -215,7 +238,7 @@ export async function POST(req: Request) {
         seoData = groqRes;
 
       } else {
-        // 🌟 FIRE-RED COMPOSITING (Dual Image)
+        // 🌟 FIRE-RED COMPOSITING
         if (!apiImageUrls || apiImageUrls.length < 2) throw new Error("Missing required images for compositing.");
 
         const [pixazoStartRes, groqRes] = await Promise.all([
@@ -227,6 +250,7 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({
               prompt: finalPrompt,
+              negative_prompt: "wrong face, different identity, distorted features, skin color change, blurry face, artifacts, cheap composite, mismatched lighting",
               image_urls: apiImageUrls, 
               num_inference_steps: 30,
               guidance_scale: 4
@@ -261,7 +285,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
 
     } catch (aiError: any) {
-      // REFUND SPARKS ON FAILURE
       const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
       await db.batch([
         db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId),
@@ -269,16 +292,14 @@ export async function POST(req: Request) {
       ]);
       
       console.error("AI Pipeline Error (Refunded):", aiError);
-      
       if (aiError.message === "NSFW_VIOLATION") {
-         return NextResponse.json({ error: "Upload rejected: Violates safety and community guidelines. Sparks refunded." }, { status: 400 });
+         return NextResponse.json({ error: "Upload rejected: Violates safety guidelines." }, { status: 400 });
       }
-      
-      return NextResponse.json({ error: aiError.message || "Generation failed. Sparks refunded." }, { status: 500 });
+      return NextResponse.json({ error: aiError.message || "Generation failed." }, { status: 500 });
     }
 
   } catch (serverError: any) {
     console.error("Server API Error:", serverError);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: serverError.message || "Internal Server Error" }, { status: 500 });
   }
 }
