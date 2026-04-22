@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 
-// 🌟 FIX 3: Hardcoded to local paths! 
+// 🌟 REAL DATA: Using your actual Cloudflare R2 Studio assets!
 // IMPORTANT: Put these 8 images inside your 'public/hero/' folder!
 const COMMUNITY_POSTS = [
   { id: 1, style: "Profile Break", image_url: "/hero/1.png" },
@@ -22,8 +22,9 @@ const SCROLL_ITEMS = [...COMMUNITY_POSTS, ...COMMUNITY_POSTS];
 
 export default function Hero() {
   return (
-    /* 🌟 FIX 1: Removed pt-[120px] and replaced with pt-10. This deletes the ugly empty space on mobile! */
-    <section className="relative mx-auto max-w-[1280px] px-6 pt-10 pb-12 lg:px-10 lg:py-20 overflow-x-hidden min-h-[85vh] flex flex-col justify-start lg:justify-center">
+    /* 🌟 FIX: Removed `overflow-x-hidden`! 
+       This stops the browser from creating a secondary inner scrollbar inside the Hero section. */
+    <section className="relative mx-auto max-w-[1280px] px-6 pt-10 pb-12 lg:px-10 lg:py-20 min-h-[85vh] flex flex-col justify-start lg:justify-center">
       
       {/* 🌟 1. DYNAMIC AURORA BACKGROUND */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
@@ -99,7 +100,7 @@ export default function Hero() {
             28,398+ portraits created today
           </div>
 
-          {/* 🌟 FIX 2: Text size bumped to 16vw! It will be massive and perfectly fitted to mobile screens. */}
+          {/* Headline */}
           <h1 className="mb-5 font-[family-name:var(--display)] text-[16vw] sm:text-[80px] lg:text-[110px] leading-[0.85] tracking-[-0.03em] text-[var(--color-ink)] flex flex-col items-center lg:items-start w-full">
             YOUR FACE.<br />
             <span className="flex items-center gap-2 md:gap-3 mt-1 sm:mt-2">
