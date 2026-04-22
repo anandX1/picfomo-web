@@ -4,7 +4,6 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // === 1. GROQ SEO HELPER (Fortified & Cloudflare Safe) ===
 async function generateSEOData(prompt: string, apiKey: string) {
-  // 🔐 Guard: catch missing key BEFORE hitting Groq
   if (!apiKey || apiKey === "undefined") {
     console.error("🚨 GROQ_API_KEY is missing or undefined — skipping Groq call");
     return { 
@@ -16,7 +15,7 @@ async function generateSEOData(prompt: string, apiKey: string) {
 
   try {
     const safePrompt = prompt?.trim() 
-      ? prompt.trim().slice(0, 500) // truncate to avoid body size issues
+      ? prompt.trim().slice(0, 500)
       : "A highly detailed, aesthetic AI image generation.";
 
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -26,8 +25,8 @@ async function generateSEOData(prompt: string, apiKey: string) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant", // faster, cheaper, better JSON compliance on edge
-        max_tokens: 300,               // Groq needs this explicitly on edge runtimes
+        model: "llama-3.1-8b-instant",
+        max_tokens: 300,
         messages: [
           {
             role: "system",
@@ -49,7 +48,6 @@ The JSON must have exactly these three keys:
     
     if (!res.ok) {
       const errorBody = await res.text();
-      console.error(`🚨 Groq 400 body (check this!): ${errorBody}`);
       throw new Error(`Groq ${res.status}: ${errorBody}`);
     }
 
@@ -58,7 +56,6 @@ The JSON must have exactly these three keys:
 
     if (!content) throw new Error("Empty Groq response");
 
-    // Strip markdown fences defensively
     content = content.trim()
       .replace(/^```json\s*/i, "")
       .replace(/^```\s*/i, "")
@@ -67,7 +64,6 @@ The JSON must have exactly these three keys:
 
     const parsed = JSON.parse(content);
 
-    // Validate shape before returning
     if (!parsed.title || !parsed.description || !parsed.tags) {
       throw new Error("Groq returned malformed JSON shape");
     }
@@ -84,7 +80,7 @@ The JSON must have exactly these three keys:
   }
 }
 
-// === 2. PIXAZO FIRE-RED POLLING HELPER (Fixed for Rate Limits & Safety) ===
+// === 2. PIXAZO FIRE-RED POLLING HELPER ===
 async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
   let attempts = 0;
   const maxAttempts = 24; 
@@ -123,7 +119,6 @@ export async function POST(req: Request) {
 
     const body = (await req.json()) as any;
     
-    // 🌟 Extracted all required parameters, including Custom Image and Swap Target
     const { prompt, model, styleId, sourceImage, customBgImage, targetImage } = body;
 
     const envCtx = ((await getCloudflareContext({ async: true })).env as any);
@@ -134,30 +129,27 @@ export async function POST(req: Request) {
 
     if (!GROQ_KEY) console.error("🚨 CRITICAL: GROQ_API_KEY is missing from Cloudflare environment!");
 
-    // --- A. GET PRICING, PROMPTS & BACKGROUNDS ---
-    let sparkCost = 2; // Default for Schnell
+    let sparkCost = 2; 
     let finalPrompt = prompt;
     let targetBackgroundUrl = customBgImage || null;
 
     if (model !== "schnell" && model !== "swap") {
       if (styleId === "custom") {
-         sparkCost = 15; // Charge premium for custom background uploads
+         sparkCost = 15; 
          if (!customBgImage) throw new Error("Custom background image required.");
       } else {
          const styleRecord = await db.prepare("SELECT spark_cost, description, preview_image_url FROM styles WHERE id = ?").bind(styleId).first();
          if (!styleRecord) throw new Error("Style not found or inactive.");
          
          sparkCost = styleRecord.spark_cost as number;
-         targetBackgroundUrl = styleRecord.preview_image_url as string; // Figure 2 Background
+         targetBackgroundUrl = styleRecord.preview_image_url as string; 
          
-         // 🌟 THE BULLETPROOF IDENTITY PROMPT:
          finalPrompt = `Place the person from Figure 1 into the scene from Figure 2. Preserve the exact facial features, skin tone, and identity of the person from Figure 1. Match the lighting direction, color temperature, and atmosphere of Figure 2. Natural seamless blend, photorealistic, no compositing artifacts. Style details: ${styleRecord.description}`;
          
          if (prompt) finalPrompt += `. Additional user details: ${prompt}`;
       }
     }
 
-    // --- B. SECURE BILLING ---
     const userWallet = await db.prepare("SELECT sparks_balance FROM users WHERE id = ?").bind(userId).first();
     const currentBalance = (userWallet?.sparks_balance as number) || 0;
 
@@ -165,7 +157,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
     }
 
-    // 🌟 SMART UPDATE: DEDUCT SPARKS AND RECORD TRANSACTION FOR THE LEDGER
     const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
     const txReason = styleId === 'custom' ? 'Custom Background Generation' : 'Generated Portrait';
     
@@ -175,7 +166,6 @@ export async function POST(req: Request) {
     ]);
 
     try {
-      // --- C. AI GENERATION & SEO (CONCURRENT) ---
       let outputImageUrl = "";
       let seoData = { title: "", description: "", tags: "" };
 
@@ -199,12 +189,10 @@ export async function POST(req: Request) {
         seoData = groqRes;
 
       } else {
-        // 🌟 FIRE-RED COMPOSITING
         if (!sourceImage) throw new Error("Source face image required.");
         
         let apiImageUrls = [sourceImage, targetBackgroundUrl];
         
-        // Handle Explore Feed 'Collab Swap' specifically
         if (model === "swap") {
           if (!targetImage) throw new Error("Target image is missing for Collab Swap!");
           apiImageUrls = [targetImage, sourceImage]; 
@@ -221,7 +209,7 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({
               prompt: finalPrompt,
-              image_urls: apiImageUrls, // Passing Figure 1 & Figure 2
+              image_urls: apiImageUrls, 
               num_inference_steps: 30,
               guidance_scale: 4
             })
@@ -236,12 +224,11 @@ export async function POST(req: Request) {
         seoData = groqRes;
       }
 
-      // --- D. SAVE TO DATABASE (Private by Default for Upsell) ---
       const postId = `post_${Date.now()}`;
       await db.prepare(`
         INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, title, description, tags, is_public)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0) 
-      `).bind( // 🌟 is_public is 0 so we can upsell it to the feed!
+      `).bind(
         postId, 
         userId, 
         outputImageUrl, 
@@ -255,7 +242,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
 
     } catch (aiError: any) {
-      // 🌟 SMART UPDATE: REFUND TRANSACTION RECORDING
       const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
       await db.batch([
         db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId),
@@ -271,8 +257,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: aiError.message || "Generation failed. Sparks refunded." }, { status: 500 });
     }
 
-  } catch (serverError) {
+  } catch (serverError: any) {
     console.error("Server API Error:", serverError);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: serverError.message || "Internal Server Error" }, { status: 500 });
   }
 }
