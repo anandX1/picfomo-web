@@ -4,16 +4,17 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 
-// 🌟 REAL DATA: Using your actual Cloudflare R2 Studio assets!
+// 🌟 FIX 3: Hardcoded to local paths! 
+// IMPORTANT: Put these 8 images inside your 'public/hero/' folder!
 const COMMUNITY_POSTS = [
-  { id: 1, style: "Profile Break", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/Gemini_Generated_Image_7jfy047jfy047jfy.png" },
-  { id: 2, style: "Reins & Shadow", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1768355185519-cyd7mg.png" },
-  { id: 3, style: "Sage & Still", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1775307126909-bd97sm.png" },
-  { id: 4, style: "Rust & Rest", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1775308557046-canqft.png" },
-  { id: 5, style: "Flock Selfie", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1775397538147-wbqu2l.png" },
-  { id: 6, style: "Headlines", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1767951360678-4r7tke.png" },
-  { id: 7, style: "Miniature Creation", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/1775307048501-bki7ts.png" },
-  { id: 8, style: "Self Creation", image_url: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/Gemini_Generated_Image_k2973ik2973ik297.png" },
+  { id: 1, style: "Profile Break", image_url: "/hero/1.png" },
+  { id: 2, style: "Reins & Shadow", image_url: "/hero/2.png" },
+  { id: 3, style: "Sage & Still", image_url: "/hero/3.png" },
+  { id: 4, style: "Rust & Rest", image_url: "/hero/4.png" },
+  { id: 5, style: "Flock Selfie", image_url: "/hero/5.png" },
+  { id: 6, style: "Headlines", image_url: "/hero/6.png" },
+  { id: 7, style: "Miniature Creation", image_url: "/hero/7.png" },
+  { id: 8, style: "Self Creation", image_url: "/hero/8.png" },
 ];
 
 // We duplicate the array so the CSS infinite scroll loops perfectly
@@ -21,8 +22,8 @@ const SCROLL_ITEMS = [...COMMUNITY_POSTS, ...COMMUNITY_POSTS];
 
 export default function Hero() {
   return (
-    /* 🌟 FIX 1: Changed to `justify-start lg:justify-center` and added `pt-[120px]`. This ensures mobile text starts at the top and NEVER gets pushed off the screen! */
-    <section className="relative mx-auto max-w-[1280px] px-6 pt-[120px] pb-12 lg:px-10 lg:py-20 overflow-x-hidden min-h-[90vh] flex flex-col justify-start lg:justify-center">
+    /* 🌟 FIX 1: Removed pt-[120px] and replaced with pt-10. This deletes the ugly empty space on mobile! */
+    <section className="relative mx-auto max-w-[1280px] px-6 pt-10 pb-12 lg:px-10 lg:py-20 overflow-x-hidden min-h-[85vh] flex flex-col justify-start lg:justify-center">
       
       {/* 🌟 1. DYNAMIC AURORA BACKGROUND */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
@@ -50,8 +51,6 @@ export default function Hero() {
           background-clip: text;
           animation: shimmer-sweep 5s linear infinite;
         }
-
-        /* Removed buggy btn-shine animations to fix mobile buttons */
 
         @keyframes aurora-drift {
           0% { transform: translate(0, 0) scale(1); }
@@ -84,12 +83,12 @@ export default function Hero() {
         }
       `}</style>
 
-      {/* 🌟 FIX 2: Shifted breakpoints to lg: so tablets don't get squished */}
+      {/* Grid Breakpoints */}
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_520px] xl:grid-cols-[1fr_600px] w-full relative z-10">
         
         {/* --- LEFT COLUMN: The Pitch --- */}
         <motion.div
-          initial={{ opacity: 1, y: 0 }} /* 🌟 FIX 3: Opacity 1 instead of 0. This bypasses the mobile Framer Motion bug that caused the black screen! */
+          initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col items-center text-center lg:items-start lg:text-left w-full"
@@ -100,14 +99,14 @@ export default function Hero() {
             28,398+ portraits created today
           </div>
 
-          {/* Headline */}
-          <h1 className="mb-5 font-[family-name:var(--display)] text-[clamp(46px,10vw,100px)] leading-[0.85] tracking-[-1.5px] text-[var(--color-ink)] flex flex-col items-center lg:items-start">
+          {/* 🌟 FIX 2: Text size bumped to 16vw! It will be massive and perfectly fitted to mobile screens. */}
+          <h1 className="mb-5 font-[family-name:var(--display)] text-[16vw] sm:text-[80px] lg:text-[110px] leading-[0.85] tracking-[-0.03em] text-[var(--color-ink)] flex flex-col items-center lg:items-start w-full">
             YOUR FACE.<br />
-            <span className="flex items-center gap-2 md:gap-3 mt-1">
+            <span className="flex items-center gap-2 md:gap-3 mt-1 sm:mt-2">
               <span className="text-shimmer font-sans text-[1.1em] font-light leading-none -mt-2">∞</span>
               <span className="text-[var(--color-gold)]">STYLES.</span>
             </span>
-            <span className="block font-[family-name:var(--serif)] text-[0.65em] font-normal italic text-[var(--color-ink3)] mt-2">
+            <span className="block font-[family-name:var(--serif)] text-[0.55em] font-normal italic text-[var(--color-ink3)] mt-2">
               ALL IN ONE PLACE.
             </span>
           </h1>
@@ -119,12 +118,11 @@ export default function Hero() {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5 w-full sm:w-auto z-20 relative">
-            {/* 🌟 FIX 4: Removed buggy 'btn-magnetic' and explicitly set bg to Gold and text to Black. It will NEVER be blank again. */}
             <Link
               href="/sign-up"
               className="flex w-full sm:w-auto items-center justify-center gap-2 bg-[var(--color-gold)] px-8 py-4 md:px-10 md:py-4.5 font-[family-name:var(--display)] text-[16px] md:text-[18px] tracking-[1.5px] text-black shadow-[var(--shadow-lg)] transition-all hover:-translate-y-1 hover:bg-[var(--color-gold-light)] hover:shadow-[0_10px_40px_rgba(245,158,11,0.3)] rounded-[14px]"
             >
-              Create Free Portrait <span className="hidden sm:inline">→</span>
+              <span className="relative z-10 flex items-center gap-2">Create Free Portrait <span className="hidden sm:inline">→</span></span>
             </Link>
             
             <Link 
@@ -168,7 +166,7 @@ export default function Hero() {
 
       {/* --- MOBILE ONLY: 3. CINEMATIC INFINITE MARQUEE --- */}
       <motion.div
-        initial={{ opacity: 1, y: 0 }} /* 🌟 FIX 5: Prevented slider from being invisible */
+        initial={{ opacity: 1, y: 0 }} 
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
         className="relative mt-12 block w-[calc(100%+3rem)] -mx-6 lg:hidden z-10"
@@ -197,6 +195,7 @@ function LiveWallCard({ post, priority = false }: { post: any, priority?: boolea
       className="group relative aspect-[3/4] w-full cursor-pointer overflow-hidden shadow-[var(--shadow-md)] transition-all duration-500 hover:-translate-y-3 hover:scale-105 hover:shadow-[var(--shadow-2xl)] rounded-[18px] block hover:z-50 border border-[var(--rule)]"
     >
       <div className="absolute inset-0 h-full w-full bg-[var(--color-cream2)]">
+        {/* 🌟 NEXT.JS IMAGE - Automatically optimizes local assets from the public folder */}
         <Image 
           src={post.image_url} 
           alt={post.style} 
