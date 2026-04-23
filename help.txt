@@ -14,3 +14,5 @@ git commit -m "info"
 git push origin main
 
 npx wrangler tail picfomo-web
+
+npm install react-easy-crop --legacy-peer-deps

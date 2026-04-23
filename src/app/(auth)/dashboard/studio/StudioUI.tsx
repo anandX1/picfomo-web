@@ -3,24 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import Script from "next/script"; 
 import { compressAndUploadImage } from "@/lib/uploadImage";
-import { Sparkles, Image as ImageIcon, CheckCircle2, Download, Share, Link as LinkIcon, X, Zap, Loader2, ChevronLeft, ScanFace, ImagePlus } from "lucide-react";
+import { Sparkles, Image as ImageIcon, CheckCircle2, Download, Share, X, Zap, Loader2, ChevronLeft, ScanFace, ImagePlus, Globe } from "lucide-react";
 import Image from "next/image";
+import { publishPostToFeed } from "@/actions/economy"; 
+import { toast } from "sonner";
 
 const NSFW_WORDS = ["nude", "naked", "nsfw", "porn", "blood", "gore", "explicit", "violence"];
 
-// Custom Style Object injected into the grid
-const CUSTOM_STYLE = {
-  id: "custom",
-  name: "Custom Universe",
-  description: "Upload any background scene and we will blend you into it.",
-  spark_cost: 15,
-  badge: "PRO",
-  mainImage: "https://pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev/picfomo_custom_bg.jpg", // Add a cool placeholder image to your R2 bucket for this!
-};
-
 export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
-  // Combine custom card with DB styles
-  const allStyles = [CUSTOM_STYLE, ...dynamicStyles];
 
   // --- APP STATE ---
   const [activeTab, setActiveTab] = useState<"styles" | "imagine">("styles");
@@ -30,7 +20,6 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
   // --- FORM STATE ---
   const [prompt, setPrompt] = useState("");
   const [file, setFile] = useState<File | null>(null); // The Face
-  const [customBgFile, setCustomBgFile] = useState<File | null>(null); // The Target Background (for Custom)
   
   // --- GENERATION STATE ---
   const [progress, setProgress] = useState(0); 
@@ -38,6 +27,11 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
   const [outputPostId, setOutputPostId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sourcePreviewUrl, setSourcePreviewUrl] = useState<string | null>(null);
+
+  // --- PUBLISH STATE ---
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
 
   // Before/After Slider State for Result View
   const [sliderPos, setSliderPos] = useState(50);
@@ -60,12 +54,19 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
     return () => clearInterval(interval);
   }, [view]);
 
+  // 🌟 AUTO-PUBLISH MODAL TRAP (Triggers 2.5s after generation finishes)
+  useEffect(() => {
+    if (view === "result" && !isPublished && outputPostId) {
+      const timer = setTimeout(() => setShowPublishModal(true), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [view, isPublished, outputPostId]);
+
   const containsNSFW = (text: string) => NSFW_WORDS.some(word => text.toLowerCase().includes(word));
 
   const openUploadView = (style: any) => {
     setSelectedStyle(style);
     setFile(null); 
-    setCustomBgFile(null);
     setError(null);
     setView("upload");
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -77,32 +78,30 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
     if (!prompt && activeTab === "imagine") return setError("Please enter a prompt.");
     if (prompt && containsNSFW(prompt)) return setError("⚠️ Prompt rejected: Violates safety guidelines.");
     if (activeTab === "styles" && !file) return setError("Please upload your face photo.");
-    if (activeTab === "styles" && selectedStyle?.id === "custom" && !customBgFile) return setError("Please upload a target background image.");
 
     try {
       setView("generating");
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Reset publish state for new generation
+      setIsPublished(false);
+      setShowPublishModal(false);
 
       let uploadedFaceUrl = "";
-      let uploadedBgUrl = "";
 
-      // 1. Upload Images to R2
+      // 1. Upload Image to R2 (Client-Side Compression)
       if (activeTab === "styles" && file) {
         setSourcePreviewUrl(URL.createObjectURL(file)); // Save for before/after slider
         uploadedFaceUrl = await compressAndUploadImage(file);
       }
-      if (activeTab === "styles" && selectedStyle?.id === "custom" && customBgFile) {
-        uploadedBgUrl = await compressAndUploadImage(customBgFile);
-      }
 
-      // 2. Call our new robust backend
+      // 2. Call Plan A robust backend (Single Image payload)
       const payload = activeTab === "imagine" 
         ? { prompt, model: "schnell" } 
         : { 
             prompt, 
             styleId: selectedStyle.id, 
-            sourceImage: uploadedFaceUrl,
-            customBgImage: uploadedBgUrl || undefined
+            sourceImage: uploadedFaceUrl
           };
 
       const res = await fetch("/api/generate", {
@@ -131,7 +130,26 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
     }
   };
 
-  // --- VIRAL LOOPS ---
+  // 🌟 HANDLE PUBLISH TO FEED LOGIC
+  const handlePublish = async () => {
+    if (!outputPostId || isPublished) return;
+    setIsPublishing(true);
+    try {
+      const res = await publishPostToFeed(outputPostId);
+      if (res.success) {
+        setIsPublished(true);
+        setShowPublishModal(false);
+        toast.success("Published! You just earned +5 ⚡");
+      } else {
+        toast.error(res.message);
+      }
+    } catch (err) {
+      toast.error("Failed to publish image.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   const handleDownload = async () => {
     if (!outputImage) return;
     try {
@@ -174,7 +192,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
       try { await navigator.share({ title: "My PicFOMO Creation", url: postUrl }); } catch (err) {}
     } else {
       navigator.clipboard.writeText(postUrl);
-      alert("Link copied to clipboard! Share it anywhere.");
+      toast.success("Link copied to clipboard! Share it anywhere.");
     }
   };
 
@@ -209,11 +227,11 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
 
           {activeTab === "styles" ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {allStyles.map((style) => (
-                <div key={style.id} onClick={() => openUploadView(style)} className={`group cursor-pointer relative aspect-[4/5] rounded-[24px] overflow-hidden shadow-sm border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-[var(--color-cream2)] ${style.id === 'custom' ? 'border-[var(--color-gold)] shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'border-[var(--rule)] hover:border-[var(--color-gold-border)]'}`}>
-                  {style.mainImage ? (
+              {dynamicStyles.map((style) => (
+                <div key={style.id} onClick={() => openUploadView(style)} className={`group cursor-pointer relative aspect-[4/5] rounded-[24px] overflow-hidden shadow-sm border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-[var(--color-cream2)] border-[var(--rule)] hover:border-[var(--color-gold-border)]`}>
+                  {style.preview_image_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={style.mainImage} alt={style.name} className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                    <img src={style.preview_image_url} alt={style.name} className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-black flex items-center justify-center">
                       <ImagePlus size={48} className="text-gray-600" />
@@ -225,7 +243,6 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                   <div className="absolute bottom-5 left-5 right-5 z-20">
                     <div className="font-[family-name:var(--display)] tracking-[0.5px] text-[18px] md:text-[22px] leading-tight flex flex-wrap items-center gap-2 drop-shadow-md text-[#FFFFFF]">
                       {style.name}
-                      {style.badge && <span className={`text-[9px] font-sans px-1.5 py-0.5 rounded font-bold tracking-widest uppercase ${style.id === 'custom' ? 'bg-[var(--color-gold)] text-black' : 'bg-[#FFFFFF] text-[#000000]'}`}>{style.badge}</span>}
                     </div>
                     <div className="text-[11px] font-[family-name:var(--mono)] uppercase tracking-[1px] font-bold text-[#FFFFFF] flex items-center gap-1 drop-shadow-md mt-2 opacity-90">
                       <Zap size={12} className="fill-[var(--color-gold)] text-[var(--color-gold)]" /> {style.spark_cost} Sparks
@@ -250,7 +267,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
       )}
 
       {/* =========================================================================
-          VIEW 2: THE UPLOAD & CONFIGURE SCREEN (Full Screen Takeover)
+          VIEW 2: THE UPLOAD & CONFIGURE SCREEN
           ========================================================================= */}
       {view === "upload" && selectedStyle && (
         <div className="animate-in slide-in-from-right-8 duration-500 max-w-5xl mx-auto">
@@ -262,9 +279,9 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
             {/* Left: Style Info & Preview */}
             <div className="w-full lg:w-1/3 flex flex-col gap-4">
               <div className="relative aspect-[4/5] rounded-[24px] overflow-hidden shadow-lg border border-[var(--rule)] bg-[var(--color-cream2)]">
-                {selectedStyle.mainImage && (
+                {selectedStyle.preview_image_url && (
                   /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={selectedStyle.mainImage} alt={selectedStyle.name} className="absolute inset-0 w-full h-full object-cover" />
+                  <img src={selectedStyle.preview_image_url} alt={selectedStyle.name} className="absolute inset-0 w-full h-full object-cover" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6 text-white">
                   <h2 className="font-[family-name:var(--display)] text-3xl tracking-wide mb-1">{selectedStyle.name}</h2>
@@ -280,10 +297,10 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
             {/* Right: Upload Zones */}
             <div className="w-full lg:w-2/3 flex flex-col gap-6">
               
-              {/* FACE UPLOAD (Always Required) */}
+              {/* FACE UPLOAD ONLY */}
               <div className="bg-[var(--color-white)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm">
                 <h3 className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-4 flex items-center gap-2">
-                  <ScanFace className="text-[var(--color-gold)]" size={18} /> 1. Upload Your Face
+                  <ScanFace className="text-[var(--color-gold)]" size={18} /> Upload Your Face
                 </h3>
                 <div className={`relative border-2 border-dashed rounded-[20px] p-10 text-center transition-all cursor-pointer overflow-hidden ${file ? 'border-[var(--color-gold)] bg-[var(--color-gold-pale)]' : 'border-[var(--rule)] bg-[var(--color-cream)] hover:bg-[var(--color-cream2)]'}`}>
                   <input type="file" accept="image/jpeg, image/png, image/webp" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={(e) => setFile(e.target.files?.[0] || null)} />
@@ -305,45 +322,19 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                 </div>
               </div>
 
-              {/* CUSTOM BACKGROUND UPLOAD (Only for Custom Style) */}
-              {selectedStyle.id === "custom" && (
-                <div className="bg-[var(--color-white)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm animate-in slide-in-from-top-4">
-                  <h3 className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-4 flex items-center gap-2">
-                    <ImagePlus className="text-[var(--color-gold)]" size={18} /> 2. Target Background
-                  </h3>
-                  <div className={`relative border-2 border-dashed rounded-[20px] p-8 text-center transition-all cursor-pointer overflow-hidden ${customBgFile ? 'border-[var(--color-gold)] bg-[var(--color-gold-pale)]' : 'border-[var(--rule)] bg-[var(--color-cream)] hover:bg-[var(--color-cream2)]'}`}>
-                    <input type="file" accept="image/jpeg, image/png, image/webp" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={(e) => setCustomBgFile(e.target.files?.[0] || null)} />
-                    <div className="flex flex-col items-center justify-center relative z-0">
-                      {customBgFile ? (
-                         <>
-                           <CheckCircle2 size={40} className="text-[var(--color-gold)] mb-3" />
-                           <h4 className="font-[family-name:var(--display)] text-xl text-[var(--color-ink)]">{customBgFile.name}</h4>
-                         </>
-                      ) : (
-                         <>
-                           <ImageIcon size={32} className="text-[var(--color-ink3)] mb-3" />
-                           <h4 className="font-[family-name:var(--display)] text-xl text-[var(--color-ink)]">Upload World / Scene</h4>
-                           <p className="text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[10px] mt-2 uppercase tracking-[2px] font-bold">The environment you want to be in.</p>
-                         </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* PROMPT OVERRIDE */}
               <div className="bg-[var(--color-white)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm">
                 <label className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-3 flex items-center justify-between">
                   Additional Details <span className="text-[9px] text-[var(--color-ink3)] tracking-widest">(Optional)</span>
                 </label>
-                <input type="text" placeholder="e.g., wearing a red leather jacket..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] rounded-xl p-4 text-[14px] focus:outline-none focus:border-[var(--color-gold-border)] transition-colors shadow-inner" />
+                <input type="text" placeholder="e.g., make it dark and cinematic..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] rounded-xl p-4 text-[14px] focus:outline-none focus:border-[var(--color-gold-border)] transition-colors shadow-inner" />
               </div>
 
               {error && <div className="text-red-500 font-[family-name:var(--mono)] text-[11px] uppercase tracking-widest font-bold text-center bg-red-500/10 p-4 rounded-xl border border-red-500/20">{error}</div>}
 
               <button 
                 onClick={handleGenerate} 
-                disabled={!file || (selectedStyle.id === "custom" && !customBgFile)} 
+                disabled={!file} 
                 className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] text-[18px] py-5 rounded-2xl hover:bg-[var(--color-gold)] hover:text-black transition-all disabled:opacity-50 disabled:hover:bg-[var(--color-ink)] disabled:hover:text-[var(--color-white)] shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 mt-4"
               >
                 <Sparkles size={20} /> INITIALIZE SYNTHESIS
@@ -355,26 +346,20 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
       )}
 
       {/* =========================================================================
-          VIEW 3: GENERATING (The Immersive Ad Lounge)
+          VIEW 3: GENERATING
           ========================================================================= */}
       {view === "generating" && (
         <div className="animate-in zoom-in-95 duration-700 min-h-[70vh] flex flex-col items-center justify-center relative">
-          
           <div className="absolute inset-0 bg-[var(--color-cream)] rounded-[40px] border border-[var(--rule)] shadow-2xl overflow-hidden flex flex-col md:flex-row">
-            
-            {/* Left: The Matrix Loader */}
             <div className="w-full md:w-1/2 p-10 md:p-16 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-[var(--rule)] bg-[var(--color-white)] relative">
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-              
               <div className="relative flex items-center justify-center mb-10 z-10">
                 <div className="absolute inset-0 bg-[var(--color-gold)] opacity-20 blur-2xl rounded-full animate-pulse h-32 w-32 -ml-8 -mt-8"></div>
                 <div className="h-20 w-20 bg-black rounded-3xl border border-gray-800 shadow-2xl flex items-center justify-center rotate-3 animate-[spin_6s_linear_infinite_reverse]">
                   <Zap size={32} className="text-[var(--color-gold)] fill-[var(--color-gold)]" />
                 </div>
               </div>
-              
               <h2 className="font-[family-name:var(--display)] text-4xl tracking-tight text-[var(--color-ink)] mb-6 relative z-10">Synthesizing...</h2>
-              
               <div className="w-full max-w-xs bg-[var(--color-cream2)] rounded-full h-3 overflow-hidden relative shadow-inner z-10">
                 <div className="bg-[var(--color-gold)] h-full transition-all duration-700 ease-out relative" style={{ width: `${progress}%` }}>
                   <div className="absolute top-0 right-0 bottom-0 w-10 bg-gradient-to-r from-transparent to-white/50"></div>
@@ -382,24 +367,19 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
               </div>
               <p className="font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[3px] text-[var(--color-ink3)] mt-4 relative z-10">{progress}% Complete</p>
             </div>
-
-            {/* Right: The Ad Lounge */}
             <div className="w-full md:w-1/2 bg-[var(--color-cream2)] p-6 md:p-10 flex flex-col items-center justify-center relative">
               <h3 className="font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[3px] text-[var(--color-ink3)] mb-6">Discover (Sponsored)</h3>
-              
-              {/* Native Ad Container */}
               <div className="w-full max-w-sm aspect-video md:aspect-[4/3] bg-white rounded-2xl border border-[var(--rule)] shadow-sm overflow-hidden flex items-center justify-center">
                  <div id="container-b39280394b30c04b29a8908fb4b0bd64" className="scale-90"></div>
                  <Script id="adsterra-native-lounge" src="https://pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" strategy="afterInteractive" data-cfasync="false" async />
               </div>
             </div>
-
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          VIEW 4: RESULT (Before & After Cinematic Display)
+          VIEW 4: RESULT
           ========================================================================= */}
       {view === "result" && outputImage && (
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto flex flex-col items-center">
@@ -413,38 +393,62 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
             </div>
           </div>
 
-          <div className="w-full bg-[var(--color-white)] rounded-[32px] md:rounded-[40px] p-4 md:p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)] flex flex-col md:flex-row gap-8 items-center">
+          <div className="w-full bg-[var(--color-white)] rounded-[32px] md:rounded-[40px] p-4 md:p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)] flex flex-col md:flex-row gap-8 items-center relative">
             
-            {/* Left: The Before/After Slider */}
+            {/* 🌟 AGGRESSIVE PUBLISH UPSELL MODAL */}
+            {showPublishModal && (
+              <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-md rounded-[32px] md:rounded-[40px] flex items-center justify-center p-6 animate-in zoom-in-95 duration-300">
+                <div className="bg-[var(--color-white)] p-8 rounded-3xl shadow-2xl max-w-md w-full border border-[var(--rule)] text-center relative overflow-hidden">
+                  <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-[var(--color-gold)] opacity-20 blur-2xl animate-pulse"></div>
+                  
+                  <button onClick={() => setShowPublishModal(false)} className="absolute right-4 top-4 text-[var(--color-ink3)] hover:text-[var(--color-ink)] bg-[var(--color-cream)] rounded-full p-2 border border-[var(--rule)]">
+                    <X size={16} />
+                  </button>
+
+                  <div className="mx-auto w-16 h-16 bg-[var(--color-gold-pale)] border border-[var(--color-gold-border)] text-[var(--color-gold)] flex items-center justify-center rounded-full mb-6">
+                    <Globe size={32} />
+                  </div>
+                  <h3 className="font-[family-name:var(--display)] text-3xl mb-2 text-[var(--color-ink)]">Publish to Explore</h3>
+                  <p className="text-[var(--color-ink2)] text-[13px] mb-6 leading-relaxed">
+                    Your masterpiece is ready. Publish it to the public feed to earn <strong className="text-[var(--color-ink)] font-bold">+5 ⚡ instantly</strong>, plus <strong className="text-[var(--color-ink)] font-bold">+1 ⚡</strong> every time someone likes it!
+                  </p>
+                  
+                  <button 
+                    onClick={handlePublish}
+                    disabled={isPublishing}
+                    className="w-full bg-[var(--color-ink)] text-[var(--color-white)] hover:bg-[var(--color-gold)] hover:text-black transition-colors font-bold uppercase tracking-[2px] text-[12px] py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 mb-3 disabled:opacity-50"
+                  >
+                    {isPublishing ? <Loader2 size={18} className="animate-spin" /> : <><Zap size={16} className="fill-current" /> PUBLISH & EARN SPARKS</>}
+                  </button>
+                  <button onClick={() => setShowPublishModal(false)} className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-ink)] hover:underline">
+                    Keep it Private
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="w-full md:w-1/2 aspect-[4/5] relative rounded-[24px] overflow-hidden shadow-inner border border-[var(--rule)] bg-black touch-none"
                  ref={sliderContainerRef}
                  onPointerMove={handleSliderMove}
             >
-              {/* After Image (Background) */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={outputImage} alt="Synthesized Output" className="absolute inset-0 w-full h-full object-cover" />
-              
-              {/* Before Image (Foreground, Clipped) */}
               <div className="absolute inset-0 w-full h-full border-r-2 border-white/50" style={{ clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` }}>
                 {sourcePreviewUrl && (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img src={sourcePreviewUrl} alt="Original Input" className="absolute inset-0 w-full h-full object-cover filter blur-[2px]" />
                 )}
                 <div className="absolute inset-0 bg-black/20"></div>
-                <div className="absolute top-4 left-4 bg-black/60 text-white text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest px-2.5 py-1 rounded backdrop-blur-md">Raw Input</div>
+                <div className="absolute top-4 left-4 bg-black/60 text-white text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest px-2.5 py-1 rounded backdrop-blur-md border border-white/10">Raw Input</div>
               </div>
-
-              {/* Slider Handle */}
               <div className="absolute top-0 bottom-0 w-1 bg-white/80 shadow-[0_0_10px_rgba(255,255,255,0.5)] cursor-ew-resize" style={{ left: `calc(${sliderPos}% - 2px)` }}>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-xl flex items-center justify-center">
                   <span className="text-black text-[10px] font-[family-name:var(--mono)] font-bold tracking-tighter">&lt;|&gt;</span>
                 </div>
               </div>
-
               <div className="absolute top-4 right-4 bg-[var(--color-gold)] text-black text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest px-2.5 py-1 rounded shadow-lg">AI Output</div>
             </div>
 
-            {/* Right: Actions */}
             <div className="w-full md:w-1/2 flex flex-col gap-6 px-2 md:px-6">
               <div>
                 <h2 className="font-[family-name:var(--display)] text-4xl md:text-5xl text-[var(--color-ink)] mb-3 tracking-tight">Masterpiece.</h2>
@@ -460,9 +464,24 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                   <button onClick={handleShare} className="bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] font-[family-name:var(--mono)] uppercase tracking-[1.5px] font-bold text-[12px] py-4 rounded-2xl hover:bg-[var(--color-cream2)] transition-colors flex items-center justify-center gap-2 shadow-sm">
                     <Share size={16} /> Share
                   </button>
-                  {/* Upsell to Feed trigger (In the future, this can trigger the feed publish modal) */}
-                  <button onClick={() => alert('Publish to feed coming soon!')} className="bg-[var(--color-gold-pale)] border border-[var(--color-gold-border)] text-[var(--color-gold)] hover:bg-[var(--color-gold)] hover:text-black font-[family-name:var(--mono)] uppercase tracking-[1.5px] font-bold text-[12px] py-4 rounded-2xl transition-colors flex items-center justify-center gap-2 shadow-sm">
-                    <Zap size={16} /> Publish (+5⚡)
+                  
+                  {/* 🌟 FULLY WIRED PUBLISH BUTTON */}
+                  <button 
+                    onClick={handlePublish}
+                    disabled={isPublished || isPublishing}
+                    className={`border font-[family-name:var(--mono)] uppercase tracking-[1.5px] font-bold text-[12px] py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-sm ${
+                      isPublished 
+                        ? 'bg-[var(--color-cream2)] border-[var(--rule)] text-[var(--color-ink3)] cursor-default' 
+                        : 'bg-[var(--color-gold-pale)] border-[var(--color-gold-border)] text-[var(--color-gold)] hover:bg-[var(--color-gold)] hover:text-black'
+                    }`}
+                  >
+                    {isPublishing ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : isPublished ? (
+                      <><CheckCircle2 size={16} /> PUBLISHED</>
+                    ) : (
+                      <><Globe size={16} /> Publish (+5⚡)</>
+                    )}
                   </button>
                 </div>
               </div>
