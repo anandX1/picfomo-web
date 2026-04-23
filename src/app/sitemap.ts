@@ -1,5 +1,10 @@
 import { MetadataRoute } from 'next';
 
+// 🌟 CRITICAL SEO FIX: Cache this sitemap for 24 hours (86400 seconds)!
+// If you don't do this, querying 10,000 rows dynamically will time out 
+// your Cloudflare worker when Googlebot tries to fetch it.
+export const revalidate = 86400; 
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://picfomo.com';
 
@@ -12,8 +17,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/how-it-works',
     '/styles',
     '/creators',
-    '/sign-in',
-    '/sign-up'
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
@@ -51,7 +54,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any);
 
-    // 🌟 Fetch last 10,000 public posts WITH image_url for Google Image Search
+    // 🌟 Fetch last 5,000 public posts WITH image_url for Google Image Search
+    // Reduced from 10k to 5k to guarantee Cloudflare never times out during generation
     const postsResult = await db.prepare(`
       SELECT 
         posts.id, 
@@ -64,15 +68,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       JOIN users ON posts.user_id = users.id
       WHERE posts.is_public = 1 
       ORDER BY posts.created_at DESC 
-      LIMIT 10000
+      LIMIT 5000
     `).all();
 
     dynamicPosts = postsResult.results.map((post: any) => ({
-      url: `${baseUrl}/post/${post.id}`,                    // ✅ Fixed: /post/ not /p/
+      url: `${baseUrl}/post/${post.id}`,
       lastModified: new Date(post.created_at),
       changeFrequency: 'weekly' as const,
       priority: 0.6,
-      // 🌟 THE FIX: Next.js strictly expects an array of strings here! No more [object Object] errors.
+      // Google Image Search integration
       images: post.image_url ? [post.image_url] : undefined,
     }));
 
@@ -81,7 +85,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       SELECT username, updated_at 
       FROM users 
       WHERE username IS NOT NULL 
-      LIMIT 5000
+      LIMIT 2000
     `).all();
 
     dynamicProfiles = usersResult.results.map((user: any) => ({
