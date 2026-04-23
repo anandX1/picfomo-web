@@ -84,8 +84,8 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
   // 🌟 AUTO-PUBLISH MODAL TRAP (DELAYED TO 5.5 SECONDS)
   useEffect(() => {
     if (view === "result" && !isPublished && outputPostId) {
-      // Gives the user 5.5 seconds to admire their generated image before upselling
-      const timer = setTimeout(() => setShowPublishModal(true), 5500);
+      // Gives the user 10 seconds to admire their generated image before upselling
+      const timer = setTimeout(() => setShowPublishModal(true), 10000);
       return () => clearTimeout(timer);
     }
   }, [view, isPublished, outputPostId]);
