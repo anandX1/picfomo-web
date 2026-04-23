@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Script from "next/script"; 
 import { compressAndUploadImage } from "@/lib/uploadImage";
 import { Sparkles, Image as ImageIcon, CheckCircle2, Download, Share, X, Zap, Loader2, ChevronLeft, ScanFace, ImagePlus, Globe } from "lucide-react";
 import Image from "next/image";
@@ -9,6 +8,34 @@ import { publishPostToFeed } from "@/actions/economy";
 import { toast } from "sonner";
 
 const NSFW_WORDS = ["nude", "naked", "nsfw", "porn", "blood", "gore", "explicit", "violence"];
+
+// 🌟 BULLETPROOF ADSTERRA INJECTION FOR REACT
+function NativeAd() {
+  useEffect(() => {
+    const container = document.getElementById('container-b39280394b30c04b29a8908fb4b0bd64');
+    if (container && container.childNodes.length === 0) {
+      const script = document.createElement('script');
+      script.src = "https://pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js";
+      script.async = true;
+      script.setAttribute('data-cfasync', 'false');
+      container.appendChild(script);
+    }
+  }, []);
+
+  return <div id="container-b39280394b30c04b29a8908fb4b0bd64" className="w-full min-h-[120px] flex items-center justify-center"></div>;
+}
+
+function SocialBarAd() {
+  useEffect(() => {
+    if (!document.querySelector('script[src*="60abb92c67b12ba0a5b4574a79d2e149.js"]')) {
+      const script = document.createElement('script');
+      script.src = "https://pl29173184.profitablecpmratenetwork.com/60/ab/b9/60abb92c67b12ba0a5b4574a79d2e149.js";
+      script.async = true;
+      document.head.appendChild(script);
+    }
+  }, []);
+  return null;
+}
 
 export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
 
@@ -90,12 +117,12 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
 
       let uploadedFaceUrl = "";
 
-      // 1. Upload Image to R2 (Client-Side Compression)
+      // 1. Upload Image to R2
       if (activeTab === "styles" && file) {
-        setSourcePreviewUrl(URL.createObjectURL(file)); // Save for before/after slider
+        setSourcePreviewUrl(URL.createObjectURL(file)); 
         uploadedFaceUrl = await compressAndUploadImage(file);
       } else {
-        setSourcePreviewUrl(null); // Clear it so 'Imagine' mode doesn't show a slider
+        setSourcePreviewUrl(null); 
       }
 
       // 2. Call Plan A robust backend (Single Image payload)
@@ -129,11 +156,11 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
 
     } catch (err: any) {
       setError(err.message);
-      setView("upload"); // Kick them back to the upload screen so they can try again
+      setView("upload"); 
     }
   };
 
-  // 🌟 HANDLE PUBLISH TO FEED LOGIC
+  // 🌟 FULLY WIRED PUBLISH TO FEED LOGIC
   const handlePublish = async () => {
     if (!outputPostId || isPublished) return;
     setIsPublishing(true);
@@ -361,8 +388,8 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
       {view === "generating" && (
         <div className="animate-in zoom-in-95 duration-700 min-h-[75vh] flex flex-col items-center justify-center relative w-full">
           
-          {/* 🌟 SOCIAL BAR AD SCRIPT INJECTION: Active ONLY while loading */}
-          <Script id="social-bar-ad" src="https://pl29173184.profitablecpmratenetwork.com/60/ab/b9/60abb92c67b12ba0a5b4574a79d2e149.js" strategy="afterInteractive" data-cfasync="false" />
+          {/* 🌟 SOCIAL BAR AD & NATIVE AD INJECTION: Active ONLY while loading */}
+          <SocialBarAd />
 
           <div className="w-full max-w-4xl bg-[var(--color-cream)] rounded-[40px] border border-[var(--rule)] shadow-2xl overflow-hidden flex flex-col relative px-6 py-10 md:p-12">
             
@@ -391,9 +418,8 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                  </p>
               </div>
               <div className="w-full min-h-[120px] bg-[var(--color-white)] rounded-xl border border-[var(--rule)] flex items-center justify-center overflow-hidden shadow-sm">
-                 {/* This Adsterra script will automatically output a 3:1 native ad grid on desktop, and adapt cleanly on mobile! */}
-                 <div id="container-b39280394b30c04b29a8908fb4b0bd64" className="w-full"></div>
-                 <Script id="adsterra-native-3x1" src="https://pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" strategy="afterInteractive" data-cfasync="false" async />
+                 {/* Native Ad injects safely here! */}
+                 <NativeAd />
               </div>
             </div>
 
@@ -498,6 +524,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                     <Share size={16} /> Share
                   </button>
                   
+                  {/* 🌟 FULLY WIRED PUBLISH BUTTON */}
                   <button 
                     onClick={handlePublish}
                     disabled={isPublished || isPublishing}
@@ -512,7 +539,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                     ) : isPublished ? (
                       <><CheckCircle2 size={16} /> PUBLISHED</>
                     ) : (
-                      <><Globe size={16} /> Publish (+5⚡)</>
+                      <><Zap size={16} className="fill-current" /> Publish (+5⚡)</>
                     )}
                   </button>
                 </div>
