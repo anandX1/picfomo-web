@@ -1,12 +1,14 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { ShieldAlert, Settings2, Eye, EyeOff, Trash2, Target } from "lucide-react";
-import StyleForm from "./StyleForm";
+import { ShieldAlert, Eye, EyeOff, Trash2, Target } from "lucide-react";
 import TaskForm from "./TaskForm";
-import { toggleStyleActive, deleteStyle, toggleTaskActive, deleteTask } from "@/actions/admin";
+import AdminClient from "./AdminClient"; // 🌟 Bringing in the new interactive Styles client
+import { toggleTaskActive, deleteTask } from "@/actions/admin";
 
 // 🌟 OPENNEXT FIX: Replaced next-on-pages with OpenNext
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+
+export const dynamic = "force-dynamic";
 
 // 🌟 MULTIPLE ADMINS CONFIGURATION
 const ALLOWED_ADMINS = [
@@ -27,9 +29,12 @@ export default async function AdminDashboard() {
   // 🌟 OPENNEXT FIX: Correct DB Connection
   const db = ((await getCloudflareContext({ async: true })).env.DB as any as D1Database);
   
-  // Fetch both Styles and Bounties
+  // Ensure the sort_order column exists for the new drag-and-drop feature safely
+  try { await db.prepare("ALTER TABLE styles ADD COLUMN sort_order INTEGER DEFAULT 0").run(); } catch(e) {}
+  
+  // Fetch both Styles (Sorted by the new sort_order!) and Bounties
   const [stylesResult, tasksResult] = await db.batch([
-    db.prepare("SELECT * FROM styles ORDER BY created_at DESC"),
+    db.prepare("SELECT * FROM styles ORDER BY sort_order ASC, created_at DESC"),
     db.prepare("SELECT * FROM tasks ORDER BY created_at DESC")
   ]);
   
@@ -37,7 +42,7 @@ export default async function AdminDashboard() {
   const tasks = tasksResult.results as any[];
 
   return (
-    <div className="min-h-screen bg-[var(--color-cream)] p-6 md:p-12">
+    <div className="min-h-screen bg-[var(--color-cream)] p-6 md:p-12 app-ui">
       <div className="mx-auto max-w-[1200px]">
         
         {/* Header */}
@@ -52,76 +57,15 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
-        {/* SECTION 1: STYLE MANAGEMENT */}
-        <div className="grid gap-8 lg:grid-cols-3 mb-16">
-          <div className="lg:col-span-1">
-            <StyleForm />
-          </div>
-
-          <div className="lg:col-span-2 flex flex-col gap-4">
-            <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-2 flex items-center gap-2">
-              <Settings2 size={16} /> Style Catalog ({styles.length})
-            </h2>
-            
-            <div className="rounded-xl border border-[var(--rule)] bg-white overflow-hidden shadow-sm">
-              {styles.length === 0 ? (
-                <div className="p-12 text-center font-[family-name:var(--mono)] text-[12px] text-[var(--color-ink3)]">
-                  No styles deployed yet. Use the form to add one.
-                </div>
-              ) : (
-                <div className="flex flex-col divide-y divide-[var(--rule)]">
-                  {styles.map((style: any) => {
-                    // 🌟 NEW: Parse the JSON array of images safely
-                    let images = [];
-                    try { images = JSON.parse(style.preview_urls || '[]'); } catch(e) {}
-                    const mainImage = images[0] || style.preview_image_url;
-
-                    return (
-                      <div key={style.id} className={`flex items-center justify-between p-4 transition-colors ${style.is_active ? 'hover:bg-[var(--color-cream)]' : 'bg-gray-50 opacity-60'}`}>
-                        <div className="flex items-center gap-4">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          {mainImage && <img src={mainImage} alt={style.name} className="h-16 w-16 rounded-md object-cover border border-[var(--rule)]" />}
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                              <span className="font-[family-name:var(--mono)] text-[14px] font-bold text-[var(--color-ink)]">{style.name}</span>
-                              {style.badge && (
-                                <span className="bg-[var(--color-ink)] text-[var(--color-gold)] text-[8px] px-2 py-0.5 rounded-sm font-bold tracking-widest">{style.badge}</span>
-                              )}
-                              {style.expires_at && (
-                                <span className="bg-red-50 border border-red-200 text-red-600 text-[8px] px-2 py-0.5 rounded-sm font-bold tracking-widest">TIMER SET</span>
-                              )}
-                            </div>
-                            <span className="text-[10px] text-[var(--color-ink3)] font-[family-name:var(--mono)] mt-1">
-                              {images.length > 0 ? `${images.length} Images` : '1 Image'} • {style.spark_cost} ⚡
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <form action={async () => { "use server"; await toggleStyleActive(style.id, style.is_active); }}>
-                            <button type="submit" className={`p-2 rounded-full border transition-colors ${style.is_active ? 'border-green-200 bg-green-50 text-green-700 hover:bg-red-50 hover:text-red-700 hover:border-red-200' : 'border-gray-200 bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-700 hover:border-green-200'}`}>
-                              {style.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
-                            </button>
-                          </form>
-                          <form action={async () => { "use server"; await deleteStyle(style.id); }}>
-                            <button type="submit" className="p-2 rounded-full border border-gray-200 bg-white text-gray-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors">
-                              <Trash2 size={16} />
-                            </button>
-                          </form>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
+        {/* SECTION 1: STYLE MANAGEMENT (Moved into the interactive AdminClient) */}
+        <div className="mb-16">
+          <AdminClient initialStyles={styles} />
         </div>
 
         {/* VISUAL DIVIDER */}
         <hr className="border-[var(--rule)] mb-12" />
 
-        {/* SECTION 2: BOUNTY MANAGEMENT (UNTOUCHED) */}
+        {/* SECTION 2: BOUNTY MANAGEMENT (COMPLETELY UNTOUCHED) */}
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-1">
             <TaskForm />

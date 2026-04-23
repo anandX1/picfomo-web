@@ -139,7 +139,7 @@ export async function POST(req: Request) {
 
       if (styleId === "custom") {
          sparkCost = 15; 
-         finalPrompt = `Keep the facial identity of the person exactly the same. Change their clothing, background, and scene to: ${prompt}. ${TEXTURE_ANCHOR}`;
+         finalPrompt = `Keep the facial identity, Skin tone, and micro skin texture of the person exactly the same. Change their clothing, background, and scene to: ${prompt}. ${TEXTURE_ANCHOR}`;
       } 
       else {
          const styleRecord = await db.prepare("SELECT spark_cost, description FROM styles WHERE id = ?").bind(styleId).first();

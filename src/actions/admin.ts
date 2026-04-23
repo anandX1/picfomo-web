@@ -24,8 +24,13 @@ const taskSchema = z.object({
 
 async function verifyAdmin() {
   const user = await currentUser();
-  const isAdmin = user?.emailAddresses.some(e => e.emailAddress === "anandkumar.3042008@gmail.com","crafty9323@gmail.com");
+  const isAdmin = user?.emailAddresses.some(e => e.emailAddress === "anandkumar.3042008@gmail.com" || e.emailAddress === "crafty9323@gmail.com");
   if (!isAdmin) throw new Error("Unauthorized Access");
+}
+
+// 🌟 AUTO-MIGRATION: Safely injects the sorting column if it doesn't exist
+async function ensureAdminColumns(db: any) {
+  try { await db.prepare("ALTER TABLE styles ADD COLUMN sort_order INTEGER DEFAULT 0").run(); } catch (e) {}
 }
 
 // ==========================================
@@ -36,6 +41,7 @@ export async function addStyle(formData: FormData) {
   try {
     await verifyAdmin();
     const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
+    await ensureAdminColumns(db);
     
     // Extract up to 5 URLs and filter out any empty ones
     const urls = [
@@ -68,8 +74,8 @@ export async function addStyle(formData: FormData) {
     const finalExpiresAt = validatedData.expires_at ? new Date(validatedData.expires_at).toISOString() : null;
     
     await db.prepare(`
-      INSERT INTO styles (id, slug, name, description, preview_image_url, preview_urls, spark_cost, badge, expires_at) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO styles (id, slug, name, description, preview_image_url, preview_urls, spark_cost, badge, expires_at, sort_order) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id, 
       slug, 
@@ -79,7 +85,8 @@ export async function addStyle(formData: FormData) {
       previewUrlsJson, 
       validatedData.spark_cost, 
       validatedData.badge || null,
-      finalExpiresAt
+      finalExpiresAt,
+      999 // 🌟 Put new styles at the end of the list by default
     ).run();
 
     revalidatePath("/admin");
@@ -89,6 +96,90 @@ export async function addStyle(formData: FormData) {
     console.error("Failed to add style:", error);
     if (error instanceof z.ZodError) return { success: false, error: (error as any).errors[0].message }; 
     return { success: false, error: "Failed to add style." };
+  }
+}
+
+// 🌟 NEW: UPDATE EXISTING STYLE
+export async function updateStyle(id: string, formData: FormData) {
+  try {
+    await verifyAdmin();
+    const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
+    await ensureAdminColumns(db);
+
+    const urls = [
+      formData.get("url_1") as string,
+      formData.get("url_2") as string,
+      formData.get("url_3") as string,
+      formData.get("url_4") as string,
+      formData.get("url_5") as string,
+    ].filter(url => url && url.trim() !== "");
+
+    if (urls.length === 0) {
+      return { success: false, error: "At least 1 preview image URL is required." };
+    }
+
+    const rawData = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      spark_cost: formData.get("spark_cost"),
+      badge: formData.get("badge") as string,
+      expires_at: formData.get("expires_at") as string,
+    };
+
+    const validatedData = styleSchema.parse(rawData);
+    
+    const slug = validatedData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const previewUrlsJson = JSON.stringify(urls);
+    const finalExpiresAt = validatedData.expires_at ? new Date(validatedData.expires_at).toISOString() : null;
+
+    await db.prepare(`
+      UPDATE styles 
+      SET slug = ?, name = ?, description = ?, preview_image_url = ?, preview_urls = ?, spark_cost = ?, badge = ?, expires_at = ?
+      WHERE id = ?
+    `).bind(
+      slug, 
+      validatedData.name, 
+      validatedData.description, 
+      urls[0], 
+      previewUrlsJson, 
+      validatedData.spark_cost, 
+      validatedData.badge || null,
+      finalExpiresAt,
+      id
+    ).run();
+
+    revalidatePath("/admin");
+    revalidatePath("/dashboard/studio"); 
+    return { success: true };
+  } catch (error: any) {
+    console.error("Failed to update style:", error);
+    if (error instanceof z.ZodError) return { success: false, error: (error as any).errors[0].message }; 
+    return { success: false, error: "Failed to update style." };
+  }
+}
+
+// 🌟 NEW: BATCH UPDATE ORDER
+export async function updateStylesOrder(orderedIds: string[]) {
+  try {
+    await verifyAdmin();
+    const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
+    await ensureAdminColumns(db);
+
+    // Create a batch of updates based on array index
+    const statements = orderedIds.map((id, index) => {
+      return db.prepare("UPDATE styles SET sort_order = ? WHERE id = ?").bind(index, id);
+    });
+
+    if (statements.length > 0) {
+      await db.batch(statements);
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/dashboard/studio');
+    return { success: true };
+  } catch (error) {
+    console.error("Reorder Error:", error);
+    return { success: false, error: "Failed to update order" };
   }
 }
 
