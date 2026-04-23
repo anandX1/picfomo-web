@@ -1,10 +1,33 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import StudioUI from "./StudioUI";
+import { Metadata } from "next";
 
 // 🌟 THE MAGIC FIX: Tells Next.js to NEVER cache this page stale!
 // Ensures the page updates instantly when you add/rearrange styles in Admin
 export const dynamic = "force-dynamic";
 export const revalidate = 0; 
+
+// 🌟 SEO BOOST 1: STATIC METADATA & CANONICAL URL
+// Locks in the master URL and provides highly clickable social preview cards
+export const metadata: Metadata = {
+  title: "AI Portrait Studio & Generator | PicFOMO",
+  description: "Step into the PicFOMO Studio. Upload your selfie, choose from dozens of premium AI styles, and generate stunning, identity-locked portraits in 20 seconds.",
+  alternates: {
+    canonical: "https://www.picfomo.com/studio",
+  },
+  openGraph: {
+    title: "AI Portrait Studio | PicFOMO",
+    description: "Upload your selfie and generate stunning portraits in 20 seconds.",
+    url: "https://www.picfomo.com/studio",
+    type: "website",
+    siteName: "PicFOMO",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Portrait Studio & Generator | PicFOMO",
+    description: "Generate stunning, identity-locked portraits in 20 seconds.",
+  }
+};
 
 export default async function StudioPage() {
   const db = ((await getCloudflareContext({ async: true })).env.DB as any as D1Database);
@@ -30,5 +53,32 @@ export default async function StudioPage() {
     };
   });
 
-  return <StudioUI dynamicStyles={dynamicStyles} />;
+  // 🌟 SEO BOOST 2: JSON-LD STRUCTURED DATA (WebApplication)
+  // Tells Google this page is a specific AI tool/software application, drastically boosting 
+  // its chances to appear when people search for "AI Generator Tools".
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "PicFOMO AI Studio",
+    "description": "Upload your selfie, choose from dozens of premium AI styles, and generate stunning, identity-locked portraits in 20 seconds.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "All",
+    "url": "https://www.picfomo.com/studio",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  };
+
+  return (
+    <>
+      {/* 🌟 Inject the JSON-LD silently into the DOM for Googlebot */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <StudioUI dynamicStyles={dynamicStyles} />
+    </>
+  );
 }

@@ -6,24 +6,53 @@ import Footer from '@/components/marketing/Footer';
 
 // 🌟 DYNAMIC SEO METADATA
 // Google reads this before the page even renders to rank it for specific keywords!
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const { slug } = resolvedParams;
   // Convert "studio-ghibli-anime-portrait" to "Studio Ghibli Anime Portrait"
   const cleanName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
   return {
     title: `Create ${cleanName}s with AI | PicFOMO`,
     description: `Generate ultra-realistic ${cleanName}s using your own face. No photographer needed. Try PicFOMO's Identity-Lock AI today.`,
+    
+    // 🌟 SEO BOOST 1: CANONICAL URL (Prevents duplicate content penalties)
+    alternates: {
+      canonical: `https://www.picfomo.com/style/${slug}`,
+    },
+    
     openGraph: {
       title: `${cleanName} Generator | PicFOMO`,
       description: `Put your face into a ${cleanName} instantly.`,
+      url: `https://www.picfomo.com/style/${slug}`,
+      type: "website",
+      siteName: "PicFOMO",
     }
   };
 }
 
-export default async function StyleSeoPage({ params }: { params: { slug: string } }) {
-  const { slug } = await params;
+export default async function StyleSeoPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
+  const { slug } = resolvedParams;
   const cleanName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+  // 🌟 SEO BOOST 2: JSON-LD STRUCTURED DATA (WebApplication)
+  // Tells Google this page is a specific AI tool/software application, drastically boosting 
+  // its chances to appear when people search for "{cleanName} generator".
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": `${cleanName} AI Generator`,
+    "description": `Generate ultra-realistic ${cleanName}s using your own face. No photographer needed. Try PicFOMO's Identity-Lock AI today.`,
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "All",
+    "url": `https://www.picfomo.com/style/${slug}`,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  };
 
   // In the future, you can fetch actual R2 images from your DB that match this slug!
   // const db = ...;
@@ -31,6 +60,13 @@ export default async function StyleSeoPage({ params }: { params: { slug: string 
 
   return (
     <main className="min-h-screen bg-[var(--color-white)] flex flex-col">
+      
+      {/* 🌟 Inject the JSON-LD silently into the DOM for Googlebot */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      
       <Navbar />
       
       {/* 🌟 SEO OPTIMIZED HERO SECTION */}
