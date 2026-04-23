@@ -8,10 +8,12 @@ const PIXAZO_SCHNELL_URL = "https://gateway.pixazo.ai/flux-1-schnell/v1/getData"
 const PIXAZO_FIRERED_URL = "https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request";
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-// 🔥 FIRERED 1.1 – PROVEN PARAMETERS (From Official Gateway Test)
-const GUIDANCE_SCALE = 4.5; // 🌟 LOW CFG = FACE LOCKED!
+// 🔥 FIRERED 1.1 – PROVEN PARAMETERS
+const GUIDANCE_SCALE = 5.0; // 🌟 SWEET SPOT: Strong enough to change the background, balanced enough to keep the face
 const INFERENCE_STEPS = 30;
-const NEGATIVE_PROMPT = "changed face, different person, wrong identity, altered nose, altered eyes, altered beard, removed glasses, changed skin tone, two people, multiple people, extra person, blurry face, distorted face, mutated hands, plastic skin, airbrushed";
+
+// 🌟 AGGRESSIVE NEGATIVE PROMPT: Actively targets and destroys the original background and clothing
+const NEGATIVE_PROMPT = "original background of Image 1, original clothing of Image 1, changed face, different person, wrong identity, altered nose, altered eyes, altered beard, removed glasses, changed skin tone, two people, multiple people, extra person, blurry face, distorted face, mutated hands, plastic skin, airbrushed";
 
 // 🌟 THE SOTA PROMPT FROM YOUR SUCCESSFUL TEST
 const SOTA_STYLE_TRANSFER_PROMPT = "Take the person from Image 1 and apply the full style of Image 2. Replace background, clothing, costume, and lighting with Image 2's details. Preserve the identity, face, and natural features of Image 1 without distortion. Final output must look like the person was originally photographed in Image 2's setting and outfit.";
@@ -140,6 +142,7 @@ export async function POST(req: Request) {
         
         apiImageUrls = [secureSourceFace, secureTarget]; // Image 1 = user, Image 2 = reference
         finalPrompt = SOTA_STYLE_TRANSFER_PROMPT;
+        if (prompt) finalPrompt += ` Target Scene Context: ${prompt}`;
       } 
       else if (styleId === "custom") {
          sparkCost = 15; 
@@ -149,7 +152,7 @@ export async function POST(req: Request) {
          
          apiImageUrls = [secureSourceFace, secureCustomBg]; // Image 1 = user, Image 2 = custom background
          finalPrompt = SOTA_STYLE_TRANSFER_PROMPT;
-         if (prompt) finalPrompt += ` Additional details: ${prompt}`;
+         if (prompt) finalPrompt += ` Target Scene Context: ${prompt}`;
       } 
       else {
          const styleRecord = await db.prepare("SELECT spark_cost, description, preview_image_url FROM styles WHERE id = ?").bind(styleId).first();
@@ -158,11 +161,14 @@ export async function POST(req: Request) {
          sparkCost = styleRecord.spark_cost as number;
          if (!secureSourceFace) throw new Error("Source face image required.");
          
-         // 🌟 Using your successful UI configuration: Image 1 = User Face, Image 2 = Style
+         // 🌟 Image 1 = User Face, Image 2 = Style Database Target
          apiImageUrls = [secureSourceFace, styleRecord.preview_image_url as string];
          
          finalPrompt = SOTA_STYLE_TRANSFER_PROMPT;
-         if (prompt) finalPrompt += ` Additional details: ${prompt}`;
+         
+         // 🌟 THE MISSING LINK: Injecting the DB description so the text encoder knows WHAT the background is!
+         if (styleRecord.description) finalPrompt += ` Target Scene Context: ${styleRecord.description}.`;
+         if (prompt) finalPrompt += ` Additional user details: ${prompt}`;
       }
     }
 
@@ -204,7 +210,7 @@ export async function POST(req: Request) {
         seoData = groqRes;
 
       } else {
-        // 🌟 FIRE-RED COMPOSITING USING YOUR PROVEN SOTA PROMPT
+        // 🌟 FIRE-RED COMPOSITING
         if (!apiImageUrls || apiImageUrls.length < 2) throw new Error("Missing required images for compositing.");
 
         const [pixazoStartRes, groqRes] = await Promise.all([
@@ -216,7 +222,7 @@ export async function POST(req: Request) {
               negative_prompt: NEGATIVE_PROMPT, 
               image_urls: apiImageUrls, 
               num_inference_steps: INFERENCE_STEPS,
-              guidance_scale: GUIDANCE_SCALE // 🌟 LOCKED TO 1.5 CFG
+              guidance_scale: GUIDANCE_SCALE // 🌟 SWEET SPOT: 5.0
             })
           }),
           generateSEOData(finalPrompt, GROQ_KEY ?? "") 
