@@ -8,10 +8,13 @@ const PIXAZO_SCHNELL_URL = "https://gateway.pixazo.ai/flux-1-schnell/v1/getData"
 const PIXAZO_FIRERED_URL = "https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request";
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-// 🔥 FIRERED 1.1 – PROVEN PARAMETERS (DeepSeek / Wiro benchmark)
-const GUIDANCE_SCALE = 4.5; // 🌟 LOW CFG = FACE LOCKED!
+// 🔥 FIRERED 1.1 – PROVEN PARAMETERS (From Official Gateway Test)
+const GUIDANCE_SCALE = 7.5; // 🌟 LOW CFG = FACE LOCKED!
 const INFERENCE_STEPS = 30;
 const NEGATIVE_PROMPT = "changed face, different person, wrong identity, altered nose, altered eyes, altered beard, removed glasses, changed skin tone, two people, multiple people, extra person, blurry face, distorted face, mutated hands, plastic skin, airbrushed";
+
+// 🌟 THE SOTA PROMPT FROM YOUR SUCCESSFUL TEST
+const SOTA_STYLE_TRANSFER_PROMPT = "Take the person from Image 1 and apply the full style of Image 2. Replace background, clothing, costume, and lighting with Image 2's details. Preserve the identity, face, and natural features of Image 1 without distortion. Final output must look like the person was originally photographed in Image 2's setting and outfit.";
 
 // === 1. BASE64 TO R2 INTERCEPTOR ===
 async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
@@ -136,7 +139,7 @@ export async function POST(req: Request) {
         let secureTarget = await uploadBase64ToR2(targetImage, envCtx);
         
         apiImageUrls = [secureSourceFace, secureTarget]; // Image 1 = user, Image 2 = reference
-        finalPrompt = "Change the outfit in Image 1 to exactly match the outfit in Image 2. Change the background to match Image 2. Keep the face, glasses, jewelry, and all personal accessories of Image 1 completely unchanged. Preserve Image 1's exact identity, skin tone, hair, and facial expression.";
+        finalPrompt = SOTA_STYLE_TRANSFER_PROMPT;
       } 
       else if (styleId === "custom") {
          sparkCost = 15; 
@@ -145,7 +148,8 @@ export async function POST(req: Request) {
          let secureCustomBg = await uploadBase64ToR2(customBgImage, envCtx);
          
          apiImageUrls = [secureSourceFace, secureCustomBg]; // Image 1 = user, Image 2 = custom background
-         finalPrompt = "Change the background in Image 1 to exactly match the background in Image 2. Keep the clothing, face, glasses, jewelry, and all personal accessories of Image 1 completely unchanged. Preserve Image 1's exact identity, skin tone, hair, and facial expression.";
+         finalPrompt = SOTA_STYLE_TRANSFER_PROMPT;
+         if (prompt) finalPrompt += ` Additional details: ${prompt}`;
       } 
       else {
          const styleRecord = await db.prepare("SELECT spark_cost, description, preview_image_url FROM styles WHERE id = ?").bind(styleId).first();
@@ -154,10 +158,10 @@ export async function POST(req: Request) {
          sparkCost = styleRecord.spark_cost as number;
          if (!secureSourceFace) throw new Error("Source face image required.");
          
-         // 🌟 DeepSeek Proven Architecture: Image 1 = User Face, Image 2 = Style Database Target
+         // 🌟 Using your successful UI configuration: Image 1 = User Face, Image 2 = Style
          apiImageUrls = [secureSourceFace, styleRecord.preview_image_url as string];
          
-         finalPrompt = "Change the outfit in Image 1 to exactly match the outfit in Image 2. Change the background to match Image 2. Keep the face, glasses, jewelry, and all personal accessories of Image 1 completely unchanged. Preserve Image 1's exact identity, skin tone, hair, and facial expression.";
+         finalPrompt = SOTA_STYLE_TRANSFER_PROMPT;
          if (prompt) finalPrompt += ` Additional details: ${prompt}`;
       }
     }
@@ -200,7 +204,7 @@ export async function POST(req: Request) {
         seoData = groqRes;
 
       } else {
-        // 🌟 FIRE-RED COMPOSITING USING DEEPSEEK PARAMETERS
+        // 🌟 FIRE-RED COMPOSITING USING YOUR PROVEN SOTA PROMPT
         if (!apiImageUrls || apiImageUrls.length < 2) throw new Error("Missing required images for compositing.");
 
         const [pixazoStartRes, groqRes] = await Promise.all([
