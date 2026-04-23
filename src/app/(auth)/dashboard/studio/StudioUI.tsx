@@ -54,10 +54,11 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
     return () => clearInterval(interval);
   }, [view]);
 
-  // 🌟 AUTO-PUBLISH MODAL TRAP (Triggers 2.5s after generation finishes)
+  // 🌟 AUTO-PUBLISH MODAL TRAP (DELAYED TO 5.5 SECONDS)
   useEffect(() => {
     if (view === "result" && !isPublished && outputPostId) {
-      const timer = setTimeout(() => setShowPublishModal(true), 2500);
+      // Gives the user 5.5 seconds to admire their generated image before upselling
+      const timer = setTimeout(() => setShowPublishModal(true), 5500);
       return () => clearTimeout(timer);
     }
   }, [view, isPublished, outputPostId]);
@@ -93,6 +94,8 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
       if (activeTab === "styles" && file) {
         setSourcePreviewUrl(URL.createObjectURL(file)); // Save for before/after slider
         uploadedFaceUrl = await compressAndUploadImage(file);
+      } else {
+        setSourcePreviewUrl(null); // Clear it so 'Imagine' mode doesn't show a slider
       }
 
       // 2. Call Plan A robust backend (Single Image payload)
@@ -197,7 +200,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
   };
 
   const handleSliderMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!sliderContainerRef.current) return;
+    if (!sliderContainerRef.current || !sourcePreviewUrl) return;
     const rect = sliderContainerRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
     setSliderPos((x / rect.width) * 100);
@@ -276,8 +279,9 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
           </button>
 
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left: Style Info & Preview */}
-            <div className="w-full lg:w-1/3 flex flex-col gap-4">
+            
+            {/* 🌟 LEFT: STYLE PREVIEW (HIDDEN ON MOBILE TO SAVE SPACE) */}
+            <div className="hidden lg:flex w-full lg:w-1/3 flex-col gap-4">
               <div className="relative aspect-[4/5] rounded-[24px] overflow-hidden shadow-lg border border-[var(--rule)] bg-[var(--color-cream2)]">
                 {selectedStyle.preview_image_url && (
                   /* eslint-disable-next-line @next/next/no-img-element */
@@ -294,28 +298,34 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
               </div>
             </div>
 
-            {/* Right: Upload Zones */}
-            <div className="w-full lg:w-2/3 flex flex-col gap-6">
+            {/* 🌟 RIGHT: UPLOAD ZONES (PRIORITY ON MOBILE) */}
+            <div className="w-full lg:w-2/3 flex flex-col gap-4 md:gap-6">
               
+              {/* MOBILE ONLY: Quick Style Info Header */}
+              <div className="lg:hidden flex items-center justify-between bg-[var(--color-cream)] border border-[var(--rule)] p-4 rounded-xl shadow-sm">
+                <div className="font-[family-name:var(--display)] text-[18px] text-[var(--color-ink)]">{selectedStyle.name}</div>
+                <div className="flex items-center gap-1 text-[var(--color-gold)] font-bold text-[12px]"><Zap size={14} className="fill-current" /> {selectedStyle.spark_cost} ⚡</div>
+              </div>
+
               {/* FACE UPLOAD ONLY */}
               <div className="bg-[var(--color-white)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm">
                 <h3 className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-4 flex items-center gap-2">
                   <ScanFace className="text-[var(--color-gold)]" size={18} /> Upload Your Face
                 </h3>
-                <div className={`relative border-2 border-dashed rounded-[20px] p-10 text-center transition-all cursor-pointer overflow-hidden ${file ? 'border-[var(--color-gold)] bg-[var(--color-gold-pale)]' : 'border-[var(--rule)] bg-[var(--color-cream)] hover:bg-[var(--color-cream2)]'}`}>
+                <div className={`relative border-2 border-dashed rounded-[20px] p-8 md:p-10 text-center transition-all cursor-pointer overflow-hidden ${file ? 'border-[var(--color-gold)] bg-[var(--color-gold-pale)]' : 'border-[var(--rule)] bg-[var(--color-cream)] hover:bg-[var(--color-cream2)]'}`}>
                   <input type="file" accept="image/jpeg, image/png, image/webp" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={(e) => setFile(e.target.files?.[0] || null)} />
                   <div className="flex flex-col items-center justify-center relative z-0">
                     {file ? (
                        <>
                          <CheckCircle2 size={48} className="text-[var(--color-gold)] mb-4" />
-                         <h4 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)]">{file.name}</h4>
+                         <h4 className="font-[family-name:var(--display)] text-xl md:text-2xl text-[var(--color-ink)] px-4 truncate w-full">{file.name}</h4>
                          <p className="text-[var(--color-ink3)] font-bold text-[11px] mt-2 uppercase tracking-widest">Tap to replace</p>
                        </>
                     ) : (
                        <>
                          <div className="bg-[var(--color-white)] p-4 rounded-full shadow-sm mb-4 border border-[var(--rule)]"><ImageIcon size={32} className="text-[var(--color-ink3)]" /></div>
                          <h4 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)]">Select clear selfie</h4>
-                         <p className="text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[10px] mt-2 uppercase tracking-[2px] font-bold">Good lighting • No sunglasses • JPEG/PNG</p>
+                         <p className="text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[10px] mt-2 uppercase tracking-[2px] font-bold">Good lighting • No sunglasses</p>
                        </>
                     )}
                   </div>
@@ -346,40 +356,53 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
       )}
 
       {/* =========================================================================
-          VIEW 3: GENERATING
+          VIEW 3: GENERATING (THE ULTIMATE AD LOUNGE)
           ========================================================================= */}
       {view === "generating" && (
-        <div className="animate-in zoom-in-95 duration-700 min-h-[70vh] flex flex-col items-center justify-center relative">
-          <div className="absolute inset-0 bg-[var(--color-cream)] rounded-[40px] border border-[var(--rule)] shadow-2xl overflow-hidden flex flex-col md:flex-row">
-            <div className="w-full md:w-1/2 p-10 md:p-16 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-[var(--rule)] bg-[var(--color-white)] relative">
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-              <div className="relative flex items-center justify-center mb-10 z-10">
+        <div className="animate-in zoom-in-95 duration-700 min-h-[75vh] flex flex-col items-center justify-center relative w-full">
+          
+          {/* 🌟 SOCIAL BAR AD SCRIPT INJECTION: Active ONLY while loading */}
+          <Script id="social-bar-ad" src="https://pl29173184.profitablecpmratenetwork.com/60/ab/b9/60abb92c67b12ba0a5b4574a79d2e149.js" strategy="afterInteractive" data-cfasync="false" />
+
+          <div className="w-full max-w-4xl bg-[var(--color-cream)] rounded-[40px] border border-[var(--rule)] shadow-2xl overflow-hidden flex flex-col relative px-6 py-10 md:p-12">
+            
+            {/* Matrix Loader (Top) */}
+            <div className="w-full flex flex-col items-center justify-center relative z-10 mb-10">
+              <div className="relative flex items-center justify-center mb-8">
                 <div className="absolute inset-0 bg-[var(--color-gold)] opacity-20 blur-2xl rounded-full animate-pulse h-32 w-32 -ml-8 -mt-8"></div>
                 <div className="h-20 w-20 bg-black rounded-3xl border border-gray-800 shadow-2xl flex items-center justify-center rotate-3 animate-[spin_6s_linear_infinite_reverse]">
                   <Zap size={32} className="text-[var(--color-gold)] fill-[var(--color-gold)]" />
                 </div>
               </div>
-              <h2 className="font-[family-name:var(--display)] text-4xl tracking-tight text-[var(--color-ink)] mb-6 relative z-10">Synthesizing...</h2>
-              <div className="w-full max-w-xs bg-[var(--color-cream2)] rounded-full h-3 overflow-hidden relative shadow-inner z-10">
+              <h2 className="font-[family-name:var(--display)] text-3xl md:text-4xl tracking-tight text-[var(--color-ink)] mb-6 text-center">Synthesizing...</h2>
+              <div className="w-full max-w-md bg-[var(--color-cream2)] rounded-full h-3 overflow-hidden relative shadow-inner z-10">
                 <div className="bg-[var(--color-gold)] h-full transition-all duration-700 ease-out relative" style={{ width: `${progress}%` }}>
                   <div className="absolute top-0 right-0 bottom-0 w-10 bg-gradient-to-r from-transparent to-white/50"></div>
                 </div>
               </div>
-              <p className="font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[3px] text-[var(--color-ink3)] mt-4 relative z-10">{progress}% Complete</p>
+              <p className="font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[3px] text-[var(--color-ink3)] mt-4">{progress}% Complete</p>
             </div>
-            <div className="w-full md:w-1/2 bg-[var(--color-cream2)] p-6 md:p-10 flex flex-col items-center justify-center relative">
-              <h3 className="font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[3px] text-[var(--color-ink3)] mb-6">Discover (Sponsored)</h3>
-              <div className="w-full max-w-sm aspect-video md:aspect-[4/3] bg-white rounded-2xl border border-[var(--rule)] shadow-sm overflow-hidden flex items-center justify-center">
-                 <div id="container-b39280394b30c04b29a8908fb4b0bd64" className="scale-90"></div>
-                 <Script id="adsterra-native-lounge" src="https://pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" strategy="afterInteractive" data-cfasync="false" async />
+
+            {/* 🌟 ADSTERRA 3:1 NATIVE WIDGET LOUNGE */}
+            <div className="w-full flex flex-col items-center justify-center border-t border-[var(--rule)] pt-8">
+              <div className="flex items-center gap-2 mb-4">
+                 <p className="font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[2px] text-[var(--color-ink3)] text-center">
+                   Ads help us keep PicFOMO free for everyone. Thanks for your patience! 💛
+                 </p>
+              </div>
+              <div className="w-full min-h-[120px] bg-[var(--color-white)] rounded-xl border border-[var(--rule)] flex items-center justify-center overflow-hidden shadow-sm">
+                 {/* This Adsterra script will automatically output a 3:1 native ad grid on desktop, and adapt cleanly on mobile! */}
+                 <div id="container-b39280394b30c04b29a8908fb4b0bd64" className="w-full"></div>
+                 <Script id="adsterra-native-3x1" src="https://pl29173183.profitablecpmratenetwork.com/b39280394b30c04b29a8908fb4b0bd64/invoke.js" strategy="afterInteractive" data-cfasync="false" async />
               </div>
             </div>
+
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          VIEW 4: RESULT
+          VIEW 4: RESULT (Supports both 'Styles' and 'Imagine' outputs)
           ========================================================================= */}
       {view === "result" && outputImage && (
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto flex flex-col items-center">
@@ -395,7 +418,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
 
           <div className="w-full bg-[var(--color-white)] rounded-[32px] md:rounded-[40px] p-4 md:p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)] flex flex-col md:flex-row gap-8 items-center relative">
             
-            {/* 🌟 AGGRESSIVE PUBLISH UPSELL MODAL */}
+            {/* 🌟 AGGRESSIVE PUBLISH UPSELL MODAL (DELAYED 5.5 SECONDS) */}
             {showPublishModal && (
               <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-md rounded-[32px] md:rounded-[40px] flex items-center justify-center p-6 animate-in zoom-in-95 duration-300">
                 <div className="bg-[var(--color-white)] p-8 rounded-3xl shadow-2xl max-w-md w-full border border-[var(--rule)] text-center relative overflow-hidden">
@@ -427,35 +450,45 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
               </div>
             )}
 
-            <div className="w-full md:w-1/2 aspect-[4/5] relative rounded-[24px] overflow-hidden shadow-inner border border-[var(--rule)] bg-black touch-none"
+            {/* Left: The Visualizer (Slider for Styles, Static for Imagine) */}
+            <div className={`w-full md:w-1/2 aspect-[4/5] relative rounded-[24px] overflow-hidden shadow-inner border border-[var(--rule)] bg-black ${sourcePreviewUrl ? 'touch-none cursor-ew-resize' : ''}`}
                  ref={sliderContainerRef}
-                 onPointerMove={handleSliderMove}
+                 onPointerMove={sourcePreviewUrl ? handleSliderMove : undefined}
             >
+              {/* After Image (Background) */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={outputImage} alt="Synthesized Output" className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute inset-0 w-full h-full border-r-2 border-white/50" style={{ clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` }}>
-                {sourcePreviewUrl && (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={sourcePreviewUrl} alt="Original Input" className="absolute inset-0 w-full h-full object-cover filter blur-[2px]" />
-                )}
-                <div className="absolute inset-0 bg-black/20"></div>
-                <div className="absolute top-4 left-4 bg-black/60 text-white text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest px-2.5 py-1 rounded backdrop-blur-md border border-white/10">Raw Input</div>
-              </div>
-              <div className="absolute top-0 bottom-0 w-1 bg-white/80 shadow-[0_0_10px_rgba(255,255,255,0.5)] cursor-ew-resize" style={{ left: `calc(${sliderPos}% - 2px)` }}>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-xl flex items-center justify-center">
-                  <span className="text-black text-[10px] font-[family-name:var(--mono)] font-bold tracking-tighter">&lt;|&gt;</span>
-                </div>
-              </div>
-              <div className="absolute top-4 right-4 bg-[var(--color-gold)] text-black text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest px-2.5 py-1 rounded shadow-lg">AI Output</div>
+              
+              {/* Before Image & Slider (Only shown if a file was uploaded) */}
+              {sourcePreviewUrl && (
+                <>
+                  <div className="absolute inset-0 w-full h-full border-r-2 border-white/50" style={{ clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={sourcePreviewUrl} alt="Original Input" className="absolute inset-0 w-full h-full object-cover filter blur-[2px]" />
+                    <div className="absolute inset-0 bg-black/20"></div>
+                    <div className="absolute top-4 left-4 bg-black/60 text-white text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest px-2.5 py-1 rounded backdrop-blur-md border border-white/10">Raw Input</div>
+                  </div>
+                  <div className="absolute top-0 bottom-0 w-1 bg-white/80 shadow-[0_0_10px_rgba(255,255,255,0.5)] pointer-events-none" style={{ left: `calc(${sliderPos}% - 2px)` }}>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-xl flex items-center justify-center">
+                      <span className="text-black text-[10px] font-[family-name:var(--mono)] font-bold tracking-tighter">&lt;|&gt;</span>
+                    </div>
+                  </div>
+                </>
+              )}
+              <div className="absolute top-4 right-4 bg-[var(--color-gold)] text-black text-[9px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest px-2.5 py-1 rounded shadow-lg pointer-events-none">AI Output</div>
             </div>
 
+            {/* Right: Actions */}
             <div className="w-full md:w-1/2 flex flex-col gap-6 px-2 md:px-6">
               <div>
                 <h2 className="font-[family-name:var(--display)] text-4xl md:text-5xl text-[var(--color-ink)] mb-3 tracking-tight">Masterpiece.</h2>
-                <p className="text-[var(--color-ink2)] text-[15px] leading-relaxed">Your identity has been successfully locked into the {selectedStyle?.name} universe.</p>
+                <p className="text-[var(--color-ink2)] text-[15px] leading-relaxed">
+                  {sourcePreviewUrl ? `Your identity has been successfully locked into the ${selectedStyle?.name} universe.` : "Your prompt has been fully realized into an aesthetic creation."}
+                </p>
               </div>
 
               <div className="flex flex-col gap-4 mt-4">
+                {/* Download works for both Tabs now! */}
                 <button onClick={handleDownload} className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] text-[18px] py-5 rounded-2xl hover:bg-[var(--color-gold)] hover:text-black transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2">
                   <Download size={20} /> DOWNLOAD 4K
                 </button>
@@ -465,7 +498,6 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                     <Share size={16} /> Share
                   </button>
                   
-                  {/* 🌟 FULLY WIRED PUBLISH BUTTON */}
                   <button 
                     onClick={handlePublish}
                     disabled={isPublished || isPublishing}
