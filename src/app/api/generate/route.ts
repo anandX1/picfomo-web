@@ -9,7 +9,7 @@ const PIXAZO_FIRERED_URL = "https://gateway.pixazo.ai/firered-image-edit-v1-1/v1
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // 🔥 FIRERED 1.1 – PROVEN PARAMETERS (From Official Gateway Test)
-const GUIDANCE_SCALE = 7.5; // 🌟 LOW CFG = FACE LOCKED!
+const GUIDANCE_SCALE = 4.5; // 🌟 LOW CFG = FACE LOCKED!
 const INFERENCE_STEPS = 30;
 const NEGATIVE_PROMPT = "changed face, different person, wrong identity, altered nose, altered eyes, altered beard, removed glasses, changed skin tone, two people, multiple people, extra person, blurry face, distorted face, mutated hands, plastic skin, airbrushed";
 
