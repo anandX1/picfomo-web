@@ -8,17 +8,14 @@ const PIXAZO_SCHNELL_URL = "https://gateway.pixazo.ai/flux-1-schnell/v1/getData"
 const PIXAZO_FIRERED_URL = "https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request";
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-// 🔥 FIRERED 1.1 – PROVEN PARAMETERS
-const GUIDANCE_SCALE = 5.0; // 🌟 SWEET SPOT: Strong enough to change the background, balanced enough to keep the face
+// 🔥 FIRERED 1.1 – PLAN A PARAMETERS (Single Image + Text Prompt)
+const GUIDANCE_SCALE = 4.5; // Sweet spot for text-driven background/clothes replacement
 const INFERENCE_STEPS = 30;
 
-// 🌟 AGGRESSIVE NEGATIVE PROMPT: Actively targets and destroys the original background and clothing
-const NEGATIVE_PROMPT = "original background of Image 1, original clothing of Image 1, changed face, different person, wrong identity, altered nose, altered eyes, altered beard, removed glasses, changed skin tone, two people, multiple people, extra person, blurry face, distorted face, mutated hands, plastic skin, airbrushed";
+// 🌟 ANTI-PLASTIC NEGATIVE PROMPT
+const NEGATIVE_PROMPT = "plastic skin, airbrushed, CGI, cartoon, 3d render, overly smooth, beauty filter, distorted features, bad anatomy, wrong identity, multiple people, mutated hands, blurred face";
 
-// 🌟 THE SOTA PROMPT FROM YOUR SUCCESSFUL TEST
-const SOTA_STYLE_TRANSFER_PROMPT = "Take the person from Image 1 and apply the full style of Image 2. Replace background, clothing, costume, and lighting with Image 2's details. Preserve the identity, face, and natural features of Image 1 without distortion. Final output must look like the person was originally photographed in Image 2's setting and outfit.";
-
-// === 1. BASE64 TO R2 INTERCEPTOR ===
+// === 1. BASE64 TO R2 INTERCEPTOR (Crucial for Pixazo) ===
 async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
   if (!base64Str.startsWith("data:image")) return base64Str;
 
@@ -112,14 +109,15 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
   throw new Error("Generation timed out. The model is currently overloaded. Please try again.");
 }
 
-// === 4. THE MAIN API ROUTE ===
+// === 4. THE MAIN API ROUTE (PLAN A - SINGLE IMAGE) ===
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = (await req.json()) as any;
-    const { prompt, model, styleId, sourceImage, customBgImage, targetImage } = body;
+    // We drop customBgImage and targetImage entirely for Plan A
+    const { prompt, model, styleId, sourceImage } = body;
 
     const envCtx = ((await getCloudflareContext({ async: true })).env as any);
     const db = envCtx.DB as any;
@@ -129,45 +127,29 @@ export async function POST(req: Request) {
 
     let sparkCost = 2; 
     let finalPrompt = prompt;
-    let apiImageUrls: string[] = [];
+    let secureSourceFace = "";
+
+    // 🌟 TEXTURE ANCHOR TO FIGHT THE PLASTIC LOOK
+    const TEXTURE_ANCHOR = "Ensure photorealistic DSLR quality, highly detailed skin texture, visible pores, and natural lighting. Do not airbrush or smooth the face.";
 
     // --- A. GET PRICING, LOGIC, & PROMPTS ---
     if (model !== "schnell") {
-      let secureSourceFace = sourceImage;
-      if (sourceImage) secureSourceFace = await uploadBase64ToR2(sourceImage, envCtx);
+      if (!sourceImage) throw new Error("Source face image required.");
+      secureSourceFace = await uploadBase64ToR2(sourceImage, envCtx);
 
-      if (model === "swap") {
-        if (!targetImage || !secureSourceFace) throw new Error("Target and source images required for swap.");
-        let secureTarget = await uploadBase64ToR2(targetImage, envCtx);
-        
-        apiImageUrls = [secureSourceFace, secureTarget]; // Image 1 = user, Image 2 = reference
-        finalPrompt = SOTA_STYLE_TRANSFER_PROMPT;
-        if (prompt) finalPrompt += ` Target Scene Context: ${prompt}`;
-      } 
-      else if (styleId === "custom") {
+      if (styleId === "custom") {
          sparkCost = 15; 
-         if (!customBgImage || !secureSourceFace) throw new Error("Face and custom background image required.");
-         
-         let secureCustomBg = await uploadBase64ToR2(customBgImage, envCtx);
-         
-         apiImageUrls = [secureSourceFace, secureCustomBg]; // Image 1 = user, Image 2 = custom background
-         finalPrompt = SOTA_STYLE_TRANSFER_PROMPT;
-         if (prompt) finalPrompt += ` Target Scene Context: ${prompt}`;
+         finalPrompt = `Keep the facial identity of the person exactly the same. Change their clothing, background, and scene to: ${prompt}. ${TEXTURE_ANCHOR}`;
       } 
       else {
-         const styleRecord = await db.prepare("SELECT spark_cost, description, preview_image_url FROM styles WHERE id = ?").bind(styleId).first();
+         const styleRecord = await db.prepare("SELECT spark_cost, description FROM styles WHERE id = ?").bind(styleId).first();
          if (!styleRecord) throw new Error("Style not found or inactive.");
          
          sparkCost = styleRecord.spark_cost as number;
-         if (!secureSourceFace) throw new Error("Source face image required.");
          
-         // 🌟 Image 1 = User Face, Image 2 = Style Database Target
-         apiImageUrls = [secureSourceFace, styleRecord.preview_image_url as string];
+         // 🌟 PLAN A: Single Image Instruction Prompt
+         finalPrompt = `Keep the facial identity of the person exactly the same. Change their clothing, the background, and the overall aesthetic to match this style: ${styleRecord.description}. ${TEXTURE_ANCHOR}`;
          
-         finalPrompt = SOTA_STYLE_TRANSFER_PROMPT;
-         
-         // 🌟 THE MISSING LINK: Injecting the DB description so the text encoder knows WHAT the background is!
-         if (styleRecord.description) finalPrompt += ` Target Scene Context: ${styleRecord.description}.`;
          if (prompt) finalPrompt += ` Additional user details: ${prompt}`;
       }
     }
@@ -181,8 +163,9 @@ export async function POST(req: Request) {
     }
 
     const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
-    const txReason = styleId === 'custom' ? 'Custom Background Generation' : 'Generated Portrait';
+    const txReason = styleId === 'custom' ? 'Custom Style Generation' : 'Generated Portrait';
     
+    // Deduct Sparks & Record Transaction
     await db.batch([
       db.prepare("UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ?").bind(sparkCost, userId),
       db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(txId, userId, -sparkCost, txReason)
@@ -210,9 +193,7 @@ export async function POST(req: Request) {
         seoData = groqRes;
 
       } else {
-        // 🌟 FIRE-RED COMPOSITING
-        if (!apiImageUrls || apiImageUrls.length < 2) throw new Error("Missing required images for compositing.");
-
+        // 🌟 FIRE-RED EDIT (PLAN A - SINGLE IMAGE)
         const [pixazoStartRes, groqRes] = await Promise.all([
           fetch(PIXAZO_FIRERED_URL, {
             method: "POST",
@@ -220,9 +201,9 @@ export async function POST(req: Request) {
             body: JSON.stringify({
               prompt: finalPrompt,
               negative_prompt: NEGATIVE_PROMPT, 
-              image_urls: apiImageUrls, 
+              image_urls: [secureSourceFace], // 🌟 BACK TO 1 IMAGE!
               num_inference_steps: INFERENCE_STEPS,
-              guidance_scale: GUIDANCE_SCALE // 🌟 SWEET SPOT: 5.0
+              guidance_scale: GUIDANCE_SCALE
             })
           }),
           generateSEOData(finalPrompt, GROQ_KEY ?? "") 
@@ -247,6 +228,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
 
     } catch (aiError: any) {
+      // Refund Sparks
       const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
       await db.batch([
         db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId),
