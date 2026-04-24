@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 // 🌟 CRITICAL SEO FIX: Cache this sitemap for 24 hours (86400 seconds)!
-// If you don't do this, querying 10,000 rows dynamically will time out 
+// If you don't do this, querying rows dynamically will time out 
 // your Cloudflare worker when Googlebot tries to fetch it.
 export const revalidate = 86400; 
 
@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ==========================================
   // 1. STATIC CORE PAGES
   // ==========================================
-  const staticPages = [
+  const staticPages: MetadataRoute.Sitemap = [
     '',
     '/explore',
     '/how-it-works',
@@ -20,78 +20,69 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: 'daily' as const,
+    changeFrequency: 'daily',
     priority: route === '' ? 1.0 : 0.8,
   }));
 
-  // ==========================================
-  // 2. PROGRAMMATIC SEO TRAP PAGES
-  // ==========================================
-  const seoTrapPages = [
-    '/style/professional-linkedin-headshot',
-    '/style/studio-ghibli-anime-portrait',
-    '/style/old-money-aesthetic-pfp',
-    '/style/cyberpunk-gaming-avatar',
-    '/style/vintage-y2k-camera-selfie',
-    '/style/diwali-ethnic-portrait',
-    '/style/ipl-cricket-player-card',
-    '/use-case/ai-dating-profile-pictures',
-    '/use-case/restore-old-blurry-photos',
-    '/how-to-make-viral-instagram-pfp'
-  ].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.9,
-  }));
-
-  // ==========================================
-  // 3. DYNAMIC PAGES (DB FLYWHEEL — ACTIVE)
-  // ==========================================
+  let dynamicStyles: MetadataRoute.Sitemap = [];
   let dynamicPosts: MetadataRoute.Sitemap = [];
   let dynamicProfiles: MetadataRoute.Sitemap = [];
 
   try {
     const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any);
 
-    // 🌟 Fetch last 5,000 public posts WITH image_url for Google Image Search
-    // Reduced from 10k to 5k to guarantee Cloudflare never times out during generation
+    // ==========================================
+    // 2. PROGRAMMATIC SEO TRAP PAGES (STYLES)
+    // 🌟 NOW FULLY AUTOMATED! Every new style in your DB is auto-indexed.
+    // ==========================================
+    const stylesResult = await db.prepare(`
+      SELECT slug, created_at 
+      FROM styles 
+      WHERE is_active = 1 AND slug IS NOT NULL
+    `).all();
+
+    dynamicStyles = stylesResult.results.map((style: any) => ({
+      url: `${baseUrl}/style/${style.slug}`,
+      lastModified: style.created_at ? new Date(style.created_at) : new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9, // Very high priority for your landing pages!
+    }));
+
+    // ==========================================
+    // 3. DYNAMIC PAGES (PUBLIC POSTS)
+    // ==========================================
+    // 🌟 Fetch last 1,000 public posts
+    // Kept limit at 1000 to guarantee Cloudflare never times out. 
+    // Googlebot prefers fast, bite-sized sitemaps over massive slow ones!
     const postsResult = await db.prepare(`
-      SELECT 
-        posts.id, 
-        posts.image_url, 
-        posts.created_at,
-        posts.title,
-        posts.description,
-        users.username
+      SELECT id, created_at
       FROM posts 
-      JOIN users ON posts.user_id = users.id
-      WHERE posts.is_public = 1 
-      ORDER BY posts.created_at DESC 
-      LIMIT 5000
+      WHERE is_public = 1 
+      ORDER BY created_at DESC 
+      LIMIT 1000
     `).all();
 
     dynamicPosts = postsResult.results.map((post: any) => ({
       url: `${baseUrl}/post/${post.id}`,
       lastModified: new Date(post.created_at),
-      changeFrequency: 'weekly' as const,
+      changeFrequency: 'monthly',
       priority: 0.6,
-      // Google Image Search integration
-      images: post.image_url ? [post.image_url] : undefined,
     }));
 
-    // 🌟 Public creator profiles
+    // ==========================================
+    // 4. CREATOR PROFILES
+    // ==========================================
     const usersResult = await db.prepare(`
-      SELECT username, updated_at 
+      SELECT username
       FROM users 
       WHERE username IS NOT NULL 
-      LIMIT 2000
+      LIMIT 500
     `).all();
 
     dynamicProfiles = usersResult.results.map((user: any) => ({
       url: `${baseUrl}/u/${user.username}`,
       lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
+      changeFrequency: 'weekly',
       priority: 0.7,
     }));
 
@@ -99,5 +90,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Sitemap DB error:", error);
   }
 
-  return [...staticPages, ...seoTrapPages, ...dynamicPosts, ...dynamicProfiles];
+  return [...staticPages, ...dynamicStyles, ...dynamicPosts, ...dynamicProfiles];
 }
