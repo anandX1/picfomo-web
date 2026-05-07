@@ -13,6 +13,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'pub-ad6276faad1f4954ad679b43ef8c4afd.r2.dev',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
     ],
   },
   experimental: {
