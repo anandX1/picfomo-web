@@ -2,6 +2,7 @@ import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { enqueueIndexing, pingSitemaps } from "@/utils/indexing";
 
 // ❌ WE DELETED 'export const runtime = "edge"' to allow Svix crypto to work via OpenNext
 
@@ -95,6 +96,8 @@ export async function POST(req: Request) {
       `).bind(txId, id, 35, 'Welcome Bonus').run();
 
       console.log(`✅ SAVED ${finalUsername} WITH 35 SPARKS!`);
+      await enqueueIndexing(db, "user", `/u/${finalUsername}`);
+      await pingSitemaps();
 
     } catch (dbError) {
       console.error("❌ Database Error:", dbError);
@@ -119,6 +122,8 @@ export async function POST(req: Request) {
       `).bind(finalUsername, finalUsername, image_url || '', id).run();
 
       console.log(`✅ UPDATED ${finalUsername} IN DATABASE!`);
+      await enqueueIndexing(db, "user", `/u/${finalUsername}`);
+      await pingSitemaps();
     } catch (dbError) {
       console.error("❌ Database Update Error:", dbError);
       return new Response('Database update failed', { status: 500 });

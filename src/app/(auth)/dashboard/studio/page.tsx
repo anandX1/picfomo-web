@@ -13,19 +13,28 @@ export const metadata: Metadata = {
   title: "AI Portrait Studio & Generator | PicFOMO",
   description: "Step into the PicFOMO Studio. Upload your selfie, choose from dozens of premium AI styles, and generate stunning, identity-locked portraits in 20 seconds.",
   alternates: {
-    canonical: "https://www.picfomo.com/studio",
+    canonical: "https://www.picfomo.com/dashboard/studio",
   },
   openGraph: {
     title: "AI Portrait Studio | PicFOMO",
     description: "Upload your selfie and generate stunning portraits in 20 seconds.",
-    url: "https://www.picfomo.com/studio",
+    url: "https://www.picfomo.com/dashboard/studio",
     type: "website",
     siteName: "PicFOMO",
+    images: [
+      {
+        url: "https://www.picfomo.com/logo2.png",
+        width: 1600,
+        height: 1600,
+        alt: "PicFOMO",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "AI Portrait Studio & Generator | PicFOMO",
     description: "Generate stunning, identity-locked portraits in 20 seconds.",
+    images: ["https://www.picfomo.com/logo2.png"],
   }
 };
 
@@ -63,7 +72,7 @@ export default async function StudioPage() {
     "description": "Upload your selfie, choose from dozens of premium AI styles, and generate stunning, identity-locked portraits in 20 seconds.",
     "applicationCategory": "DesignApplication",
     "operatingSystem": "All",
-    "url": "https://www.picfomo.com/studio",
+    "url": "https://www.picfomo.com/dashboard/studio",
     "offers": {
       "@type": "Offer",
       "price": "0",

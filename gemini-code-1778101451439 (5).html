@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PicFOMO | AI Portrait Studio & Creator Feed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.css">
+    <style>
+        :root {
+            --bg-color: #030303;
+            --surface-color: #0A0A0A;
+            --card-color: #111111;
+            --gold: #D4AF37;
+            --gold-glow: rgba(212,175,55,0.8);
+        }
+        html.lenis, html.lenis body { height: auto; }
+        .lenis.lenis-smooth { scroll-behavior: auto !important; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color); 
+            color: #fff; 
+            overflow-x: hidden;
+            padding-top: 120px;
+            padding-bottom: 100px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        h1, h2, h3, h4, .display-font { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
+        p { letter-spacing: -0.01em; }
+        .type-lead { font-size: clamp(1.05rem, 0.9rem + 0.4vw, 1.2rem); line-height: 1.7; }
+        .type-h1 { font-size: clamp(2.7rem, 2.2rem + 2.1vw, 4.6rem); line-height: 1.03; }
+        .type-h2 { font-size: clamp(2rem, 1.6rem + 1.1vw, 3.1rem); line-height: 1.1; }
+        .type-kicker { letter-spacing: 0.16em; }
+        .text-balance { text-wrap: balance; }
+        .bg-gold { background-color: var(--gold); }
+        .text-gold { color: var(--gold); }
+        .border-gold { border-color: var(--gold); }
+
+        /* Brand gold glow surfaces */
+        .brand-gold-glow {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        @keyframes liquidDrift {
+            0% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(-2%, 1%, 0) scale(1.03); }
+            100% { transform: translate3d(2%, -1%, 0) scale(1.02); }
+        }
+        .brand-gold-glow::before {
+            content: "";
+            position: absolute;
+            inset: -20%;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(50% 56% at 18% 86%, rgba(212,175,55,0.22) 0%, rgba(212,175,55,0.0) 64%),
+                radial-gradient(56% 63% at 50% 74%, rgba(180,148,42,0.16) 0%, rgba(180,148,42,0.0) 66%),
+                radial-gradient(60% 66% at 82% 12%, rgba(140,112,34,0.14) 0%, rgba(140,112,34,0.0) 66%);
+            filter: blur(48px);
+            opacity: 0.82;
+            transform: translateZ(0);
+            animation: liquidDrift 14s ease-in-out infinite alternate;
+        }
+        .brand-gold-glow::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.09;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        .brand-gold-glow > * { position: relative; z-index: 1; }
+        .brand-gold-glow--section {
+            background:
+                radial-gradient(120% 100% at 50% 0%, rgba(8,8,8,0.32) 0%, rgba(8,8,8,0.82) 46%, #070707 78%, #050505 100%),
+                #050505;
+        }
+        .brand-gold-glow--section::before {
+            background:
+                radial-gradient(42% 40% at 50% 2%, rgba(255, 220, 90, 0.78) 0%, rgba(255, 214, 74, 0.35) 38%, rgba(255, 214, 74, 0.0) 64%),
+                radial-gradient(34% 32% at 50% 8%, rgba(255, 236, 160, 0.52) 0%, rgba(255, 236, 160, 0.0) 66%),
+                radial-gradient(95% 70% at 50% -2%, rgba(212, 175, 55, 0.22) 0%, rgba(212, 175, 55, 0.0) 56%);
+            filter: blur(40px);
+            opacity: 0.92;
+            animation: liquidDrift 16s ease-in-out infinite alternate;
+        }
+        .brand-gold-glow--section::after {
+            opacity: 0.12;
+            mix-blend-mode: soft-light;
+            background-image:
+                repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.20) 2px, rgba(0,0,0,0.20) 4px),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        .brand-gold-glow--footer {
+            background:
+                radial-gradient(120% 100% at 50% 0%, rgba(8,8,8,0.32) 0%, rgba(8,8,8,0.88) 48%, #070707 78%, #050505 100%),
+                #050505;
+        }
+        .brand-gold-glow--footer::before {
+            background:
+                radial-gradient(42% 40% at 50% 2%, rgba(255, 220, 90, 0.72) 0%, rgba(255, 214, 74, 0.32) 38%, rgba(255, 214, 74, 0.0) 64%),
+                radial-gradient(34% 32% at 50% 8%, rgba(255, 236, 160, 0.46) 0%, rgba(255, 236, 160, 0.0) 66%),
+                radial-gradient(95% 70% at 50% -2%, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.0) 56%);
+            filter: blur(40px);
+            opacity: 0.9;
+            animation: liquidDrift 16s ease-in-out infinite alternate;
+        }
+        .brand-gold-glow--footer::after {
+            opacity: 0.12;
+            mix-blend-mode: soft-light;
+            background-image:
+                repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.20) 2px, rgba(0,0,0,0.20) 4px),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        
+        .hero-gradient { background: radial-gradient(circle at top, #151515 0%, var(--bg-color) 100%); }
+
+        /* SPA Routing Styles */
+        .page-section { display: none; opacity: 0; }
+        .page-section.active { display: block; animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Unified Card Style */
+        .step-card { 
+            background-color: var(--card-color); border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.5); padding: 1.5rem; position: relative;
+        }
+        .step-label { 
+            background-color: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; 
+            border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; padding: 0.5rem 1rem; 
+            position: absolute; top: -1rem; left: 2rem; z-index: 20; box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+        }
+
+        /* Flanking Cards 3D Tilt */
+        .flank-card { transform-style: preserve-3d; will-change: transform; transition: transform 0.08s linear, box-shadow 0.08s linear, border-color 0.3s ease; }
+        .flank-card.tilt-resetting { transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.3s ease; }
+
+        /* Dropzone Dash Animation */
+        @keyframes dash { to { stroke-dashoffset: -20; } }
+        .animate-dash { animation: dash 1s linear infinite; }
+
+        /* Global Drag State Classes */
+        body.is-dragging-file #dropzone-container {
+            transform: scale(1.05); border-color: var(--gold); box-shadow: 0 0 80px rgba(212,175,55,0.4); background-color: rgba(212,175,55,0.05);
+        }
+        body.is-dragging-file .dropzone-dashed-border { stroke: var(--gold); stroke-width: 3; animation: dash 0.5s linear infinite; }
+        body.is-dragging-file #dropzone-icon { 
+            transform: scale(1.2); background-color: var(--gold); border-color: var(--gold); color: black; box-shadow: 0 0 50px var(--gold-glow);
+        }
+        body.is-dragging-file .dropzone-glow { opacity: 0.6 !important; }
+
+        /* Framer-Style Fluid Button Engine */
+        .fluid-btn {
+            position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+            cursor: pointer; z-index: 1; user-select: none;
+        }
+        .fluid-btn:hover { transform: scale(1.04); }
+        .fluid-btn-bg {
+            position: absolute; inset: 0; z-index: -1; border-radius: inherit; transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .fluid-btn:hover .fluid-btn-bg { transform: translateY(0); }
+        .fluid-text-wrapper { display: grid; position: relative; overflow: hidden; }
+        .fluid-text {
+            grid-area: 1 / 1; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;
+        }
+        .fluid-text-bottom { transform: translateY(120%); }
+        .fluid-btn:hover .fluid-text-top { transform: translateY(-120%); }
+        .fluid-btn:hover .fluid-text-bottom { transform: translateY(0); }
+
+        .fluid-btn-gold { background-color: var(--gold); color: #000; box-shadow: 0 4px 15px rgba(212,175,55,0.2); }
+        .fluid-btn-gold:hover { box-shadow: 0 8px 25px rgba(212,175,55,0.5); }
+        .fluid-btn-gold .fluid-btn-bg { background-color: #fff; }
+        .fluid-btn-gold .fluid-text-bottom { color: #000; }
+
+        .fluid-btn-dark { background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; }
+        .fluid-btn-dark:hover { border-color: var(--gold); box-shadow: 0 8px 25px rgba(212,175,55,0.2); }
+        .fluid-btn-dark .fluid-btn-bg { background-color: var(--gold); }
+        .fluid-btn-dark .fluid-text-bottom { color: #000; }
+
+        .fluid-btn-white { background-color: #fff; color: #000; box-shadow: 0 4px 15px rgba(255,255,255,0.1); }
+        .fluid-btn-white:hover { box-shadow: 0 8px 25px rgba(255,255,255,0.3); }
+        .fluid-btn-white .fluid-btn-bg { background-color: #111; }
+        .fluid-btn-white .fluid-text-bottom { color: #fff; }
+
+        /* Premium Scroll Timeline Styles */
+        .timeline-step { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .timeline-step.active { opacity: 1; transform: translateY(0); }
+        .timeline-node { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; background-color: #111; border: 3px solid rgba(255,255,255,0.2); z-index: 20; transition: all 0.5s ease; }
+        .timeline-step.active .timeline-node { border-color: var(--gold); background-color: var(--gold); box-shadow: 0 0 20px var(--gold-glow); }
+
+        /* Timeline 3D tilt cards (uniform size + ratio) */
+        .tilt-card {
+            perspective: 1000px;
+            perspective-origin: 50% 50%;
+        }
+        .tilt-card__face {
+            position: relative;
+            transform-style: preserve-3d;
+            will-change: transform;
+            transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.45s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.35s ease;
+        }
+        .tilt-card__face.tilt-resetting {
+            transition: transform 0.65s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.65s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.35s ease;
+        }
+        .step-card.timeline-step-card {
+            width: 100%;
+            aspect-ratio: 5 / 3;
+            min-height: 288px;
+            transform-origin: center center;
+        }
+        .tilt-card__shine {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: 4;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: linear-gradient(
+                125deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.06) 42%,
+                rgba(212, 175, 55, 0.22) 50%,
+                rgba(255, 255, 255, 0.05) 58%,
+                transparent 100%
+            );
+            background-size: 200% 200%;
+            mix-blend-mode: soft-light;
+        }
+        .tilt-card.is-active .tilt-card__shine { opacity: 1; }
+        .tilt-card__parallax {
+            transform: translateZ(0);
+            transform-style: preserve-3d;
+        }
+
+        /* Identity flow arrows (scroll-draw) */
+        .flow-arrow { overflow: visible; }
+        .flow-arrow-path {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.85;
+        }
+
+        /* ========================================= */
+        /* ORGANIC 3D PHYSICS CAROUSEL               */
+        /* ========================================= */
+        .carousel-wrapper {
+            position: relative; width: 100%; height: 600px; overflow: hidden; perspective: 1200px; display: flex; align-items: center; justify-content: center; touch-action: pan-y; mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+        .carousel-track { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; width: 0; height: 0; }
+        .organic-card { position: absolute; width: 280px; height: 400px; left: -140px; top: -200px; border-radius: 1.5rem; background: #111; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.8); overflow: hidden; will-change: transform, opacity, box-shadow; user-select: none; -webkit-user-drag: none; transition: box-shadow 0.3s ease, border-color 0.3s ease; }
+        .organic-card:hover { border-color: var(--gold); box-shadow: 0 20px 60px rgba(212,175,55,0.3) !important; }
+        .organic-card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .organic-card-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 2.5rem 1.5rem 1.5rem; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); display: flex; justify-content: space-between; align-items: flex-end; pointer-events: none; }
+        .carousel-controls { display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 1rem; position: relative; z-index: 30; }
+        .carousel-dots { display: flex; gap: 8px; }
+        .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; }
+        .carousel-dot.active { background: var(--gold); transform: scale(1.5); box-shadow: 0 0 10px var(--gold); }
+
+        /* ========================================= */
+        /* SPECTRA NOISE BACKGROUND EFFECT           */
+        /* ========================================= */
+        .spectra-bg {
+            position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+            background-color: #050505;
+        }
+        .spectra-gradient {
+            position: absolute; width: 150vw; height: 150vh; top: -25vh; left: -25vw;
+            background: radial-gradient(circle at 40% 50%, rgba(212, 175, 55, 0.15), transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(133, 150, 20, 0.1), transparent 40%);
+            filter: blur(60px);
+            animation: warpDrift 15s infinite alternate ease-in-out;
+            will-change: transform;
+        }
+        .spectra-noise {
+            position: absolute; inset: 0; opacity: 0.12; mix-blend-mode: screen;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        .spectra-scanlines {
+            position: absolute; inset: 0; opacity: 0.4; pointer-events: none; mix-blend-mode: overlay;
+            background: repeating-linear-gradient(to bottom, transparent, transparent 2px, rgba(0,0,0,0.8) 2px, rgba(0,0,0,0.8) 4px);
+        }
+        @keyframes warpDrift {
+            0% { transform: rotate(0deg) scale(1) translate(0, 0); }
+            50% { transform: rotate(3deg) scale(1.05) translate(3%, 4%); }
+            100% { transform: rotate(-3deg) scale(1.1) translate(-2%, -3%); }
+        }
+
+        /* ========================================= */
+        /* GRADIENT PRO V2 (WEBGL) BACKGROUND        */
+        /* ========================================= */
+        .gradientpro-bg {
+            position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+            background: radial-gradient(120% 120% at 50% 50%, #FCD34D 0%, #FB923C 55%, #422006 100%);
+        }
+        .gradientpro-bg canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .gradientpro-vignette {
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(120% 80% at 50% 35%, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.05) 55%, rgba(0,0,0,0.75) 100%),
+                linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.55) 100%);
+            mix-blend-mode: multiply;
+            opacity: 0.9;
+        }
+        .gradientpro-fallback-grain {
+            position: absolute; inset: 0; opacity: 0.08; mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* FAQ */
+        .faq-item.open .faq-body { max-height: 300px; }
+        .faq-item.open .faq-arrow { transform: rotate(180deg); }
+        .faq-item.open { border-color: rgba(212,175,55,0.3); }
+        .faq-item.open .faq-icon { border-color: var(--gold); color: var(--gold); }
+        .faq-item.open .faq-trigger .opacity-60 { opacity: 1; }
+
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* macOS DOCK STYLES */
+        .mac-dock-wrapper { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 200; }
+        .mac-dock { display: flex; align-items: flex-end; gap: 16px; padding: 10px 12px; background: rgba(12, 12, 12, 0.55); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 18px 50px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08); }
+        .dock-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; cursor: pointer; width: 62px; height: 62px; flex-shrink: 0; }
+        .dock-icon { width: 100%; height: 100%; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); color: #aaa; }
+        .dock-item.brand .dock-icon { font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: #fff; }
+        /* Gold highlight should appear only on hover (all icons) */
+        .dock-item:hover .dock-icon { background: var(--gold); color: #000; border-color: rgba(255, 230, 128, 0.75); box-shadow: 0 14px 28px rgba(0,0,0,0.65), 0 0 32px rgba(212,175,55,0.35); }
+        .dock-icon { will-change: transform, box-shadow, border-color; transform: translateZ(0); transform-origin: 50% 100%; transition: transform 0.12s ease-out, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease; }
+        .dock-icon svg { width: 52%; height: 52%; transition: color 0.2s; }
+        .dock-dot { width: 4px; height: 4px; border-radius: 50%; background: transparent; margin-top: 6px; transition: background 0.3s; }
+        .dock-item.active .dock-dot { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+        .dock-tooltip { position: absolute; top: -45px; background: rgba(10,10,10,0.9); border: 1px solid rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #fff; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; transform: translateY(10px) scale(0.9); white-space: nowrap; backdrop-filter: blur(5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .dock-item:hover .dock-tooltip { opacity: 1; transform: translateY(0) scale(1); }
+    </style>
+</head>
+<body class="hero-gradient relative flex flex-col min-h-screen">
+
+    <div class="fixed top-0 left-0 w-full px-6 py-6 z-[90] pointer-events-none flex justify-between items-start">
+        <div class="flex items-center gap-2">
+            <span class="text-xl font-bold tracking-tight display-font text-white drop-shadow-lg">picfomo<span class="text-gold">.com</span></span>
+        </div>
+    </div>
+
+    <div id="sticky-cta" class="fixed bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-[205] translate-y-full opacity-0 transition-all duration-500 ease-out pointer-events-none hidden w-[calc(100%-1.5rem)] max-w-xl sm:max-w-2xl">
+        <div class="bg-black/80 backdrop-blur-xl border border-white/10 p-2 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center justify-center sm:justify-start gap-3 sm:gap-4 pl-4 sm:pl-6 pr-2">
+            <span class="text-white text-sm font-semibold whitespace-nowrap hidden sm:block">Ready to remix your identity?</span>
+            
+            <button type="button" onclick="scrollPageToTop()" class="fluid-btn fluid-btn-gold px-6 py-2.5 rounded-full font-bold text-sm pointer-events-auto">
+                <span class="fluid-btn-bg"></span>
+                <span class="fluid-text-wrapper">
+                    <span class="fluid-text fluid-text-top">Upload Photo</span>
+                    <span class="fluid-text fluid-text-bottom">Upload Photo</span>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex-grow pt-[40px]">
+
+        <main id="page-home" class="page-section active">
+            
+            <section id="hero-section" class="w-full flex flex-col items-center justify-center min-h-[calc(100vh-140px)] pb-16 relative overflow-hidden">
+                <div class="text-center mb-10 px-6 relative z-20">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-gold mb-5 uppercase backdrop-blur-md type-kicker">
+                        <span class="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
+                        AI Portrait Studio + Creator Economy
+                    </div>
+                    <h1 class="font-extrabold mb-5 display-font type-h1 text-balance">
+                        Identity‑Lock portraits.<br>One click. Viral aesthetics.
+                    </h1>
+                    <p class="text-gray-300/80 max-w-2xl mx-auto type-lead text-balance">
+                        PicFOMO turns a single selfie into studio‑grade portraits in ~20 seconds—no prompts, no “uncanny valley.”
+                        Browse a live style feed, hit Generate, then Remix the exact aesthetic you love.
+                    </p>
+                </div>
+
+                <div class="w-full max-w-[1400px] mx-auto px-4 flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12 relative z-10">
+                    <div class="hidden lg:flex flex-col gap-6 w-[260px] xl:w-[280px] shrink-0">
+                        <div class="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[-8deg] translate-y-12 translate-x-4">
+                            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80" class="w-full h-full object-cover">
+                            <div class="absolute bottom-4 left-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">DSLR</div>
+                        </div>
+                        <div class="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[-3deg] -translate-x-6">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80" class="w-full h-full object-cover">
+                            <div class="absolute bottom-4 left-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">Ghibli</div>
+                        </div>
+                    </div>
+
+                    <div class="w-full max-w-xl lg:max-w-[500px] xl:max-w-[550px] relative group shrink-0">
+                        <div class="dropzone-glow absolute -inset-1.5 bg-gradient-to-r from-yellow-500 to-gold rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-40 transition duration-500"></div>
+                        
+                        <div id="dropzone-container" class="relative bg-[#0A0A0A] border-2 border-white/20 group-hover:border-gold rounded-[2rem] p-8 md:p-12 flex flex-col items-center justify-center min-h-[420px] transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.05)] group-hover:shadow-[0_0_60px_rgba(212,175,55,0.3)] overflow-hidden">
+                            <svg class="absolute inset-2 w-[calc(100%-16px)] h-[calc(100%-16px)] pointer-events-none rounded-[1.5rem]" preserveAspectRatio="none">
+                                <rect x="0" y="0" width="100%" height="100%" rx="24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-dasharray="10 10" class="dropzone-dashed-border animate-dash group-hover:stroke-gold transition-colors duration-500"></rect>
+                            </svg>
+                            <div id="dropzone-icon" class="bg-white w-20 h-20 rounded-2xl border border-white/30 flex items-center justify-center mb-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)] text-black group-hover:scale-110 group-hover:bg-gold group-hover:border-gold group-hover:shadow-[0_0_40px_rgba(212,175,55,0.8)] transition-all duration-500">
+                                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            </div>
+                            <h3 id="dropzone-title" class="text-2xl md:text-3xl font-bold display-font mb-2 text-white group-hover:text-gold transition-colors duration-500">Upload a selfie</h3>
+                            <p id="dropzone-desc" class="text-gray-400 text-sm text-center px-4 mb-8">Drag & drop your photo here, or browse.</p>
+                            
+                            <button class="relative overflow-hidden px-8 py-3 rounded-xl font-bold text-sm bg-white/10 border border-white/20 text-white transition-all duration-500 shadow-lg pointer-events-none group-hover:border-gold group-hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transform group-hover:scale-105 z-10">
+                                <span class="absolute inset-0 bg-gold translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] z-[-1] rounded-xl"></span>
+                                <span class="grid relative overflow-hidden">
+                                    <span class="col-start-1 row-start-1 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-[120%]">Select Photo</span>
+                                    <span class="col-start-1 row-start-1 translate-y-[120%] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 text-black">Select Photo</span>
+                                </span>
+                            </button>
+                            
+                            <div class="absolute bottom-6 flex items-center gap-2 text-gray-500 text-[11px] font-semibold uppercase tracking-wider group-hover:text-gold transition-colors duration-500">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                No signup required
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="hidden lg:flex flex-col gap-6 w-[260px] xl:w-[280px] shrink-0">
+                        <div class="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[8deg] translate-y-12 -translate-x-4">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80" class="w-full h-full object-cover">
+                            <div class="absolute bottom-4 right-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">Cyberpunk</div>
+                        </div>
+                        <div class="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[3deg] translate-x-6">
+                            <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&q=80" class="w-full h-full object-cover">
+                            <div class="absolute bottom-4 right-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">Vogue</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex lg:hidden w-full overflow-x-auto hide-scroll gap-4 px-6 mt-10 snap-x snap-mandatory pb-6">
+                    <div class="w-[160px] shrink-0 aspect-[4/5] rounded-2xl border border-white/10 overflow-hidden snap-center relative">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80" class="w-full h-full object-cover">
+                        <div class="absolute bottom-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded border border-white/10 text-[10px] font-bold">DSLR</div>
+                    </div>
+                    <div class="w-[160px] shrink-0 aspect-[4/5] rounded-2xl border border-white/10 overflow-hidden snap-center relative">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80" class="w-full h-full object-cover">
+                        <div class="absolute bottom-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded border border-white/10 text-[10px] font-bold">Ghibli</div>
+                    </div>
+                    <div class="w-[160px] shrink-0 aspect-[4/5] rounded-2xl border border-white/10 overflow-hidden snap-center relative">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80" class="w-full h-full object-cover">
+                        <div class="absolute bottom-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded border border-white/10 text-[10px] font-bold">Cyberpunk</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="identity-flow-section" class="py-24 border-y border-white/5 brand-gold-glow brand-gold-glow--section">
+                <div class="max-w-5xl mx-auto px-6">
+                    <div class="text-center mb-20">
+                        <h2 class="font-bold mb-4 display-font type-h2 text-balance">Zero prompts. Your identity stays you.</h2>
+                        <p class="text-gray-100/80 max-w-2xl mx-auto type-lead text-balance">
+                            Our Identity‑Lock™ tech preserves your real facial structure, while styles change completely—from Ghibli to Cyberpunk to DSLR realism.
+                        </p>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-16 md:gap-32 relative mt-8">
+                        <div class="text-5xl md:text-6xl font-bold tracking-tight z-10 relative text-center md:text-left display-font">
+                            picfomo<span class="text-gold">.com</span>
+                            <svg class="flow-arrow hidden md:block absolute -right-28 md:-right-32 -top-24 w-28 h-28 md:w-32 md:h-32 text-gray-500 pointer-events-none" viewBox="0 0 100 100" aria-hidden="true">
+                                <path class="flow-arrow-path" data-flow-arrow="1" d="M 90,10 C 50,10 20,40 10,80 L 0,70 M 10,80 L 20,70"/>
+                            </svg>
+                            <svg class="flow-arrow hidden md:block absolute -right-28 md:-right-32 -bottom-24 w-28 h-28 md:w-32 md:h-32 text-gray-500 pointer-events-none" viewBox="0 0 100 100" aria-hidden="true">
+                                <path class="flow-arrow-path" data-flow-arrow="2" d="M 10,20 C 20,60 50,90 90,90 L 80,80 M 90,90 L 80,100"/>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col gap-12 md:gap-16 z-10">
+                            <div class="relative transform transition hover:-translate-y-1 duration-300">
+                                <div class="absolute -left-4 md:-left-8 top-1/2 -translate-y-1/2 bg-white text-black text-xs font-bold px-3 py-1.5 rounded shadow-lg z-20 lowercase tracking-wider border border-gray-200">input</div>
+                                <div class="bg-black p-1.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/10">
+                                    <img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=800&auto=format&fit=crop&q=80" class="w-80 h-52 md:w-[26rem] md:h-60 lg:w-[28rem] lg:h-64 object-cover object-top rounded-xl grayscale-[20%]">
+                                </div>
+                            </div>
+                            <div class="relative transform transition hover:-translate-y-1 duration-300 md:ml-12">
+                                <div class="absolute -left-4 md:-left-8 top-1/2 -translate-y-1/2 bg-gold text-black text-xs font-bold px-3 py-1.5 rounded shadow-lg z-20 lowercase tracking-wider border border-gold">output</div>
+                                <div class="flex -space-x-7 md:-space-x-8 relative z-10 pl-6 md:pl-10 justify-center md:justify-start">
+                                    <div class="w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-full border-4 border-gold overflow-hidden relative z-30 shadow-xl"><img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=500&auto=format&fit=crop&q=80" class="w-full h-full object-cover object-top"></div>
+                                    <div class="w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-full border-4 border-[#3b82f6] overflow-hidden relative z-20 shadow-xl"><img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=500&auto=format&fit=crop&q=80" class="w-full h-full object-cover object-top saturate-[1.5] hue-rotate-[15deg]"></div>
+                                    <div class="w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-full border-4 border-[#ec4899] overflow-hidden relative z-10 shadow-xl"><img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=500&auto=format&fit=crop&q=80" class="w-full h-full object-cover object-top contrast-[1.2]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="timeline-section" class="max-w-5xl mx-auto px-6 py-32 flex flex-col items-center relative">
+                <div class="text-center mb-24">
+                    <h2 class="font-bold mb-3 display-font type-h2 text-balance">How <span class="font-black text-gold">picfomo.com</span> works</h2>
+                    <p class="text-gray-300/70 font-semibold uppercase text-sm tracking-[0.22em]">One selfie → any aesthetic → remix culture → Sparks</p>
+                </div>
+                
+                <div class="relative w-full flex flex-col">
+                    <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-[2px] bg-white/10 -translate-x-1/2 z-0"></div>
+                    <div id="timeline-line-progress" class="hidden md:block absolute left-1/2 top-0 w-[2px] bg-gold -translate-x-1/2 z-10 transition-all duration-100 ease-out shadow-[0_0_15px_rgba(212,175,55,0.8)]" style="height: 0%;"></div>
+
+                    <div class="timeline-step w-full flex justify-start relative mb-24 md:mb-32">
+                        <div class="timeline-node hidden md:block"></div>
+                        <div class="w-full md:w-[45%] relative z-20">
+                            <div class="step-label" style="left: auto; right: 2rem;">1. Upload one selfie</div>
+                            <div class="tilt-card">
+                                <div class="step-card timeline-step-card tilt-card__face flex flex-col">
+                                    <span class="tilt-card__shine" aria-hidden="true"></span>
+                                    <div class="tilt-card__parallax flex-1 min-h-0 w-full relative rounded-xl overflow-hidden">
+                                        <img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=800&auto=format&fit=crop&q=80" class="absolute inset-0 w-full h-full object-cover object-top">
+                                        <div class="absolute top-4 right-4 bg-white text-black text-[10px] font-bold p-3 w-40 rounded-md shadow-2xl leading-snug z-10">
+                                            Privacy-first: uploads are automatically deleted right after processing.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-step w-full flex justify-end relative mb-24 md:mb-32">
+                        <div class="timeline-node hidden md:block"></div>
+                        <div class="w-full md:w-[45%] relative z-20">
+                            <div class="step-label">2. Identity‑Lock™ Face Match</div>
+                            <div class="tilt-card">
+                                <div class="step-card timeline-step-card tilt-card__face flex items-center justify-center p-0 overflow-hidden bg-gold">
+                                    <span class="tilt-card__shine" aria-hidden="true"></span>
+                                    <div class="tilt-card__parallax w-full h-full relative">
+                                        <div class="absolute inset-0 bg-gold/90 flex flex-col justify-center px-6 w-[45%] z-10">
+                                            <p class="text-black font-bold text-sm leading-snug">We map your facial structure so the output looks unmistakably like you—every time.</p>
+                                        </div>
+                                        <img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=800&auto=format&fit=crop&q=80" class="absolute inset-y-0 right-0 h-full w-[60%] object-cover object-top border-l border-white/20">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-step w-full flex justify-start relative mb-24 md:mb-32">
+                        <div class="timeline-node hidden md:block"></div>
+                        <div class="w-full md:w-[45%] relative z-20">
+                            <div class="step-label" style="left: auto; right: 2rem;">3. Pick a trending aesthetic</div>
+                            <div class="tilt-card">
+                                <div class="step-card timeline-step-card tilt-card__face flex flex-col items-center justify-center gap-4 md:gap-6">
+                                    <span class="tilt-card__shine" aria-hidden="true"></span>
+                                    <div class="tilt-card__parallax flex flex-col items-center justify-center gap-4 md:gap-6 w-full px-2">
+                                        <div class="text-center px-2"><p class="text-gray-300/80 text-sm leading-relaxed text-balance">Browse the Studio. What you see is exactly what you get—no prompt engineering required.</p></div>
+                                        <div class="flex -space-x-4 relative justify-center">
+                                            <div class="w-20 h-20 rounded-full border-4 border-gold overflow-hidden z-30 shadow-lg"><img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=200&auto=format&fit=crop&q=80" class="w-full h-full object-cover object-top"></div>
+                                            <div class="w-20 h-20 rounded-full border-4 border-[#3b82f6] overflow-hidden z-20 shadow-lg"><img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=200&auto=format&fit=crop&q=80" class="w-full h-full object-cover object-top saturate-[1.5] hue-rotate-[15deg]"></div>
+                                            <div class="w-20 h-20 rounded-full border-4 border-[#ec4899] overflow-hidden z-10 shadow-lg"><img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=200&auto=format&fit=crop&q=80" class="w-full h-full object-cover object-top contrast-[1.2]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-step w-full flex justify-end relative">
+                        <div class="timeline-node hidden md:block"></div>
+                        <div class="w-full md:w-[45%] relative z-20">
+                            <div class="step-label !text-gold border-gold/30">4. Remix & Earn Sparks</div>
+                            <div class="tilt-card">
+                                <div class="step-card timeline-step-card tilt-card__face flex flex-col justify-center items-center bg-[#050505] p-0 overflow-hidden">
+                                    <span class="tilt-card__shine" aria-hidden="true"></span>
+                                    <div class="spectra-bg">
+                                        <div class="spectra-gradient"></div>
+                                        <div class="spectra-noise"></div>
+                                        <div class="spectra-scanlines"></div>
+                                    </div>
+
+                                    <div class="tilt-card__parallax relative z-10 w-full h-full flex flex-col justify-center items-center px-3 py-4">
+                                        <div class="w-16 h-16 rounded-full border-2 border-gold overflow-hidden mb-3 relative shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                                            <img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=200&auto=format&fit=crop&q=80" class="w-full h-full object-cover object-top">
+                                            <div class="absolute -bottom-1 -right-1 bg-gold text-black text-[10px] font-black px-1.5 py-0.5 rounded-full border border-black">+2</div>
+                                        </div>
+                                        <div class="text-white text-sm font-bold mb-2">Your aesthetic is live.</div>
+                                        <div class="text-gray-300/75 text-xs text-center leading-relaxed px-4 mb-5 text-balance">Publish to the Creator Feed. When someone hits Remix, you earn Sparks to generate more premium looks.</div>
+                                        <div class="w-[80%] flex justify-between items-center bg-[#151515] p-2.5 rounded-lg border border-white/5">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-4 h-4 rounded-full bg-gold flex items-center justify-center text-[8px] text-black font-black">⚡</span><span class="text-xs font-bold text-white">55 Sparks</span>
+                                            </div>
+                                            <button class="fluid-btn fluid-btn-gold px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-wide">
+                                                <span class="fluid-btn-bg"></span>
+                                                <span class="fluid-text-wrapper">
+                                                    <span class="fluid-text fluid-text-top">Generate</span>
+                                                    <span class="fluid-text fluid-text-bottom">Generate</span>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="bg-[#050505] py-32 border-t border-white/5 relative overflow-hidden">
+                
+                <div class="gradientpro-bg" data-gradient-pro="citrus">
+                    <div class="gradientpro-vignette"></div>
+                    <div class="gradientpro-fallback-grain"></div>
+                </div>
+
+                <div class="max-w-7xl mx-auto px-6 relative z-20 mb-12">
+                    <div class="text-center">
+                        <h2 class="font-bold mb-4 display-font type-h2 text-balance">Trending Aesthetics</h2>
+                        <p class="text-gray-200/80 max-w-2xl mx-auto type-lead text-balance">Drag to explore what’s viral right now. See a look you love? Remix it instantly onto your face.</p>
+                    </div>
+                </div>
+                
+                <div class="carousel-wrapper" id="organic-carousel">
+                    <div class="carousel-track" id="carousel-track">
+                        <div class="organic-card"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&q=80"><div class="organic-card-info"><span class="font-bold text-lg">Ghibli</span><span class="text-gold text-xs font-bold">⚡ 4.2k</span></div></div>
+                        <div class="organic-card"><img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&q=80"><div class="organic-card-info"><span class="font-bold text-lg">DSLR</span><span class="text-gold text-xs font-bold">⚡ 3.8k</span></div></div>
+                        <div class="organic-card"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&q=80"><div class="organic-card-info"><span class="font-bold text-lg">Cyberpunk</span><span class="text-gold text-xs font-bold">⚡ 8.1k</span></div></div>
+                        <div class="organic-card"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&q=80"><div class="organic-card-info"><span class="font-bold text-lg">Old Money</span><span class="text-gold text-xs font-bold">⚡ 2.4k</span></div></div>
+                        <div class="organic-card"><img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&q=80"><div class="organic-card-info"><span class="font-bold text-lg">Vogue</span><span class="text-gold text-xs font-bold">⚡ 5.5k</span></div></div>
+                        <div class="organic-card"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&q=80"><div class="organic-card-info"><span class="font-bold text-lg">Fantasy</span><span class="text-gold text-xs font-bold">⚡ 1.9k</span></div></div>
+                        <div class="organic-card"><img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&q=80"><div class="organic-card-info"><span class="font-bold text-lg">Editorial</span><span class="text-gold text-xs font-bold">⚡ 6.3k</span></div></div>
+                    </div>
+                </div>
+
+                <div class="carousel-controls relative z-20">
+                    <button class="fluid-btn fluid-btn-dark w-12 h-12 rounded-full" id="btn-prev">
+                        <span class="fluid-btn-bg"></span>
+                        <span class="fluid-text-wrapper">
+                            <span class="fluid-text fluid-text-top">←</span>
+                            <span class="fluid-text fluid-text-bottom">←</span>
+                        </span>
+                    </button>
+                    <div class="carousel-dots" id="carousel-dots"></div>
+                    <button class="fluid-btn fluid-btn-dark w-12 h-12 rounded-full" id="btn-next">
+                        <span class="fluid-btn-bg"></span>
+                        <span class="fluid-text-wrapper">
+                            <span class="fluid-text fluid-text-top">→</span>
+                            <span class="fluid-text fluid-text-bottom">→</span>
+                        </span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="bg-[#0A0A0A] py-32 border-t border-white/5 relative overflow-hidden">
+                <div class="max-w-4xl mx-auto px-6 relative z-10">
+                    <div class="text-center mb-20">
+                        <p class="text-gold text-xs font-bold uppercase tracking-[0.3em] mb-4">Got Questions?</p>
+                        <h2 class="text-4xl md:text-5xl font-bold tracking-tight mb-5 display-font">Frequently Asked <span class="text-gold">Questions</span></h2>
+                    </div>
+                    
+                    <div class="flex flex-col gap-4" id="faq-list">
+                        <div class="faq-item bg-[#111111] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/10">
+                            <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 md:p-7 text-left group" onclick="toggleFaq(this)">
+                                <span class="flex items-center gap-4">
+                                    <span class="text-gold font-black text-xs tracking-widest opacity-60 group-hover:opacity-100 transition w-6 shrink-0">01</span>
+                                    <span class="text-white font-semibold text-base leading-snug">Is this tool completely free to use?</span>
+                                </span>
+                                <span class="faq-icon shrink-0 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-gray-400 transition-all duration-300">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="faq-arrow transition-transform duration-300"><polyline points="6 9 12 15 18 9"/></svg>
+                                </span>
+                            </button>
+                            <div class="faq-body max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                                <p class="text-gray-400 leading-relaxed text-sm pb-7 px-7 pl-[4.5rem]">Absolutely. PicFOMO offers free daily generations, and there are zero ads. We built it to help you nail the perfect profile picture every single time.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-[#111111] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/10">
+                            <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 md:p-7 text-left group" onclick="toggleFaq(this)">
+                                <span class="flex items-center gap-4">
+                                    <span class="text-gold font-black text-xs tracking-widest opacity-60 group-hover:opacity-100 transition w-6 shrink-0">02</span>
+                                    <span class="text-white font-semibold text-base leading-snug">Are my photos safe and private?</span>
+                                </span>
+                                <span class="faq-icon shrink-0 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-gray-400 transition-all duration-300">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="faq-arrow transition-transform duration-300"><polyline points="6 9 12 15 18 9"/></svg>
+                                </span>
+                            </button>
+                            <div class="faq-body max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                                <p class="text-gray-400 leading-relaxed text-sm pb-7 px-7 pl-[4.5rem]">100%. We never track, store, or collect face data. All uploaded photos are <span class="text-white font-semibold">automatically deleted</span> immediately after processing — no exceptions.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-[#111111] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/10">
+                            <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 md:p-7 text-left group" onclick="toggleFaq(this)">
+                                <span class="flex items-center gap-4">
+                                    <span class="text-gold font-black text-xs tracking-widest opacity-60 group-hover:opacity-100 transition w-6 shrink-0">03</span>
+                                    <span class="text-white font-semibold text-base leading-snug">What photo formats are supported?</span>
+                                </span>
+                                <span class="faq-icon shrink-0 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-gray-400 transition-all duration-300">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="faq-arrow transition-transform duration-300"><polyline points="6 9 12 15 18 9"/></svg>
+                                </span>
+                            </button>
+                            <div class="faq-body max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                                <p class="text-gray-400 leading-relaxed text-sm pb-7 px-7 pl-[4.5rem]">We support all major photo formats — .jpg, .jpeg, .png, .webp, and .heic. If you're shooting on any modern device or camera, you're covered.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-[#111111] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/10">
+                            <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 md:p-7 text-left group" onclick="toggleFaq(this)">
+                                <span class="flex items-center gap-4">
+                                    <span class="text-gold font-black text-xs tracking-widest opacity-60 group-hover:opacity-100 transition w-6 shrink-0">04</span>
+                                    <span class="text-white font-semibold text-base leading-snug">How does the AI generate styles while keeping my face?</span>
+                                </span>
+                                <span class="faq-icon shrink-0 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-gray-400 transition-all duration-300">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="faq-arrow transition-transform duration-300"><polyline points="6 9 12 15 18 9"/></svg>
+                                </span>
+                            </button>
+                            <div class="faq-body max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                                <p class="text-gray-400 leading-relaxed text-sm pb-7 px-7 pl-[4.5rem]">Our proprietary <span class="text-gold font-semibold">Identity-Lock™</span> engine extracts your unique facial geometry before applying any style. This means the aesthetic changes completely — Studio Ghibli, Cyberpunk, Old Money — but your face stays unmistakably you.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-[#111111] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/10">
+                            <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 md:p-7 text-left group" onclick="toggleFaq(this)">
+                                <span class="flex items-center gap-4">
+                                    <span class="text-gold font-black text-xs tracking-widest opacity-60 group-hover:opacity-100 transition w-6 shrink-0">05</span>
+                                    <span class="text-white font-semibold text-base leading-snug">What makes a good photo for the best results?</span>
+                                </span>
+                                <span class="faq-icon shrink-0 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-gray-400 transition-all duration-300">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="faq-arrow transition-transform duration-300"><polyline points="6 9 12 15 18 9"/></svg>
+                                </span>
+                            </button>
+                            <div class="faq-body max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                                <p class="text-gray-400 leading-relaxed text-sm pb-7 px-7 pl-[4.5rem]">For the best output: use a front-facing photo with good lighting, a simple background, and no heavy filters. The cleaner the input, the more stunning the result.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-[#111111] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/10">
+                            <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 md:p-7 text-left group" onclick="toggleFaq(this)">
+                                <span class="flex items-center gap-4">
+                                    <span class="text-gold font-black text-xs tracking-widest opacity-60 group-hover:opacity-100 transition w-6 shrink-0">06</span>
+                                    <span class="text-white font-semibold text-base leading-snug">Where can I use my generated profile pictures?</span>
+                                </span>
+                                <span class="faq-icon shrink-0 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-gray-400 transition-all duration-300">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="faq-arrow transition-transform duration-300"><polyline points="6 9 12 15 18 9"/></svg>
+                                </span>
+                            </button>
+                            <div class="faq-body max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                                <p class="text-gray-400 leading-relaxed text-sm pb-7 px-7 pl-[4.5rem]">Everywhere. LinkedIn, Twitter/X, Instagram, Discord, Slack, WhatsApp, your CV, personal website — any platform where first impressions matter. The outputs are high-resolution and ready to drop in.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-[#111111] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/10">
+                            <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 md:p-7 text-left group" onclick="toggleFaq(this)">
+                                <span class="flex items-center gap-4">
+                                    <span class="text-gold font-black text-xs tracking-widest opacity-60 group-hover:opacity-100 transition w-6 shrink-0">07</span>
+                                    <span class="text-white font-semibold text-base leading-snug">What are Sparks?</span>
+                                </span>
+                                <span class="faq-icon shrink-0 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-gray-400 transition-all duration-300">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="faq-arrow transition-transform duration-300"><polyline points="6 9 12 15 18 9"/></svg>
+                                </span>
+                            </button>
+                            <div class="faq-body max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                                <p class="text-gray-400 leading-relaxed text-sm pb-7 px-7 pl-[4.5rem]"><span class="text-gold font-semibold">⚡ Sparks</span> are our in-app currency for generating new styles. You earn Sparks every time another creator remixes one of your published looks. The more your style gets shared, the more you generate — for free.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <main id="page-feed" class="page-section max-w-7xl mx-auto px-6 py-20 min-h-[calc(100vh-100px)]">
+            <div class="text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-4 display-font">The Creator Feed</h1>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Discover and remix the most viral AI aesthetics generated by our community today.</p>
+            </div>
+
+            <div class="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                <div class="relative group rounded-2xl overflow-hidden cursor-pointer break-inside-avoid shadow-lg bg-[#111] border border-white/5">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&q=80" class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur px-2 py-1 rounded">@cyber_neo</span>
+                            <div class="flex items-center gap-1"><span class="text-[10px] text-black bg-gold rounded-full px-1.5 font-bold">⚡ 4.2k</span></div>
+                        </div>
+                        <button class="fluid-btn fluid-btn-gold w-full py-2.5 rounded-lg font-bold text-sm">
+                            <span class="fluid-btn-bg"></span>
+                            <span class="fluid-text-wrapper">
+                                <span class="fluid-text fluid-text-top">Remix this style</span>
+                                <span class="fluid-text fluid-text-bottom">Remix this style</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                <div class="relative group rounded-2xl overflow-hidden cursor-pointer break-inside-avoid shadow-lg bg-[#111] border border-white/5">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&q=80" class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur px-2 py-1 rounded">@vintage_vibe</span>
+                            <div class="flex items-center gap-1"><span class="text-[10px] text-black bg-gold rounded-full px-1.5 font-bold">⚡ 2.8k</span></div>
+                        </div>
+                        <button class="fluid-btn fluid-btn-gold w-full py-2.5 rounded-lg font-bold text-sm">
+                            <span class="fluid-btn-bg"></span>
+                            <span class="fluid-text-wrapper">
+                                <span class="fluid-text fluid-text-top">Remix this style</span>
+                                <span class="fluid-text fluid-text-bottom">Remix this style</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                <div class="relative group rounded-2xl overflow-hidden cursor-pointer break-inside-avoid shadow-lg bg-[#111] border border-white/5">
+                    <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&q=80" class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur px-2 py-1 rounded">@vogue_ai</span>
+                            <div class="flex items-center gap-1"><span class="text-[10px] text-black bg-gold rounded-full px-1.5 font-bold">⚡ 8.1k</span></div>
+                        </div>
+                        <button class="fluid-btn fluid-btn-gold w-full py-2.5 rounded-lg font-bold text-sm">
+                            <span class="fluid-btn-bg"></span>
+                            <span class="fluid-text-wrapper">
+                                <span class="fluid-text fluid-text-top">Remix this style</span>
+                                <span class="fluid-text fluid-text-bottom">Remix this style</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                <div class="relative group rounded-2xl overflow-hidden cursor-pointer break-inside-avoid shadow-lg bg-[#111] border border-white/5">
+                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&q=80" class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur px-2 py-1 rounded">@dslr_king</span>
+                            <div class="flex items-center gap-1"><span class="text-[10px] text-black bg-gold rounded-full px-1.5 font-bold">⚡ 1.2k</span></div>
+                        </div>
+                        <button class="fluid-btn fluid-btn-gold w-full py-2.5 rounded-lg font-bold text-sm">
+                            <span class="fluid-btn-bg"></span>
+                            <span class="fluid-text-wrapper">
+                                <span class="fluid-text fluid-text-top">Remix this style</span>
+                                <span class="fluid-text fluid-text-bottom">Remix this style</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center">
+                <button class="fluid-btn fluid-btn-dark px-8 py-3 rounded-xl font-bold text-sm">
+                    <span class="fluid-btn-bg"></span>
+                    <span class="fluid-text-wrapper">
+                        <span class="fluid-text fluid-text-top">Load More Styles</span>
+                        <span class="fluid-text fluid-text-bottom">Load More Styles</span>
+                    </span>
+                </button>
+            </div>
+        </main>
+
+        <main id="page-pricing" class="page-section max-w-7xl mx-auto px-6 py-20 min-h-[calc(100vh-100px)]">
+            <div class="text-center mb-16">
+                <h1 class="font-extrabold mb-4 display-font type-h2 text-balance">Simple, transparent pricing</h1>
+                <p class="text-gray-300/80 max-w-2xl mx-auto type-lead text-balance">Start free with Sparks. Upgrade when you want more generations, higher resolution, and premium styles.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="bg-[#111] border border-white/5 rounded-[2rem] p-8 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-2">Starter</h3>
+                    <p class="text-gray-300/70 text-sm mb-6">Try the studio, test a few styles, share your first look.</p>
+                    <div class="mb-8"><span class="text-4xl font-extrabold">$0</span><span class="text-gray-500">/mo</span></div>
+                    <ul class="flex flex-col gap-4 mb-8 flex-grow">
+                        <li class="flex items-center gap-3 text-sm text-gray-300"><svg class="text-gray-500 w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 5 Free Sparks daily</li>
+                        <li class="flex items-center gap-3 text-sm text-gray-300"><svg class="text-gray-500 w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Standard Resolution</li>
+                    </ul>
+                    <button class="fluid-btn fluid-btn-dark w-full py-3 rounded-xl font-bold">
+                        <span class="fluid-btn-bg"></span>
+                        <span class="fluid-text-wrapper">
+                            <span class="fluid-text fluid-text-top">Get Started</span>
+                            <span class="fluid-text fluid-text-bottom">Get Started</span>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="bg-[#151515] border border-gold rounded-[2rem] p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_40px_rgba(212,175,55,0.15)]">
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gold text-black text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full">Most Popular</div>
+                    <h3 class="text-xl font-bold text-gold mb-2">Creator Tier</h3>
+                    <p class="text-gray-300/70 text-sm mb-6">For daily creators: more Sparks, premium output, and better visibility.</p>
+                    <div class="mb-8"><span class="text-4xl font-extrabold">$12</span><span class="text-gray-500">/mo</span></div>
+                    <ul class="flex flex-col gap-4 mb-8 flex-grow">
+                        <li class="flex items-center gap-3 text-sm text-white"><svg class="text-gold w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 500 Sparks per month</li>
+                        <li class="flex items-center gap-3 text-sm text-white"><svg class="text-gold w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 4K Ultra-HD Resolution</li>
+                        <li class="flex items-center gap-3 text-sm text-white"><svg class="text-gold w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> No watermarks</li>
+                    </ul>
+                    <button class="fluid-btn fluid-btn-gold w-full py-3 rounded-xl font-bold">
+                        <span class="fluid-btn-bg"></span>
+                        <span class="fluid-text-wrapper">
+                            <span class="fluid-text fluid-text-top">Subscribe Now</span>
+                            <span class="fluid-text fluid-text-bottom">Subscribe Now</span>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="bg-[#111] border border-white/5 rounded-[2rem] p-8 flex flex-col">
+                    <h3 class="text-xl font-bold text-white mb-2">API Access</h3>
+                    <p class="text-gray-400 text-sm mb-6">Build our engine into your app.</p>
+                    <div class="mb-8"><span class="text-4xl font-extrabold">Pay as you go</span></div>
+                    <ul class="flex flex-col gap-4 mb-8 flex-grow">
+                        <li class="flex items-center gap-3 text-sm text-gray-300"><svg class="text-gray-500 w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> $0.02 per successful generation</li>
+                        <li class="flex items-center gap-3 text-sm text-gray-300"><svg class="text-gray-500 w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Unlimited API calls</li>
+                    </ul>
+                    <button class="fluid-btn fluid-btn-dark w-full py-3 rounded-xl font-bold">
+                        <span class="fluid-btn-bg"></span>
+                        <span class="fluid-text-wrapper">
+                            <span class="fluid-text fluid-text-top">View Docs</span>
+                            <span class="fluid-text fluid-text-bottom">View Docs</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <footer class="border-t border-white/5 py-16 relative z-50 brand-gold-glow brand-gold-glow--footer">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
+                <div class="col-span-1 md:col-span-1 flex flex-col gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-gold rounded-full flex items-center justify-center font-bold text-black">P</div>
+                        <span class="text-lg font-bold tracking-tight text-white display-font">picfomo<span class="text-gold">.com</span></span>
+                    </div>
+                    <p class="text-gray-200/70 text-sm mt-2 leading-relaxed">The fastest way to generate studio-grade AI portraits and remix viral aesthetics—without prompts.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold text-sm mb-4">Product</h4>
+                    <ul class="flex flex-col gap-3">
+                        <li><a onclick="navigateTo('home')" class="text-gray-200/70 hover:text-gold text-sm transition cursor-pointer">Styles</a></li>
+                        <li><a onclick="navigateTo('feed')" class="text-gray-200/70 hover:text-gold text-sm transition cursor-pointer">Creator Feed</a></li>
+                        <li><a onclick="navigateTo('pricing')" class="text-gray-200/70 hover:text-gold text-sm transition cursor-pointer">Pricing</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold text-sm mb-4">Company</h4>
+                    <ul class="flex flex-col gap-3">
+                        <li><a href="#" class="text-gray-200/70 hover:text-gold text-sm transition">About Us</a></li>
+                        <li><a href="#" class="text-gray-200/70 hover:text-gold text-sm transition">Careers</a></li>
+                        <li><a href="#" class="text-gray-200/70 hover:text-gold text-sm transition">Contact Support</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold text-sm mb-4">Legal</h4>
+                    <ul class="flex flex-col gap-3">
+                        <li><a href="#" class="text-gray-200/70 hover:text-gold text-sm transition">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-200/70 hover:text-gold text-sm transition">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-gray-200/60 text-xs">© 2026 PicFOMO. All rights reserved.</p>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="text-gray-200/60 hover:text-white transition"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="mac-dock-wrapper">
+        <div class="mac-dock" id="mac-dock">
+            
+            <div class="dock-item brand active" onclick="navigateTo('home')">
+                <div class="dock-tooltip">Home</div>
+                <div class="dock-icon">P</div>
+                <div class="dock-dot"></div>
+            </div>
+
+            <div class="dock-item" onclick="navigateTo('feed')">
+                <div class="dock-tooltip">Creator Feed</div>
+                <div class="dock-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div>
+                <div class="dock-dot"></div>
+            </div>
+
+            <div class="dock-item" onclick="navigateTo('pricing')">
+                <div class="dock-tooltip">Pricing</div>
+                <div class="dock-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></div>
+                <div class="dock-dot"></div>
+            </div>
+
+            <div class="dock-item" onclick="toggleModal('login-modal')">
+                <div class="dock-tooltip">Login</div>
+                <div class="dock-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+                <div class="dock-dot"></div>
+            </div>
+
+            <div class="dock-item" onclick="navigateTo('home'); setTimeout(scrollPageToTop,100)">
+                <div class="dock-tooltip">Upload Photo</div>
+                <div class="dock-icon" style="color: var(--gold);"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
+                <div class="dock-dot"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="login-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="toggleModal('login-modal')"></div>
+        <div class="relative bg-[#111] border border-white/10 rounded-[2rem] p-8 md:p-10 w-full max-w-md shadow-[0_20px_60px_rgba(0,0,0,0.8)] mx-4">
+            <button onclick="toggleModal('login-modal')" class="absolute top-6 right-6 text-gray-500 hover:text-white transition">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div class="text-center mb-8">
+                <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center font-bold text-black mx-auto mb-4">P</div>
+                <h3 class="text-2xl font-bold text-white display-font">Welcome back</h3>
+                <p class="text-gray-400 text-sm mt-2">Sign in to access your Sparks and generations.</p>
+            </div>
+            
+            <button class="fluid-btn fluid-btn-white w-full py-3.5 rounded-xl font-semibold mb-6">
+                <span class="fluid-btn-bg"></span>
+                <span class="fluid-text-wrapper">
+                    <span class="fluid-text fluid-text-top flex items-center gap-3">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        Continue with Google
+                    </span>
+                    <span class="fluid-text fluid-text-bottom flex items-center gap-3 text-black">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        Continue with Google
+                    </span>
+                </span>
+            </button>
+
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-px bg-white/10 flex-grow"></div>
+                <span class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Or email</span>
+                <div class="h-px bg-white/10 flex-grow"></div>
+            </div>
+
+            <form class="flex flex-col gap-4">
+                <input type="email" placeholder="Email address" class="w-full bg-[#1A1A1A] border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-gold transition">
+                <button type="button" class="fluid-btn fluid-btn-gold w-full py-3.5 rounded-xl font-bold mt-2">
+                    <span class="fluid-btn-bg"></span>
+                    <span class="fluid-text-wrapper">
+                        <span class="fluid-text fluid-text-top">Sign In</span>
+                        <span class="fluid-text fluid-text-bottom">Sign In</span>
+                    </span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- SMOOTH SCROLL (LENIS, ESM) ---
+        window.lenisInstance = null;
+        window.scrollPageToTop = function () {
+            if (window.lenisInstance && typeof window.lenisInstance.scrollTo === 'function') {
+                window.lenisInstance.scrollTo(0, { duration: 0.95 });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+        (function loadLenis() {
+            import('https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.mjs')
+                .then(function (mod) {
+                    var Lenis = mod.default || mod.Lenis;
+                    if (!Lenis) return;
+                    var lenis = new Lenis({
+                        duration: 1.12,
+                        easing: function (t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); },
+                        orientation: 'vertical',
+                        smoothWheel: true,
+                        wheelMultiplier: 0.92,
+                        touchMultiplier: 1.05,
+                        infinite: false
+                    });
+                    window.lenisInstance = lenis;
+                    function raf(time) {
+                        lenis.raf(time);
+                        requestAnimationFrame(raf);
+                    }
+                    requestAnimationFrame(raf);
+                })
+                .catch(function () { /* fallback: native scroll only */ });
+        })();
+
+        // --- PREMIUM TIMELINE SCROLL LOGIC ---
+        (function() {
+            const timelineSection = document.getElementById('timeline-section');
+            const progressLine = document.getElementById('timeline-line-progress');
+            const steps = document.querySelectorAll('.timeline-step');
+            
+            window.addEventListener('scroll', () => {
+                if(!timelineSection || !progressLine) return;
+                const rect = timelineSection.getBoundingClientRect();
+                const windowMid = window.innerHeight / 2;
+                let scrolled = windowMid - rect.top;
+                let percentage = (scrolled / rect.height) * 100;
+                percentage = Math.max(0, Math.min(100, percentage));
+                progressLine.style.height = percentage + '%';
+            });
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.3, rootMargin: "0px 0px -10% 0px" });
+
+            steps.forEach(step => observer.observe(step));
+        })();
+
+        // --- IDENTITY FLOW ARROWS (SCROLL-DRAW) ---
+        (function () {
+            var section = document.getElementById('identity-flow-section');
+            if (!section) return;
+            var paths = section.querySelectorAll('.flow-arrow-path');
+            if (!paths.length) return;
+            var lengths = [];
+            paths.forEach(function (p, i) {
+                try {
+                    var L = p.getTotalLength();
+                    lengths[i] = L;
+                    p.style.strokeDasharray = String(L);
+                    p.style.strokeDashoffset = String(L);
+                } catch (e) {
+                    lengths[i] = 0;
+                }
+            });
+            var rafId = null;
+            function progressForSection() {
+                var r = section.getBoundingClientRect();
+                var vh = window.innerHeight || 1;
+                var anchor = r.top + r.height * 0.3;
+                var start = vh * 0.9;
+                var end = vh * 0.3;
+                var t = (start - anchor) / (start - end);
+                return Math.max(0, Math.min(1, t));
+            }
+            function tick() {
+                rafId = null;
+                var p = progressForSection();
+                paths.forEach(function (path, i) {
+                    var len = lengths[i];
+                    if (!len) return;
+                    var stagger = i === 0 ? p : Math.max(0, Math.min(1, (p - 0.12) / 0.85));
+                    var ease = stagger * stagger * (3 - 2 * stagger);
+                    path.style.strokeDashoffset = String(len * (1 - ease));
+                });
+            }
+            function onScroll() {
+                if (rafId == null) rafId = requestAnimationFrame(tick);
+            }
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onScroll, { passive: true });
+            tick();
+        })();
+
+        // --- ORGANIC 3D CAROUSEL PHYSICS ---
+        (function() {
+            const track = document.getElementById('carousel-track');
+            if(!track) return;
+            const cards = track.querySelectorAll('.organic-card');
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            const dotsContainer = document.getElementById('carousel-dots');
+            
+            let currentX = 0;
+            let targetX = 0;
+            let lastX = 0;
+            const SPACING = 340; 
+            const COUNT = cards.length;
+            const LOOP_LENGTH = COUNT * SPACING;
+            let isDragging = false;
+            let startClientX = 0;
+            let startTargetX = 0;
+            let raf;
+
+            const mod = (n, m) => ((n % m) + m) % m;
+            const wrapDelta = (d) => mod(d + LOOP_LENGTH / 2, LOOP_LENGTH) - LOOP_LENGTH / 2;
+
+            // Create Dots
+            cards.forEach((_, i) => {
+                let dot = document.createElement('div');
+                dot.className = 'carousel-dot' + (i===0?' active':'');
+                dot.addEventListener('click', () => {
+                    const activeIndex = ((Math.round(currentX / SPACING) % COUNT) + COUNT) % COUNT;
+                    let diff = i - activeIndex;
+                    const half = Math.floor(COUNT / 2);
+                    diff = ((diff + half) % COUNT) - half;
+                    targetX = Math.round(currentX / SPACING) * SPACING + diff * SPACING;
+                });
+                dotsContainer.appendChild(dot);
+            });
+            const dots = dotsContainer.querySelectorAll('.carousel-dot');
+
+            // Physics Loop
+            function animate() {
+                const delta = wrapDelta(targetX - currentX);
+                currentX += delta * 0.08;
+                
+                let dragSpeed = currentX - lastX;
+                lastX = currentX;
+
+                let activeIndex = ((Math.round(currentX / SPACING) % COUNT) + COUNT) % COUNT;
+                
+                dots.forEach((dot, i) => dot.classList.toggle('active', i === activeIndex));
+
+                cards.forEach((card, i) => {
+                    let offset = (i * SPACING) - currentX;
+                    offset = wrapDelta(offset);
+                    let normalizedOffset = offset / SPACING; 
+                    let absOffset = Math.abs(normalizedOffset);
+                    
+                    let z = absOffset < 1 ? Math.cos(absOffset * Math.PI/2) * 100 : 0;
+                    z -= absOffset * 200; 
+                    
+                    let y = Math.sin(Date.now() / 800 + i) * 15;
+                    let rotateY = normalizedOffset * -25; 
+                    let rotateZ = (normalizedOffset * 5) + (dragSpeed * -0.2); 
+                    
+                    card.style.transform = `translate3d(${offset}px, ${y}px, ${z}px) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`;
+                    card.style.zIndex = Math.round(100 - absOffset * 10);
+                    card.style.opacity = 1 - (absOffset * 0.3);
+                    
+                    let shadowX = normalizedOffset * 20;
+                    card.style.boxShadow = `${shadowX}px 20px 50px rgba(0,0,0,${0.8 - absOffset*0.2})`;
+                });
+                raf = requestAnimationFrame(animate);
+            }
+            raf = requestAnimationFrame(animate);
+
+            // Controls
+            btnPrev.addEventListener('click', () => { targetX = targetX - SPACING; });
+            btnNext.addEventListener('click', () => { targetX = targetX + SPACING; });
+
+            // Dragging Logic
+            const wrapper = document.getElementById('organic-carousel');
+            wrapper.addEventListener('pointerdown', (e) => {
+                isDragging = true;
+                startClientX = e.clientX;
+                startTargetX = targetX;
+                wrapper.style.cursor = 'grabbing';
+            });
+            window.addEventListener('pointermove', (e) => {
+                if(!isDragging) return;
+                let delta = startClientX - e.clientX;
+                targetX = startTargetX + delta * 1.5; 
+            });
+            window.addEventListener('pointerup', () => {
+                if(!isDragging) return;
+                isDragging = false;
+                wrapper.style.cursor = 'default';
+                targetX = Math.round(targetX / SPACING) * SPACING;
+            });
+        })();
+
+        // --- MAC OS DOCK PHYSICS ---
+        (function() {
+            if (window.matchMedia('(hover: none)').matches) return;
+            const dock = document.getElementById('mac-dock');
+            const items = dock.querySelectorAll('.dock-item');
+            const maxScale = 1.55;
+            const influence = 160; 
+
+            dock.addEventListener('mousemove', (e) => {
+                // Scale only the closest item (prevents multi-hover + overlap)
+                let closest = null;
+                let closestDist = Infinity;
+                items.forEach(item => {
+                    const rect = item.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const distance = Math.abs(e.clientX - centerX);
+                    if (distance < closestDist) {
+                        closestDist = distance;
+                        closest = item;
+                    }
+                });
+
+                items.forEach(item => {
+                    const icon = item.querySelector('.dock-icon');
+                    if (!icon) return;
+                    if (item !== closest || closestDist >= influence) {
+                        icon.style.transform = '';
+                        icon.style.boxShadow = '';
+                        return;
+                    }
+                    const normalized = 1 - (closestDist / influence);
+                    const scale = 1 + (Math.min(maxScale, 1.32) - 1) * Math.sin(normalized * Math.PI / 2);
+                    const lift = (scale - 1) * -10;
+                    icon.style.transform = `translate3d(0, ${lift}px, 0) scale(${scale})`;
+                    icon.style.boxShadow = `0 14px 28px rgba(0,0,0,0.65), 0 0 ${18 + (scale-1)*30}px rgba(212,175,55,0.18)`;
+                });
+            });
+
+            dock.addEventListener('mouseleave', () => {
+                items.forEach(item => {
+                    const icon = item.querySelector('.dock-icon');
+                    if (!icon) return;
+                    icon.style.transform = '';
+                    icon.style.boxShadow = '';
+                });
+            });
+        })();
+
+        // --- SINGLE PAGE APP ROUTING ---
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('page-' + pageId).classList.add('active');
+            scrollPageToTop();
+            
+            const dockItems = document.querySelectorAll('.dock-item');
+            dockItems.forEach(item => item.classList.remove('active'));
+            if(pageId === 'home') dockItems[0].classList.add('active');
+            else if(pageId === 'feed') dockItems[1].classList.add('active');
+            else if(pageId === 'pricing') dockItems[2].classList.add('active');
+            
+            handleStickyCTA();
+        }
+
+        // --- MODAL LOGIC ---
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if(modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // --- STICKY CTA LOGIC ---
+        function handleStickyCTA() {
+            const heroSection = document.getElementById('hero-section');
+            const stickyCta = document.getElementById('sticky-cta');
+            const isHome = document.getElementById('page-home').classList.contains('active');
+            
+            if(isHome && heroSection && window.scrollY > heroSection.offsetHeight * 0.8) {
+                stickyCta.classList.remove('hidden', 'translate-y-full', 'opacity-0');
+                stickyCta.classList.add('translate-y-0', 'opacity-100');
+            } else {
+                stickyCta.classList.add('translate-y-full', 'opacity-0');
+                stickyCta.classList.remove('translate-y-0', 'opacity-100');
+                setTimeout(() => { if(stickyCta.classList.contains('opacity-0')) stickyCta.classList.add('hidden'); }, 500);
+            }
+        }
+        window.addEventListener('scroll', handleStickyCTA);
+
+        // --- 3D TILT EFFECT (FLANKING CARDS) ---
+        (function () {
+            if (window.matchMedia('(hover: none)').matches) return;
+            var cards = document.querySelectorAll('.flank-card');
+            var MAX_TILT = 15;
+            var SCALE = 1.05;
+            var PERSPECTIVE = 800;
+
+            cards.forEach(function (card) {
+                var raf = null;
+                card.addEventListener('mouseenter', function () { card.classList.remove('tilt-resetting'); });
+                card.addEventListener('mousemove', function (e) {
+                    if (raf) cancelAnimationFrame(raf);
+                    raf = requestAnimationFrame(function () {
+                        var rect = card.getBoundingClientRect();
+                        var nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+                        var ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+                        var rotY = nx * 15; var rotX = -ny * 15;
+                        card.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.05,1.05,1.05)`;
+                        card.style.boxShadow = `${-rotY * 1.5}px ${rotX * 1.5}px 40px rgba(0,0,0,0.5), 0 0 30px rgba(212,175,55,0.15)`;
+                        card.style.borderColor = 'rgba(212,175,55,0.6)';
+                    });
+                });
+                card.addEventListener('mouseleave', function () {
+                    if (raf) { cancelAnimationFrame(raf); raf = null; }
+                    card.classList.add('tilt-resetting');
+                    card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = '';
+                });
+                card.addEventListener('transitionend', function () { card.classList.remove('tilt-resetting'); });
+            });
+        })();
+
+        // --- 3D TILT (TIMELINE STEP CARDS) ---
+        (function () {
+            if (window.matchMedia('(hover: none)').matches) return;
+            var wraps = document.querySelectorAll('#timeline-section .tilt-card');
+            var MAX_TILT = 11;
+            var PARALLAX_PX = 7;
+            wraps.forEach(function (wrap) {
+                var face = wrap.querySelector('.tilt-card__face');
+                var shine = wrap.querySelector('.tilt-card__shine');
+                var parallax = wrap.querySelector('.tilt-card__parallax');
+                if (!face) return;
+                var raf = null;
+                wrap.addEventListener('mouseenter', function () {
+                    wrap.classList.add('is-active');
+                    face.classList.remove('tilt-resetting');
+                });
+                wrap.addEventListener('mousemove', function (e) {
+                    if (raf) cancelAnimationFrame(raf);
+                    raf = requestAnimationFrame(function () {
+                        var rect = face.getBoundingClientRect();
+                        var nx = (e.clientX - rect.left) / rect.width - 0.5;
+                        var ny = (e.clientY - rect.top) / rect.height - 0.5;
+                        var rotY = nx * 2 * MAX_TILT;
+                        var rotX = -ny * 2 * MAX_TILT;
+                        face.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg) scale3d(1.02,1.02,1.02)';
+                        face.style.boxShadow = (-rotY * 0.85) + 'px ' + (rotX * 0.85) + 'px 40px rgba(0,0,0,0.55), 0 0 48px rgba(212,175,55,0.26), 0 0 1px rgba(212,175,55,0.4)';
+                        face.style.borderColor = 'rgba(212,175,55,0.38)';
+                        if (parallax) {
+                            parallax.style.transform = 'translateZ(34px) translate3d(' + (-nx * 2 * PARALLAX_PX) + 'px,' + (-ny * 2 * PARALLAX_PX) + 'px,0)';
+                        }
+                        if (shine) {
+                            shine.style.backgroundPosition = (50 + nx * 110) + '% ' + (50 + ny * 110) + '%';
+                        }
+                    });
+                });
+                wrap.addEventListener('mouseleave', function () {
+                    if (raf) { cancelAnimationFrame(raf); raf = null; }
+                    wrap.classList.remove('is-active');
+                    face.classList.add('tilt-resetting');
+                    face.style.transform = '';
+                    face.style.boxShadow = '';
+                    face.style.borderColor = '';
+                    if (parallax) parallax.style.transform = '';
+                    if (shine) shine.style.backgroundPosition = '';
+                });
+                face.addEventListener('transitionend', function () {
+                    face.classList.remove('tilt-resetting');
+                });
+            });
+        })();
+
+        // --- GLOBAL DRAG AND DROP UI ---
+        const body = document.body;
+        const title = document.getElementById('dropzone-title');
+        const desc = document.getElementById('dropzone-desc');
+        let dragTimer;
+
+        window.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            if(!document.getElementById('page-home').classList.contains('active')) return;
+            
+            body.classList.add('is-dragging-file');
+            title.innerText = "Drop it like it's hot!";
+            title.classList.add('text-gold');
+            desc.innerText = "Release to start the magic...";
+            clearTimeout(dragTimer);
+        });
+
+        window.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            dragTimer = setTimeout(() => {
+                body.classList.remove('is-dragging-file');
+                title.innerText = "Upload a selfie";
+                title.classList.remove('text-gold');
+                desc.innerText = "Drag & drop your photo here, or browse.";
+            }, 100);
+        });
+
+        window.addEventListener('drop', function(e) {
+            e.preventDefault();
+            body.classList.remove('is-dragging-file');
+            if(document.getElementById('page-home').classList.contains('active')) {
+                title.innerText = "Processing Magic...";
+                desc.innerText = "Analyzing facial geometry...";
+            }
+        });
+
+        // --- FAQ TOGGLE ---
+        function toggleFaq(btn) {
+            var item = btn.closest('.faq-item');
+            var isOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
+            if (!isOpen) { item.classList.add('open'); }
+        }
+
+        // --- GRADIENT PRO V2 (WEBGL) INIT (PAGE 4 CARD ONLY) ---
+        (function () {
+            const containers = document.querySelectorAll('[data-gradient-pro]');
+            if (!containers.length) return;
+
+            const vertexSrc = `#version 300 es
+in vec2 position;
+void main(){gl_Position=vec4(position,0.0,1.0);}
+`;
+            const fragmentSrc = `#version 300 es
+precision highp float;
+uniform vec2 iResolution;
+uniform float iTime;
+uniform float uTimeSpeed;
+uniform float uColorBalance;
+uniform float uWarpStrength;
+uniform float uWarpFrequency;
+uniform float uWarpSpeed;
+uniform float uWarpAmplitude;
+uniform float uBlendAngle;
+uniform float uBlendSoftness;
+uniform int uBlendMode;
+uniform float uRotationAmount;
+uniform float uNoiseScale;
+uniform float uGrainAmount;
+uniform float uGrainScale;
+uniform float uGrainAnimated;
+uniform float uContrast;
+uniform float uGamma;
+uniform float uSaturation;
+uniform vec2 uCenterOffset;
+uniform float uZoom;
+uniform vec3 uColor1;
+uniform vec3 uColor2;
+uniform vec3 uColor3;
+out vec4 fragColor;
+#define S(a,b,t) smoothstep(a,b,t)
+mat2 Rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);}
+vec2 hash(vec2 p){p=vec2(dot(p,vec2(2127.1,81.17)),dot(p,vec2(1269.5,283.37)));return fract(sin(p)*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);
+  float n=mix(mix(dot(-1.0+2.0*hash(i+vec2(0.0,0.0)),f-vec2(0.0,0.0)),
+                  dot(-1.0+2.0*hash(i+vec2(1.0,0.0)),f-vec2(1.0,0.0)),u.x),
+               mix(dot(-1.0+2.0*hash(i+vec2(0.0,1.0)),f-vec2(0.0,1.0)),
+                  dot(-1.0+2.0*hash(i+vec2(1.0,1.0)),f-vec2(1.0,1.0)),u.x),u.y);
+  return 0.5+0.5*n;
+}
+vec3 blendMode(vec3 base, vec3 blend, int mode){
+  if(mode==1) return base * blend;
+  if(mode==2) return 1.0 - (1.0-base)*(1.0-blend);
+  if(mode==3){
+    vec3 lt = 2.0*base*blend;
+    vec3 gt = 1.0 - 2.0*(1.0-base)*(1.0-blend);
+    return mix(lt, gt, step(0.5, base));
+  }
+  return blend;
+}
+void mainImage(out vec4 o, vec2 C){
+  float t = iTime * uTimeSpeed;
+  vec2 uv = C / iResolution.xy;
+  float ratio = iResolution.x / iResolution.y;
+  vec2 tuv = uv - 0.5 + uCenterOffset;
+  tuv /= max(uZoom, 0.001);
+  float degree = noise(vec2(t * 0.1, tuv.x * tuv.y) * uNoiseScale);
+  tuv.y *= 1.0 / ratio;
+  tuv *= Rot(radians((degree - 0.5) * uRotationAmount + 180.0));
+  tuv.y *= ratio;
+  float frequency = uWarpFrequency;
+  float ws = max(uWarpStrength, 0.001);
+  float amplitude = uWarpAmplitude / ws;
+  float warpTime = t * uWarpSpeed;
+  tuv.x += sin(tuv.y * frequency + warpTime) / max(amplitude, 0.001);
+  tuv.y += sin(tuv.x * (frequency * 1.5) + warpTime) / max(amplitude * 0.5, 0.001);
+  vec3 col1 = uColor1, col2 = uColor2, col3 = uColor3;
+  float bal = uColorBalance;
+  float soft = max(uBlendSoftness, 0.0);
+  mat2 blendRot = Rot(radians(uBlendAngle));
+  float blendCoord = (tuv * blendRot).x;
+  float edge0 = -0.3 - bal - soft;
+  float edge1 = 0.2 - bal + soft;
+  float v0 = 0.5 - bal + soft;
+  float v1 = -0.3 - bal - soft;
+  vec3 layer1 = mix(col3, col2, S(edge0, edge1, blendCoord));
+  vec3 layer2 = mix(col2, col1, S(edge0, edge1, blendCoord));
+  float blendWeight = S(v0, v1, tuv.y);
+  vec3 finalCol = blendMode(layer1, layer2, uBlendMode);
+  finalCol = mix(layer1, finalCol, blendWeight);
+  vec2 grainUv = uv * max(uGrainScale, 0.001);
+  if(uGrainAnimated > 0.5) grainUv += vec2(iTime * 0.05);
+  float grainNoise = fract(sin(dot(grainUv, vec2(12.9898, 78.233))) * 43758.5453);
+  finalCol += (grainNoise - 0.5) * uGrainAmount;
+  finalCol = (finalCol - 0.5) * uContrast + 0.5;
+  float luma = dot(finalCol, vec3(0.2126, 0.7152, 0.0722));
+  finalCol = mix(vec3(luma), finalCol, uSaturation);
+  finalCol = pow(max(finalCol, 0.0), vec3(1.0 / max(uGamma, 0.001)));
+  o = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+}
+void main(){ vec4 o=vec4(0.0); mainImage(o, gl_FragCoord.xy); fragColor=o; }
+`;
+
+            function init(el) {
+                if (!el || el.dataset.gpInit) return;
+                el.dataset.gpInit = "1";
+
+                const canvas = document.createElement("canvas");
+                canvas.setAttribute("aria-hidden", "true");
+                el.appendChild(canvas);
+
+                const gl = canvas.getContext("webgl2", {
+                    alpha: true,
+                    antialias: false,
+                    premultipliedAlpha: true,
+                    powerPreference: "high-performance"
+                });
+                if (!gl) return;
+
+                const compile = (type, src) => {
+                    const sh = gl.createShader(type);
+                    if (!sh) return null;
+                    gl.shaderSource(sh, src);
+                    gl.compileShader(sh);
+                    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+                        gl.deleteShader(sh);
+                        return null;
+                    }
+                    return sh;
+                };
+
+                const vs = compile(gl.VERTEX_SHADER, vertexSrc);
+                const fs = compile(gl.FRAGMENT_SHADER, fragmentSrc);
+                if (!vs || !fs) return;
+
+                const prog = gl.createProgram();
+                if (!prog) return;
+                gl.attachShader(prog, vs);
+                gl.attachShader(prog, fs);
+                gl.linkProgram(prog);
+                gl.deleteShader(vs);
+                gl.deleteShader(fs);
+                if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+
+                const vao = gl.createVertexArray();
+                gl.bindVertexArray(vao);
+                const buf = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+                const loc = gl.getAttribLocation(prog, "position");
+                gl.enableVertexAttribArray(loc);
+                gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+                gl.bindVertexArray(null);
+                gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+                const u = {
+                    iTime: gl.getUniformLocation(prog, "iTime"),
+                    iResolution: gl.getUniformLocation(prog, "iResolution"),
+                    uTimeSpeed: gl.getUniformLocation(prog, "uTimeSpeed"),
+                    uColorBalance: gl.getUniformLocation(prog, "uColorBalance"),
+                    uWarpStrength: gl.getUniformLocation(prog, "uWarpStrength"),
+                    uWarpFrequency: gl.getUniformLocation(prog, "uWarpFrequency"),
+                    uWarpSpeed: gl.getUniformLocation(prog, "uWarpSpeed"),
+                    uWarpAmplitude: gl.getUniformLocation(prog, "uWarpAmplitude"),
+                    uBlendAngle: gl.getUniformLocation(prog, "uBlendAngle"),
+                    uBlendSoftness: gl.getUniformLocation(prog, "uBlendSoftness"),
+                    uBlendMode: gl.getUniformLocation(prog, "uBlendMode"),
+                    uRotationAmount: gl.getUniformLocation(prog, "uRotationAmount"),
+                    uNoiseScale: gl.getUniformLocation(prog, "uNoiseScale"),
+                    uGrainAmount: gl.getUniformLocation(prog, "uGrainAmount"),
+                    uGrainScale: gl.getUniformLocation(prog, "uGrainScale"),
+                    uGrainAnimated: gl.getUniformLocation(prog, "uGrainAnimated"),
+                    uContrast: gl.getUniformLocation(prog, "uContrast"),
+                    uGamma: gl.getUniformLocation(prog, "uGamma"),
+                    uSaturation: gl.getUniformLocation(prog, "uSaturation"),
+                    uCenterOffset: gl.getUniformLocation(prog, "uCenterOffset"),
+                    uZoom: gl.getUniformLocation(prog, "uZoom"),
+                    uColor1: gl.getUniformLocation(prog, "uColor1"),
+                    uColor2: gl.getUniformLocation(prog, "uColor2"),
+                    uColor3: gl.getUniformLocation(prog, "uColor3"),
+                };
+
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                const resize = () => {
+                    const rect = el.getBoundingClientRect();
+                    const w = Math.max(1, Math.floor(rect.width));
+                    const h = Math.max(1, Math.floor(rect.height));
+                    canvas.width = Math.floor(w * dpr);
+                    canvas.height = Math.floor(h * dpr);
+                    gl.viewport(0, 0, canvas.width, canvas.height);
+                    gl.useProgram(prog);
+                    gl.uniform2f(u.iResolution, canvas.width, canvas.height);
+                };
+
+                resize();
+                const ro = new ResizeObserver(resize);
+                ro.observe(el);
+
+                // Citrus preset (matches your screenshot)
+                gl.useProgram(prog);
+                gl.uniform1f(u.uTimeSpeed, 0.25);
+                gl.uniform1f(u.uColorBalance, 0.0);
+                // More "liquid" motion
+                gl.uniform1f(u.uWarpStrength, 1.35);
+                gl.uniform1f(u.uWarpFrequency, 7.5);
+                gl.uniform1f(u.uWarpSpeed, 2.8);
+                gl.uniform1f(u.uWarpAmplitude, 70.0);
+                gl.uniform1f(u.uBlendAngle, 0.0);
+                gl.uniform1f(u.uBlendSoftness, 0.08);
+                gl.uniform1i(u.uBlendMode, 0);
+                gl.uniform1f(u.uRotationAmount, 650.0);
+                gl.uniform1f(u.uNoiseScale, 2.5);
+                gl.uniform1f(u.uGrainAmount, 0.09);
+                gl.uniform1f(u.uGrainScale, 2.0);
+                gl.uniform1f(u.uGrainAnimated, 1.0);
+                gl.uniform1f(u.uContrast, 1.35);
+                gl.uniform1f(u.uGamma, 1.0);
+                gl.uniform1f(u.uSaturation, 0.95);
+                gl.uniform2f(u.uCenterOffset, 0.0, 0.0);
+                gl.uniform1f(u.uZoom, 0.9);
+                gl.uniform3f(u.uColor1, 0.9882353, 0.827451, 0.3019608); // #FCD34D
+                gl.uniform3f(u.uColor2, 0.9843137, 0.572549, 0.2352941); // #FB923C
+                gl.uniform3f(u.uColor3, 0.2588235, 0.1254902, 0.02352941); // #422006
+
+                const start = performance.now();
+                let raf = 0;
+                const loop = (now) => {
+                    const t = (now - start) * 0.001;
+                    gl.useProgram(prog);
+                    gl.uniform1f(u.iTime, t);
+                    gl.bindVertexArray(vao);
+                    gl.drawArrays(gl.TRIANGLES, 0, 3);
+                    gl.bindVertexArray(null);
+                    raf = requestAnimationFrame(loop);
+                };
+                raf = requestAnimationFrame(loop);
+
+                window.addEventListener("beforeunload", () => {
+                    if (raf) cancelAnimationFrame(raf);
+                    ro.disconnect();
+                    try { gl.deleteProgram(prog); } catch (_) {}
+                    try { gl.deleteVertexArray(vao); } catch (_) {}
+                    try { gl.deleteBuffer(buf); } catch (_) {}
+                }, { once: true });
+            }
+
+            containers.forEach(init);
+        })();
+    </script>
+</body>
+</html>

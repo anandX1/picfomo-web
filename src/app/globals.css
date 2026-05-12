@@ -14,6 +14,7 @@
     --color-gold-light: #F0C84A;
     --color-gold-pale: #FBF3DC;
     --color-gold-border: rgba(200, 151, 31, 0.2);
+    --color-gold-glow: rgba(200, 151, 31, 0.8);
     
     --color-red: #D94035;
     --color-grn: #2E7D52;
@@ -30,18 +31,19 @@
   @media (prefers-color-scheme: dark) {
     :root {
       /* 🌙 PREMIUM AI DARK MODE */
-      --color-white: #09090B;      /* Deep Zinc Black - sleek & modern */
-      --color-cream: #18181B;      /* Elevated Zinc 900 for cards */
-      --color-cream2: #27272A;     /* Zinc 800 for borders & hovers */
+      --color-white: #09090B;
+      --color-cream: #18181B;
+      --color-cream2: #27272A;
       
-      --color-ink: #FAFAFA;        /* Crisp white text for primary headers */
-      --color-ink2: #A1A1AA;       /* Zinc 400 - highly readable secondary text */
-      --color-ink3: #71717A;       /* Zinc 500 - elegant muted text */
+      --color-ink: #FAFAFA;
+      --color-ink2: #A1A1AA;
+      --color-ink3: #71717A;
       
-      --color-gold: #F59E0B;       /* Vibrant Amber - pops beautifully on dark bg */
-      --color-gold-light: #FDE68A; /* Luminous pale yellow for highlights/text */
-      --color-gold-pale: rgba(245, 158, 11, 0.08);  /* Clean translucent amber wash (fixes the muddy brown issue!) */
-      --color-gold-border: rgba(245, 158, 11, 0.25);
+      --color-gold: #D4AF37; /* Used the premium gold from HTML prototype */
+      --color-gold-light: #FDE68A;
+      --color-gold-pale: rgba(212, 175, 55, 0.08);
+      --color-gold-border: rgba(212, 175, 55, 0.25);
+      --color-gold-glow: rgba(212, 175, 55, 0.8);
       
       --color-red: #EF4444;
       --color-grn: #10B981;
@@ -61,59 +63,85 @@
     color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
     scroll-behavior: smooth;
+    padding-bottom: 100px; /* Space for macOS Dock */
   }
 }
 
 @theme {
-  /* --- TAILWIND V4 NATIVE ANIMATIONS --- */
-  --animate-scroll-up: scroll-up 25s linear infinite;
-  --animate-scroll-down: scroll-down 30s linear infinite;
-  --animate-scroll-left: scroll-left 25s linear infinite;
-
-  @keyframes scroll-up {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-50%); }
-  }
+  --animate-dash: dash 1s linear infinite;
   
-  @keyframes scroll-down {
-    0% { transform: translateY(-50%); }
-    100% { transform: translateY(0); }
-  }
-  
-  @keyframes scroll-left {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+  @keyframes dash {
+    to { stroke-dashoffset: -20; }
   }
 }
 
 @layer utilities {
-  .c-ghibli { background: linear-gradient(160deg, #2d5a3d, #4a8c63, #2d5a3d); }
-  .c-ipl { background: linear-gradient(160deg, #1c3d5c, #2d6194, #1c3d5c); }
-  .c-action { background: linear-gradient(160deg, #2d2d52, #4848a8, #2d2d52); }
-  .c-bolly { background: linear-gradient(160deg, #5c2d2d, #a84848, #5c1c1c); }
-  .c-wedding { background: linear-gradient(160deg, #5c3d1c, #a86e33, #5c2d0a); }
-
-  /* --- THE SOCIAL UI OVERRIDE --- */
-  .app-ui .font-\[family-name\:var\(--mono\)\] {
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-  }
-  
-  .app-ui .tracking-\[1px\],
-  .app-ui .tracking-\[2px\],
-  .app-ui .tracking-\[3px\] {
-    letter-spacing: normal !important;
-  }
-  
-  .app-ui .text-\[9px\],
-  .app-ui .text-\[10px\],
-  .app-ui .text-\[11px\],
-  .app-ui .text-\[12px\] {
-    font-size: 13px !important;
-    text-transform: none !important;
-    font-weight: 500 !important;
+  .display-font { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    letter-spacing: -0.02em; 
   }
 
-  .app-ui .uppercase {
-    text-transform: none !important;
+  .hide-scroll::-webkit-scrollbar { display: none; }
+  .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ========================================= */
+  /* GLOBAL DRAG STATE CLASSES                 */
+  /* ========================================= */
+  body.is-dragging-file #dropzone-container {
+    transform: scale(1.05);
+    border-color: var(--color-gold);
+    box-shadow: 0 0 80px rgba(212,175,55,0.4);
+    background-color: rgba(212,175,55,0.05);
   }
+  body.is-dragging-file .dropzone-dashed-border {
+    stroke: var(--color-gold);
+    stroke-width: 3;
+    animation: dash 0.5s linear infinite;
+  }
+  body.is-dragging-file #dropzone-icon { 
+    transform: scale(1.2);
+    background-color: var(--color-gold);
+    border-color: var(--color-gold);
+    color: black;
+    box-shadow: 0 0 50px var(--color-gold-glow);
+  }
+  body.is-dragging-file .dropzone-glow { opacity: 0.6 !important; }
+
+  /* ========================================= */
+  /* FRAMER-STYLE FLUID BUTTON ENGINE          */
+  /* ========================================= */
+  .fluid-btn {
+    position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+    cursor: pointer; z-index: 1; user-select: none;
+  }
+  .fluid-btn:hover { transform: scale(1.04); }
+  .fluid-btn-bg {
+    position: absolute; inset: 0; z-index: -1; border-radius: inherit; transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .fluid-btn:hover .fluid-btn-bg { transform: translateY(0); }
+  .fluid-text-wrapper { display: grid; position: relative; overflow: hidden; }
+  .fluid-text {
+    grid-area: 1 / 1; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;
+  }
+  .fluid-text-bottom { transform: translateY(120%); }
+  .fluid-btn:hover .fluid-text-top { transform: translateY(-120%); }
+  .fluid-btn:hover .fluid-text-bottom { transform: translateY(0); }
+
+  .fluid-btn-gold { background-color: var(--color-gold); color: #000; box-shadow: 0 4px 15px rgba(212,175,55,0.2); }
+  .fluid-btn-gold:hover { box-shadow: 0 8px 25px rgba(212,175,55,0.5); }
+  .fluid-btn-gold .fluid-btn-bg { background-color: #fff; }
+  .fluid-btn-gold .fluid-text-bottom { color: #000; }
+
+  .fluid-btn-dark { background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; }
+  .fluid-btn-dark:hover { border-color: var(--color-gold); box-shadow: 0 8px 25px rgba(212,175,55,0.2); }
+  .fluid-btn-dark .fluid-btn-bg { background-color: var(--color-gold); }
+  .fluid-btn-dark .fluid-text-bottom { color: #000; }
+
+  .fluid-btn-white { background-color: #fff; color: #000; box-shadow: 0 4px 15px rgba(255,255,255,0.1); }
+  .fluid-btn-white:hover { box-shadow: 0 8px 25px rgba(255,255,255,0.3); }
+  .fluid-btn-white .fluid-btn-bg { background-color: #111; }
+  .fluid-btn-white .fluid-text-bottom { color: #fff; }
 }

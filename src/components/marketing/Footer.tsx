@@ -33,7 +33,7 @@ export default function Footer() {
               <li><Link href="#styles" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">All Styles</Link></li>
               <li><Link href="#how-it-works" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">How it works</Link></li>
               <li><Link href="#pricing" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Pricing</Link></li>
-              <li><Link href="/creators" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Creator Programme</Link></li>
+              <li><Link href="/explore" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Creator Feed</Link></li>
             </ul>
           </div>
 

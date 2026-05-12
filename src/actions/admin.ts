@@ -3,6 +3,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { enqueueIndexing, pingSitemaps } from "@/utils/indexing";
 
 // --- UPDATED STYLE SCHEMA (Phase 1.5) ---
 const styleSchema = z.object({
@@ -91,6 +92,8 @@ export async function addStyle(formData: FormData) {
 
     revalidatePath("/admin");
     revalidatePath("/dashboard/studio"); // Instantly updates the Studio for users
+    await enqueueIndexing(db, "style", `/style/${slug}`);
+    await pingSitemaps();
     return { success: true };
   } catch (error: any) {
     console.error("Failed to add style:", error);
@@ -150,6 +153,8 @@ export async function updateStyle(id: string, formData: FormData) {
 
     revalidatePath("/admin");
     revalidatePath("/dashboard/studio"); 
+    await enqueueIndexing(db, "style", `/style/${slug}`);
+    await pingSitemaps();
     return { success: true };
   } catch (error: any) {
     console.error("Failed to update style:", error);

@@ -43,6 +43,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const displayUsername = post.display_name || post.username || "A Creator";
   const style = post.style_name || "aesthetic";
+  const tagsCsv = (post.tags || "").toString();
+  const tags = tagsCsv
+    .split(",")
+    .map((t: string) => t.trim())
+    .filter(Boolean)
+    .slice(0, 12);
   
   const title = post.title 
     ? `${post.title} — PicFOMO ✨` 
@@ -55,7 +61,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title,
     description,
-    keywords: post.tags || undefined, 
+    keywords: tags.length ? tags : undefined,
     alternates: {
       canonical: `https://www.picfomo.com/post/${postId}`,
     },
@@ -67,8 +73,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         alt: title, // 🌟 ADDED: Required for strict SEO compliance
       }],
       siteName: "PicFOMO",
-      type: "website",
+      type: "article",
       url: `https://www.picfomo.com/post/${postId}`,
+      publishedTime: post.created_at ? new Date(post.created_at).toISOString() : undefined,
+      authors: post.username ? [`https://www.picfomo.com/u/${post.username}`] : undefined,
+      tags: tags.length ? tags : undefined,
     },
     twitter: {
       card: "summary_large_image",
@@ -100,7 +109,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
     isFollowing = !!followCheck;
   }
 
-  // 🌟 SEO BOOST 2: JSON-LD STRUCTURED DATA (ImageObject)
+  // 🌟 SEO: JSON-LD STRUCTURED DATA (ImageObject + keywords)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ImageObject",
@@ -113,7 +122,12 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
       "name": post.display_name || post.username,
       "url": `https://www.picfomo.com/u/${post.username}`
     },
-    "keywords": post.tags || post.style_name
+    "keywords": post.tags || post.style_name,
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "PicFOMO",
+      "url": "https://www.picfomo.com/",
+    },
   };
 
   return (

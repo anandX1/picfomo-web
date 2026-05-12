@@ -1,225 +1,219 @@
-"use client"; // Required for Framer Motion animations
+"use client";
 
-import { motion } from "framer-motion";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
-// 🌟 REAL DATA: Using your actual Cloudflare R2 Studio assets!
-// IMPORTANT: Put these 8 images inside your 'public/hero/' folder!
+// Re-using your local assets
 const COMMUNITY_POSTS = [
-  { id: 1, style: "Profile Break", image_url: "/hero/1.png" },
-  { id: 2, style: "Reins & Shadow", image_url: "/hero/2.png" },
-  { id: 3, style: "Sage & Still", image_url: "/hero/3.png" },
-  { id: 4, style: "Rust & Rest", image_url: "/hero/4.png" },
-  { id: 5, style: "Flock Selfie", image_url: "/hero/5.png" },
-  { id: 6, style: "Headlines", image_url: "/hero/6.png" },
-  { id: 7, style: "Miniature Creation", image_url: "/hero/7.png" },
-  { id: 8, style: "Self Creation", image_url: "/hero/8.png" },
+  { id: 1, style: "Ghibli", image_url: "/hero/1.png" },
+  { id: 2, style: "DSLR", image_url: "/hero/2.png" },
+  { id: 3, style: "Cyberpunk", image_url: "/hero/3.png" },
+  { id: 4, style: "Vogue", image_url: "/hero/4.png" },
 ];
 
-// We duplicate the array so the CSS infinite scroll loops perfectly
-const SCROLL_ITEMS = [...COMMUNITY_POSTS, ...COMMUNITY_POSTS];
-
 export default function Hero() {
-  return (
-    /* 🌟 FIX: Removed `overflow-x-hidden`! 
-       This stops the browser from creating a secondary inner scrollbar inside the Hero section. */
-    <section className="relative mx-auto max-w-[1280px] px-6 pt-10 pb-12 lg:px-10 lg:py-20 min-h-[85vh] flex flex-col justify-start lg:justify-center">
+  const [dragState, setDragState] = useState<"idle" | "dragging" | "processing">("idle");
+
+  // Global Drag & Drop Handler
+  useEffect(() => {
+    let dragTimer: NodeJS.Timeout;
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      document.body.classList.add("is-dragging-file");
+      setDragState("dragging");
+      clearTimeout(dragTimer);
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      dragTimer = setTimeout(() => {
+        document.body.classList.remove("is-dragging-file");
+        setDragState("idle");
+      }, 100);
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      document.body.classList.remove("is-dragging-file");
+      setDragState("processing");
       
-      {/* 🌟 1. DYNAMIC AURORA BACKGROUND */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-[var(--color-gold)] opacity-[0.06] blur-[120px] rounded-full animate-aurora-drift" />
-        <div className="absolute bottom-[-10%] right-[10%] w-[50%] h-[50%] bg-[var(--color-ink)] opacity-[0.04] blur-[100px] rounded-full animate-aurora-drift-reverse" />
+      // Reset back to idle after 3 seconds to simulate processing
+      setTimeout(() => setDragState("idle"), 3000);
+    };
+
+    window.addEventListener("dragover", handleDragOver);
+    window.addEventListener("dragleave", handleDragLeave);
+    window.addEventListener("drop", handleDrop);
+
+    return () => {
+      window.removeEventListener("dragover", handleDragOver);
+      window.removeEventListener("dragleave", handleDragLeave);
+      window.removeEventListener("drop", handleDrop);
+    };
+  }, []);
+
+  // 3D Flanking Card Tilt Physics
+  useEffect(() => {
+    if (window.matchMedia("(hover: none)").matches) return;
+
+    const cards = document.querySelectorAll<HTMLElement>(".flank-card");
+    const MAX_TILT = 15;
+    const SCALE = 1.05;
+    const PERSPECTIVE = 800;
+
+    cards.forEach((card) => {
+      let raf: number | null = null;
+
+      const onMouseEnter = () => card.classList.remove("tilt-resetting");
+      
+      const onMouseMove = (e: MouseEvent) => {
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const rect = card.getBoundingClientRect();
+          const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+          const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+          
+          const rotY = nx * MAX_TILT;
+          const rotX = -ny * MAX_TILT;
+          
+          card.style.transform = `perspective(${PERSPECTIVE}px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(${SCALE},${SCALE},${SCALE})`;
+          card.style.boxShadow = `${-rotY * 1.5}px ${rotX * 1.5}px 40px rgba(0,0,0,0.5), 0 0 30px rgba(212,175,55,0.15)`;
+          card.style.borderColor = "rgba(212,175,55,0.6)";
+        });
+      };
+
+      const onMouseLeave = () => {
+        if (raf) {
+          cancelAnimationFrame(raf);
+          raf = null;
+        }
+        card.classList.add("tilt-resetting");
+        card.style.transform = "";
+        card.style.boxShadow = "";
+        card.style.borderColor = "";
+      };
+
+      const onTransitionEnd = () => card.classList.remove("tilt-resetting");
+
+      card.addEventListener("mouseenter", onMouseEnter);
+      card.addEventListener("mousemove", onMouseMove);
+      card.addEventListener("mouseleave", onMouseLeave);
+      card.addEventListener("transitionend", onTransitionEnd);
+      
+      // Cleanup for hot-reloads
+      return () => {
+        card.removeEventListener("mouseenter", onMouseEnter);
+        card.removeEventListener("mousemove", onMouseMove);
+        card.removeEventListener("mouseleave", onMouseLeave);
+        card.removeEventListener("transitionend", onTransitionEnd);
+      };
+    });
+  }, []);
+
+  return (
+    <section id="hero-section" className="w-full flex flex-col items-center justify-center min-h-[calc(100vh-140px)] pb-16 pt-4 relative overflow-hidden">
+      
+      {/* HEADER */}
+      <div className="text-center mb-10 px-6 relative z-20">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-[var(--color-gold)] mb-5 tracking-widest uppercase backdrop-blur-md">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-gold)] animate-pulse"></span>
+          Your Trendy AI Image Generator
+        </div>
+        <h1 className="text-5xl md:text-7xl font-extrabold mb-5 tracking-tight display-font">
+          Turn One Selfie <br />Into Any Trend.
+        </h1>
+        <p className="text-gray-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+          Stay ahead of the curve. Choose from 120+ viral styles, upload your photo, hit generate, and watch the magic happen. No complex prompts needed.
+        </p>
       </div>
 
-      {/* 🌟 CUSTOM MICRO-INTERACTION STYLES */}
-      <style jsx>{`
-        @keyframes heartbeat {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.6); opacity: 0.6; box-shadow: 0 0 10px var(--color-red); }
-        }
-        .animate-heartbeat { animation: heartbeat 1.5s ease-in-out infinite; }
-
-        @keyframes shimmer-sweep {
-          0% { background-position: 200% center; }
-          100% { background-position: -200% center; }
-        }
-        .text-shimmer {
-          background: linear-gradient(to right, var(--color-gold) 20%, var(--color-gold-light) 50%, var(--color-gold) 80%);
-          background-size: 200% auto;
-          color: transparent;
-          -webkit-background-clip: text;
-          background-clip: text;
-          animation: shimmer-sweep 5s linear infinite;
-        }
-
-        @keyframes aurora-drift {
-          0% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(3%, -3%) scale(1.05); }
-          66% { transform: translate(-2%, 4%) scale(0.95); }
-          100% { transform: translate(0, 0) scale(1); }
-        }
-        .animate-aurora-drift { animation: aurora-drift 15s ease-in-out infinite; }
-        .animate-aurora-drift-reverse { animation: aurora-drift 20s ease-in-out infinite reverse; }
-
-        /* Perfect fading edges that adapt to ANY theme (Light or Dark) */
-        .mask-edges-y {
-          mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
-          -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
-        }
-        .mask-edges-x {
-          mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-          -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-        }
-
-        /* 3D Spatial UI Container */
-        .perspective-container { perspective: 1200px; }
-        .wall-3d {
-          transform: rotateY(-12deg) rotateX(4deg) translateZ(0);
-          transform-style: preserve-3d;
-          transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .perspective-container:hover .wall-3d {
-          transform: rotateY(-4deg) rotateX(1deg) translateZ(30px);
-        }
-      `}</style>
-
-      {/* Grid Breakpoints */}
-      <div className="grid items-center gap-12 lg:grid-cols-[1fr_520px] xl:grid-cols-[1fr_600px] w-full relative z-10">
+      <div className="w-full max-w-[1400px] mx-auto px-4 flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12 relative z-10">
         
-        {/* --- LEFT COLUMN: The Pitch --- */}
-        <motion.div
-          initial={{ opacity: 1, y: 0 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center text-center lg:items-start lg:text-left w-full"
-        >
-          {/* Live Counter Eyebrow */}
-          <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[var(--color-gold-border)] bg-[var(--color-gold-pale)] px-4 py-1.5 font-[family-name:var(--mono)] text-[10px] md:text-[11px] font-bold uppercase tracking-[3px] text-[var(--color-gold)] shadow-sm backdrop-blur-md transition-transform hover:scale-105">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-red)] animate-heartbeat"></span>
-            28,398+ portraits created today
-          </div>
-
-          {/* Headline */}
-          <h1 className="mb-5 font-[family-name:var(--display)] text-[16vw] sm:text-[80px] lg:text-[110px] leading-[0.85] tracking-[-0.03em] text-[var(--color-ink)] flex flex-col items-center lg:items-start w-full">
-            YOUR FACE.<br />
-            <span className="flex items-center gap-2 md:gap-3 mt-1 sm:mt-2">
-              <span className="text-shimmer font-sans text-[1.1em] font-light leading-none -mt-2">∞</span>
-              <span className="text-[var(--color-gold)]">STYLES.</span>
-            </span>
-            <span className="block font-[family-name:var(--serif)] text-[0.55em] font-normal italic text-[var(--color-ink3)] mt-2">
-              ALL IN ONE PLACE.
-            </span>
-          </h1>
-
-          {/* Description */}
-          <p className="mb-10 max-w-[500px] font-light leading-[1.7] md:leading-[1.8] text-[16px] md:text-[20px] text-[var(--color-ink2)]">
-            Pick a trending style — Ghibli, IPL cricket card, Bollywood poster. Drop a selfie. Get a portrait so stunning you'll actually change your Profile Picture.
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5 w-full sm:w-auto z-20 relative">
-            <Link
-              href="/sign-up"
-              className="flex w-full sm:w-auto items-center justify-center gap-2 bg-[var(--color-gold)] px-8 py-4 md:px-10 md:py-4.5 font-[family-name:var(--display)] text-[16px] md:text-[18px] tracking-[1.5px] text-black shadow-[var(--shadow-lg)] transition-all hover:-translate-y-1 hover:bg-[var(--color-gold-light)] hover:shadow-[0_10px_40px_rgba(245,158,11,0.3)] rounded-[14px]"
-            >
-              <span className="relative z-10 flex items-center gap-2">Create Free Portrait <span className="hidden sm:inline">→</span></span>
-            </Link>
-            
-            <Link 
-              href="#how-it-works" 
-              className="group flex items-center gap-2 bg-transparent py-2 text-[13px] md:text-[14px] font-medium text-[var(--color-ink3)] transition-colors hover:text-[var(--color-ink)]"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--rule)] bg-[var(--color-cream)] transition-transform group-hover:scale-110 shadow-sm">
-                <span className="text-[9px] translate-x-[1px]">▶</span>
-              </div>
-              <span className="underline decoration-[var(--rule)] underline-offset-4">See how it works</span>
-            </Link>
-          </div>
-        </motion.div>
-
-        {/* --- DESKTOP RIGHT COLUMN: 2. SPATIAL UI 3D WALL --- */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative hidden h-[700px] w-full lg:block perspective-container z-10"
-        >
-          {/* True Alpha Masks */}
-          <div className="mask-edges-y h-full w-full">
-            <div className="grid h-full grid-cols-2 gap-5 wall-3d">
-              {/* Column 1 */}
-              <div className="animate-scroll-up flex flex-col gap-5 hover:[animation-play-state:paused] pt-10">
-                {SCROLL_ITEMS.slice(0, SCROLL_ITEMS.length / 2).map((post, idx) => (
-                  <LiveWallCard key={`col1-${idx}`} post={post} priority={idx < 3} />
-                ))}
-              </div>
-              {/* Column 2 */}
-              <div className="animate-scroll-down -mt-[350px] flex flex-col gap-5 hover:[animation-play-state:paused]">
-                {SCROLL_ITEMS.slice(SCROLL_ITEMS.length / 2).map((post, idx) => (
-                  <LiveWallCard key={`col2-${idx}`} post={post} priority={idx < 3} />
-                ))}
-              </div>
+        {/* LEFT FLANK */}
+        <div className="hidden lg:flex flex-col gap-6 w-[260px] xl:w-[280px] shrink-0">
+          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[-8deg] translate-y-12 translate-x-4">
+            <Image src={COMMUNITY_POSTS[1].image_url} alt={COMMUNITY_POSTS[1].style} fill className="object-cover pointer-events-none" />
+            <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">
+              {COMMUNITY_POSTS[1].style}
             </div>
           </div>
-        </motion.div>
-      </div>
-
-      {/* --- MOBILE ONLY: 3. CINEMATIC INFINITE MARQUEE --- */}
-      <motion.div
-        initial={{ opacity: 1, y: 0 }} 
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="relative mt-12 block w-[calc(100%+3rem)] -mx-6 lg:hidden z-10"
-      >
-        {/* True Alpha Masks */}
-        <div className="mask-edges-x w-full overflow-hidden pb-8 pt-2">
-          <div className="flex w-max animate-scroll-left gap-4 pl-4">
-            {SCROLL_ITEMS.map((post, idx) => (
-              <div key={`mobile-scroll-${idx}`} className="w-[160px] shrink-0">
-                <LiveWallCard post={post} priority={idx < 4} />
-              </div>
-            ))}
+          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[-3deg] -translate-x-6">
+            <Image src={COMMUNITY_POSTS[0].image_url} alt={COMMUNITY_POSTS[0].style} fill className="object-cover pointer-events-none" />
+            <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">
+              {COMMUNITY_POSTS[0].style}
+            </div>
           </div>
         </div>
-      </motion.div>
 
-    </section>
-  );
-}
+        {/* THE GLOWING DROPZONE */}
+        <div className="w-full max-w-xl lg:max-w-[500px] xl:max-w-[550px] relative group shrink-0">
+          <div className="dropzone-glow absolute -inset-1.5 bg-gradient-to-r from-yellow-500 to-[var(--color-gold)] rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-40 transition duration-500"></div>
+          
+          <div id="dropzone-container" className="relative bg-[#0A0A0A] border-2 border-white/20 group-hover:border-[var(--color-gold)] rounded-[2rem] p-8 md:p-12 flex flex-col items-center justify-center min-h-[420px] transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.05)] group-hover:shadow-[0_0_60px_rgba(212,175,55,0.3)] overflow-hidden">
+            <svg className="absolute inset-2 w-[calc(100%-16px)] h-[calc(100%-16px)] pointer-events-none rounded-[1.5rem]" preserveAspectRatio="none">
+              <rect x="0" y="0" width="100%" height="100%" rx="24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeDasharray="10 10" className="dropzone-dashed-border animate-dash group-hover:stroke-[var(--color-gold)] transition-colors duration-500"></rect>
+            </svg>
+            
+            <div id="dropzone-icon" className="bg-white w-20 h-20 rounded-2xl border border-white/30 flex items-center justify-center mb-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)] text-black group-hover:scale-110 group-hover:bg-[var(--color-gold)] group-hover:border-[var(--color-gold)] group-hover:shadow-[0_0_40px_rgba(212,175,55,0.8)] transition-all duration-500">
+              <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            
+            <h3 id="dropzone-title" className="text-2xl md:text-3xl font-bold display-font mb-2 text-white group-hover:text-[var(--color-gold)] transition-colors duration-500">
+              {dragState === "dragging" ? "Drop it like it's hot!" : dragState === "processing" ? "Processing Magic..." : "Upload a selfie"}
+            </h3>
+            <p id="dropzone-desc" className="text-gray-400 text-sm text-center px-4 mb-8">
+              {dragState === "dragging" ? "Release to start the magic..." : dragState === "processing" ? "Analyzing facial geometry..." : "Drag & drop your photo here, or browse."}
+            </p>
+            
+            {/* Embedded Fluid Button for Dropzone */}
+            <button className="relative overflow-hidden px-8 py-3 rounded-xl font-bold text-sm bg-white/10 border border-white/20 text-white transition-all duration-500 shadow-lg pointer-events-none group-hover:border-[var(--color-gold)] group-hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transform group-hover:scale-105 z-10">
+              <span className="absolute inset-0 bg-[var(--color-gold)] translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] z-[-1] rounded-xl"></span>
+              <span className="grid relative overflow-hidden">
+                  <span className="col-start-1 row-start-1 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-[120%]">Select Photo</span>
+                  <span className="col-start-1 row-start-1 translate-y-[120%] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 text-black">Select Photo</span>
+              </span>
+            </button>
+            
+            <div className="absolute bottom-6 flex items-center gap-2 text-gray-500 text-[11px] font-semibold uppercase tracking-wider group-hover:text-[var(--color-gold)] transition-colors duration-500">
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              No signup required
+            </div>
+          </div>
+        </div>
 
-// 🌟 4. UPGRADED CARD SUB-COMPONENT
-function LiveWallCard({ post, priority = false }: { post: any, priority?: boolean }) {
-  return (
-    <Link 
-      href="/sign-up" 
-      className="group relative aspect-[3/4] w-full cursor-pointer overflow-hidden shadow-[var(--shadow-md)] transition-all duration-500 hover:-translate-y-3 hover:scale-105 hover:shadow-[var(--shadow-2xl)] rounded-[18px] block hover:z-50 border border-[var(--rule)]"
-    >
-      <div className="absolute inset-0 h-full w-full bg-[var(--color-cream2)]">
-        {/* 🌟 NEXT.JS IMAGE - Automatically optimizes local assets from the public folder */}
-        <Image 
-          src={post.image_url} 
-          alt={post.style} 
-          fill
-          priority={priority}
-          sizes="(max-width: 768px) 160px, 300px"
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-        />
-      </div>
-      
-      {/* Sleeker Glassmorphism Label */}
-      <div className="absolute bottom-3 left-3 right-3 z-20 flex justify-center">
-        <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full font-[family-name:var(--mono)] text-[10px] md:text-[11px] font-bold tracking-[1px] text-gray-900 shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-transform duration-300 group-hover:-translate-y-1">
-          {post.style}
+        {/* RIGHT FLANK */}
+        <div className="hidden lg:flex flex-col gap-6 w-[260px] xl:w-[280px] shrink-0">
+          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[8deg] translate-y-12 -translate-x-4">
+            <Image src={COMMUNITY_POSTS[2].image_url} alt={COMMUNITY_POSTS[2].style} fill className="object-cover pointer-events-none" />
+            <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">
+              {COMMUNITY_POSTS[2].style}
+            </div>
+          </div>
+          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[3deg] translate-x-6">
+            <Image src={COMMUNITY_POSTS[3].image_url} alt={COMMUNITY_POSTS[3].style} fill className="object-cover pointer-events-none" />
+            <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">
+              {COMMUNITY_POSTS[3].style}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Deep Dark Mode Overlay Glow */}
-      <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--color-ink)]/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100">
-        <span className="bg-[var(--color-gold)] px-5 py-2 rounded-full font-[family-name:var(--display)] text-[13px] md:text-[15px] tracking-[1.5px] text-black shadow-[0_0_30px_rgba(245,158,11,0.5)] scale-90 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100">
-          TRY THIS →
-        </span>
+      {/* MOBILE ROW */}
+      <div className="flex lg:hidden w-full overflow-x-auto hide-scroll gap-4 px-6 mt-10 snap-x snap-mandatory pb-6">
+        {COMMUNITY_POSTS.map((post, idx) => (
+          <div key={idx} className="w-[160px] shrink-0 aspect-[4/5] rounded-2xl border border-white/10 overflow-hidden snap-center relative">
+            <Image src={post.image_url} alt={post.style} fill className="object-cover" />
+            <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded border border-white/10 text-[10px] font-bold">
+              {post.style}
+            </div>
+          </div>
+        ))}
       </div>
-    </Link>
+    </section>
   );
 }

@@ -6,7 +6,8 @@ import { MetadataRoute } from 'next';
 export const revalidate = 86400; 
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://picfomo.com';
+  // Canonical host (matches `metadataBase` + all canonicals)
+  const baseUrl = "https://www.picfomo.com";
 
   // ==========================================
   // 1. STATIC CORE PAGES
@@ -14,14 +15,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     '',
     '/explore',
-    '/how-it-works',
-    '/styles',
-    '/creators',
+    '/join',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: 'daily',
-    priority: route === '' ? 1.0 : 0.8,
+    changeFrequency: route === "" ? "daily" : "weekly",
+    priority: route === "" ? 1.0 : 0.7,
   }));
 
   let dynamicStyles: MetadataRoute.Sitemap = [];
@@ -29,20 +28,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let dynamicProfiles: MetadataRoute.Sitemap = [];
 
   try {
-    const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any);
+    const ctx = await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true });
+    const db = (ctx.env.DB as any);
 
     // ==========================================
     // 2. PROGRAMMATIC SEO TRAP PAGES (STYLES)
     // 🌟 NOW FULLY AUTOMATED! Every new style in your DB is auto-indexed.
     // ==========================================
-    const stylesResult = await db.prepare(`
-      SELECT slug, created_at 
-      FROM styles 
-      WHERE is_active = 1 AND slug IS NOT NULL
-    `).all();
+    let stylesResult: any = { results: [] };
+    try {
+      stylesResult = await db.prepare(`
+        SELECT slug, created_at 
+        FROM styles 
+        WHERE is_active = 1 AND slug IS NOT NULL
+      `).all();
+    } catch {
+      stylesResult = { results: [] };
+    }
 
-    dynamicStyles = stylesResult.results.map((style: any) => ({
-      url: `${baseUrl}/style/${style.slug}`,
+    dynamicStyles = (stylesResult?.results ?? []).map((style: any) => ({
+      url: `${baseUrl}/style/${encodeURIComponent(style.slug)}`,
       lastModified: style.created_at ? new Date(style.created_at) : new Date(),
       changeFrequency: 'weekly',
       priority: 0.9, // Very high priority for your landing pages!
@@ -54,17 +59,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 🌟 Fetch last 1,000 public posts
     // Kept limit at 1000 to guarantee Cloudflare never times out. 
     // Googlebot prefers fast, bite-sized sitemaps over massive slow ones!
-    const postsResult = await db.prepare(`
-      SELECT id, created_at
-      FROM posts 
-      WHERE is_public = 1 
-      ORDER BY created_at DESC 
-      LIMIT 1000
-    `).all();
+    let postsResult: any = { results: [] };
+    try {
+      postsResult = await db.prepare(`
+        SELECT id, created_at
+        FROM posts 
+        WHERE is_public = 1 
+        ORDER BY created_at DESC 
+        LIMIT 1000
+      `).all();
+    } catch {
+      postsResult = { results: [] };
+    }
 
-    dynamicPosts = postsResult.results.map((post: any) => ({
-      url: `${baseUrl}/post/${post.id}`,
-      lastModified: new Date(post.created_at),
+    dynamicPosts = (postsResult?.results ?? []).map((post: any) => ({
+      url: `${baseUrl}/post/${encodeURIComponent(post.id)}`,
+      lastModified: post.created_at ? new Date(post.created_at) : new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     }));
@@ -72,22 +82,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // ==========================================
     // 4. CREATOR PROFILES
     // ==========================================
-    const usersResult = await db.prepare(`
-      SELECT username
-      FROM users 
-      WHERE username IS NOT NULL 
-      LIMIT 500
-    `).all();
+    let usersResult: any = { results: [] };
+    try {
+      usersResult = await db.prepare(`
+        SELECT username
+        FROM users 
+        WHERE username IS NOT NULL 
+        LIMIT 500
+      `).all();
+    } catch {
+      usersResult = { results: [] };
+    }
 
-    dynamicProfiles = usersResult.results.map((user: any) => ({
-      url: `${baseUrl}/u/${user.username}`,
+    dynamicProfiles = (usersResult?.results ?? []).map((user: any) => ({
+      url: `${baseUrl}/u/${encodeURIComponent(user.username)}`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
     }));
 
   } catch (error) {
-    console.error("Sitemap DB error:", error);
+    // Sitemap should still be valid even if DB is unavailable (preview/build).
   }
 
   return [...staticPages, ...dynamicStyles, ...dynamicPosts, ...dynamicProfiles];

@@ -11,6 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const resolvedParams = await params;
   const { slug } = resolvedParams;
   const cleanName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const ogImage = "https://www.picfomo.com/logo2.png";
 
   return {
     title: `Create ${cleanName}s with AI | PicFOMO`,
@@ -24,7 +25,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       url: `https://www.picfomo.com/style/${slug}`,
       type: "website",
       siteName: "PicFOMO",
-    }
+      images: [
+        {
+          url: ogImage,
+          width: 1600,
+          height: 1600,
+          alt: "PicFOMO",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${cleanName} Generator | PicFOMO`,
+      description: `Generate a ${cleanName} portrait in ~20 seconds — no prompts.`,
+      images: [ogImage],
+    },
   };
 }
 

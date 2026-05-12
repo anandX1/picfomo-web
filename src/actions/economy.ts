@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { enqueueIndexing, pingSitemaps } from "@/utils/indexing";
 
 // 1. CLAIM DAILY LOGIN REWARD (Upgraded with Streak Tracking)
 export async function claimDailyLogin() {
@@ -335,5 +336,9 @@ export async function publishPostToFeed(postId: string) {
   // Force cache refresh so it appears immediately on the Explore feed
   revalidatePath("/explore");
   revalidatePath("/dashboard/vault");
+
+  // Indexing priority: posts last (after styles/users)
+  await enqueueIndexing(db, "post", `/post/${postId}`);
+  await pingSitemaps();
   return { success: true };
 }
