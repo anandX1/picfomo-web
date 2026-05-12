@@ -66,7 +66,7 @@ const nextConfig = {
   // 🏗️ 4. PACKAGE OPTIMIZATION
   experimental: {
     // Modularizes heavy imports so the client only downloads the exact icons/charts used
-    optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts'],
+    optimizePackageImports: ['lucide-react', 'recharts'],
   },
   
   transpilePackages: ['lucide-react'],

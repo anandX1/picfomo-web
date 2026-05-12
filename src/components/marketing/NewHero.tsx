@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
 
 const COMMUNITY_POSTS = [
   { id: 1, style: "DSLR", image_url: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80" },
