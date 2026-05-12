@@ -56,7 +56,7 @@ export default function Hero() {
 
   // 3D Flanking Card Tilt Physics (Desktop Only)
   useEffect(() => {
-    if (window.matchMedia("(hover: none)").matches) return; // Disables on touch devices
+    if (window.matchMedia("(hover: none)").matches) return; // Disables on touch devices to save memory
 
     const cards = document.querySelectorAll<HTMLElement>(".flank-card");
     const MAX_TILT = 15;
@@ -123,13 +123,18 @@ export default function Hero() {
           animation: mobile-marquee 20s linear infinite;
           will-change: transform;
         }
+        /* Hardware acceleration for smooth scrolling */
+        .hardware-accelerated {
+          will-change: transform, box-shadow;
+          transform: translateZ(0);
+        }
       `}</style>
 
       {/* HEADER */}
       <div className="text-center mb-5 md:mb-10 px-4 relative z-20">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] md:text-[10px] font-bold text-[var(--color-gold)] mb-4 md:mb-5 tracking-widest uppercase backdrop-blur-md">
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-gold)] animate-pulse"></span>
-          made with love
+          Your Trendy AI Image Generator
         </div>
         <h1 className="text-[2.2rem] leading-[1.1] md:text-5xl lg:text-7xl font-extrabold mb-3 md:mb-5 tracking-tight display-font">
           Turn One Selfie <br className="hidden md:block"/>Into Any Trend.
@@ -143,35 +148,35 @@ export default function Hero() {
         
         {/* DESKTOP ONLY: LEFT FLANK */}
         <div className="hidden lg:flex flex-col gap-6 w-[260px] xl:w-[280px] shrink-0">
-          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-white/5 shadow-2xl transform rotate-[-8deg] translate-y-12 translate-x-4 relative">
-            <Image src={COMMUNITY_POSTS[1].image_url} alt={COMMUNITY_POSTS[1].style} fill priority quality={85} sizes="280px" className="object-cover pointer-events-none" />
+          <div className="flank-card hardware-accelerated aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-white/5 shadow-2xl transform rotate-[-8deg] translate-y-12 translate-x-4 relative">
+            <Image src={COMMUNITY_POSTS[1].image_url} alt={COMMUNITY_POSTS[1].style} fill priority quality={75} sizes="(max-width: 1200px) 260px, 280px" className="object-cover pointer-events-none" />
             <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">
               {COMMUNITY_POSTS[1].style}
             </div>
           </div>
-          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-white/5 shadow-2xl transform rotate-[-3deg] -translate-x-6 relative">
-            <Image src={COMMUNITY_POSTS[0].image_url} alt={COMMUNITY_POSTS[0].style} fill priority quality={85} sizes="280px" className="object-cover pointer-events-none" />
+          <div className="flank-card hardware-accelerated aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-white/5 shadow-2xl transform rotate-[-3deg] -translate-x-6 relative">
+            <Image src={COMMUNITY_POSTS[0].image_url} alt={COMMUNITY_POSTS[0].style} fill priority quality={75} sizes="(max-width: 1200px) 260px, 280px" className="object-cover pointer-events-none" />
             <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">
               {COMMUNITY_POSTS[0].style}
             </div>
           </div>
         </div>
 
-        {/* THE GLOWING DROPZONE (Desktop: White default -> Gold Hover. Mobile: Gold default) */}
+        {/* THE GLOWING DROPZONE (FIXED: White to Gold transition) */}
         <div className="w-full max-w-[95%] sm:max-w-xl lg:max-w-[500px] xl:max-w-[550px] relative group shrink-0">
           <div className="dropzone-glow absolute -inset-1.5 bg-gradient-to-r from-yellow-500 to-[var(--color-gold)] rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-40 transition duration-500 hidden md:block"></div>
           
-          <div id="dropzone-container" className="relative bg-[#0A0A0A] border-2 border-white/10 md:hover:border-[var(--color-gold)] rounded-[2rem] p-6 md:p-12 flex flex-col items-center justify-center min-h-[240px] md:min-h-[420px] transition-all duration-500 cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden active:scale-[0.98] md:active:scale-100">
+          <div id="dropzone-container" className="relative bg-[#0A0A0A] border-2 border-white/10 md:border-white/20 md:hover:border-[var(--color-gold)] rounded-[2rem] p-6 md:p-12 flex flex-col items-center justify-center min-h-[240px] md:min-h-[420px] transition-all duration-500 cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden active:scale-[0.98] md:active:scale-100">
             
-            {/* Dashed Border: Brighter white on desktop so it's clearly visible */}
+            {/* Dashed Border: Bright White/40 Idle -> Gold Hover */}
             <svg className="absolute inset-2 w-[calc(100%-16px)] h-[calc(100%-16px)] pointer-events-none rounded-[1.5rem]" preserveAspectRatio="none">
               <rect x="0" y="0" width="100%" height="100%" rx="24" fill="none" strokeWidth="2" strokeDasharray="10 10" 
-                className="stroke-[var(--color-gold)]/40 md:stroke-[rgba(255,255,255,0.4)] md:group-hover:stroke-[var(--color-gold)] animate-dash md:animate-none md:group-hover:animate-dash transition-colors duration-500">
+                className="stroke-[var(--color-gold)]/50 md:stroke-[rgba(255,255,255,0.4)] md:group-hover:stroke-[var(--color-gold)] animate-dash md:animate-none md:group-hover:animate-dash transition-colors duration-500">
               </rect>
             </svg>
             
-            {/* Icon Box: Solid White on Desktop Idle, Solid Gold on Mobile/Hover */}
-            <div id="dropzone-icon" className="w-14 h-14 md:w-20 md:h-20 rounded-2xl flex items-center justify-center mb-3 md:mb-6 transition-all duration-500 bg-[var(--color-gold)] md:bg-white text-black shadow-[0_0_20px_rgba(212,175,55,0.4)] md:shadow-[0_10px_30px_rgba(255,255,255,0.1)] md:group-hover:scale-110 md:group-hover:bg-[var(--color-gold)] border border-[var(--color-gold)] md:border-transparent md:group-hover:border-[var(--color-gold)] md:group-hover:shadow-[0_0_40px_rgba(212,175,55,0.8)]">
+            {/* Icon: Solid White Idle -> Gold Hover */}
+            <div id="dropzone-icon" className="w-14 h-14 md:w-20 md:h-20 rounded-2xl flex items-center justify-center mb-3 md:mb-6 transition-all duration-500 bg-[var(--color-gold)] md:bg-white text-black shadow-[0_0_20px_rgba(212,175,55,0.4)] md:shadow-[0_10px_30px_rgba(255,255,255,0.15)] md:group-hover:scale-110 md:group-hover:bg-[var(--color-gold)] border border-[var(--color-gold)] md:border-transparent md:group-hover:border-[var(--color-gold)] md:group-hover:shadow-[0_0_40px_rgba(212,175,55,0.8)]">
               <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="md:w-8 md:h-8">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="17 8 12 3 7 8"/>
@@ -179,11 +184,12 @@ export default function Hero() {
               </svg>
             </div>
             
+            {/* Title: Bright White Idle -> Gold Hover */}
             <h3 id="dropzone-title" className="text-xl md:text-3xl font-bold display-font mb-1 md:mb-2 text-white md:group-hover:text-[var(--color-gold)] transition-colors duration-500 text-center">
               {dragState === "dragging" ? "Drop it like it's hot!" : dragState === "processing" ? "Processing Magic..." : "Upload a selfie"}
             </h3>
             
-            <p id="dropzone-desc" className="text-gray-400 text-[11px] md:text-sm text-center px-4 mb-5 md:mb-8">
+            <p id="dropzone-desc" className="text-gray-300 text-[11px] md:text-sm text-center px-4 mb-5 md:mb-8 transition-colors duration-300">
               {dragState === "dragging" 
                 ? "Release to start the magic..." 
                 : dragState === "processing" 
@@ -197,17 +203,15 @@ export default function Hero() {
               }
             </p>
             
-            {/* Desktop Button: Made border and background slightly more visible on idle */}
             <button className="relative overflow-hidden px-6 py-2.5 md:px-8 md:py-3 rounded-xl font-bold text-[13px] md:text-sm bg-[var(--color-gold)] md:bg-white/10 border border-[var(--color-gold)] md:border-white/30 text-black md:text-white transition-all duration-500 shadow-[0_0_15px_rgba(212,175,55,0.3)] md:shadow-lg pointer-events-none md:group-hover:border-[var(--color-gold)] transform md:group-hover:scale-105 z-10 md:group-hover:shadow-[0_0_30px_rgba(212,175,55,0.5)]">
               <span className="hidden md:block absolute inset-0 bg-[var(--color-gold)] translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] z-[-1] rounded-xl"></span>
-              
               <span className="grid relative overflow-hidden">
                   <span className="col-start-1 row-start-1 md:transition-transform md:duration-500 md:ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:-translate-y-[120%]">Select Photo</span>
                   <span className="hidden md:block col-start-1 row-start-1 translate-y-[120%] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 text-black">Select Photo</span>
               </span>
             </button>
             
-            <div className="absolute bottom-4 md:bottom-6 flex items-center gap-1.5 md:gap-2 text-gray-500 text-[9px] md:text-[11px] font-semibold uppercase tracking-wider md:group-hover:text-[var(--color-gold)] transition-colors duration-500">
+            <div className="absolute bottom-4 md:bottom-6 flex items-center gap-1.5 md:gap-2 text-gray-400 text-[9px] md:text-[11px] font-semibold uppercase tracking-wider md:group-hover:text-[var(--color-gold)] transition-colors duration-500">
               <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="md:w-3 md:h-3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               No signup required
             </div>
@@ -216,14 +220,14 @@ export default function Hero() {
 
         {/* DESKTOP ONLY: RIGHT FLANK */}
         <div className="hidden lg:flex flex-col gap-6 w-[260px] xl:w-[280px] shrink-0">
-          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-white/5 shadow-2xl transform rotate-[8deg] translate-y-12 -translate-x-4 relative">
-            <Image src={COMMUNITY_POSTS[2].image_url} alt={COMMUNITY_POSTS[2].style} fill priority quality={85} sizes="280px" className="object-cover pointer-events-none" />
+          <div className="flank-card hardware-accelerated aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-white/5 shadow-2xl transform rotate-[8deg] translate-y-12 -translate-x-4 relative">
+            <Image src={COMMUNITY_POSTS[2].image_url} alt={COMMUNITY_POSTS[2].style} fill priority quality={75} sizes="(max-width: 1200px) 260px, 280px" className="object-cover pointer-events-none" />
             <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">
               {COMMUNITY_POSTS[2].style}
             </div>
           </div>
-          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-white/5 shadow-2xl transform rotate-[3deg] translate-x-6 relative">
-            <Image src={COMMUNITY_POSTS[3].image_url} alt={COMMUNITY_POSTS[3].style} fill priority quality={85} sizes="280px" className="object-cover pointer-events-none" />
+          <div className="flank-card hardware-accelerated aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-white/5 shadow-2xl transform rotate-[3deg] translate-x-6 relative">
+            <Image src={COMMUNITY_POSTS[3].image_url} alt={COMMUNITY_POSTS[3].style} fill priority quality={75} sizes="(max-width: 1200px) 260px, 280px" className="object-cover pointer-events-none" />
             <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">
               {COMMUNITY_POSTS[3].style}
             </div>
@@ -233,14 +237,14 @@ export default function Hero() {
 
       {/* MOBILE ONLY: CINEMATIC INFINITE MARQUEE */}
       <div className="flex lg:hidden w-full overflow-hidden mt-6 relative">
-        <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[var(--bg-color)] to-transparent z-10"></div>
-        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[var(--bg-color)] to-transparent z-10"></div>
+        <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[var(--bg-color)] to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[var(--bg-color)] to-transparent z-10 pointer-events-none"></div>
         
         <div className="flex w-max animate-mobile-marquee gap-3 pl-3">
           {MOBILE_SCROLL_ITEMS.map((post, idx) => (
-            <div key={idx} className="w-[120px] md:w-[160px] shrink-0 aspect-[4/5] rounded-[1rem] border border-white/10 overflow-hidden relative shadow-lg bg-white/5">
-              {/* Added priority to first few mobile images to speed up LCP */}
-              <Image src={post.image_url} alt={post.style} fill priority={idx < 4} quality={80} sizes="120px" className="object-cover" />
+            <div key={idx} className="w-[120px] md:w-[160px] shrink-0 aspect-[4/5] rounded-[1rem] border border-white/10 overflow-hidden relative shadow-lg bg-white/5 hardware-accelerated">
+              {/* Only prioritize the first 4 images on mobile to save bandwidth */}
+              <Image src={post.image_url} alt={post.style} fill priority={idx < 4} quality={70} sizes="120px" className="object-cover" />
               <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded border border-white/10 text-[9px] md:text-[10px] font-bold text-white">
                 {post.style}
               </div>
