@@ -26,6 +26,11 @@
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+    /* PROTOTYPE VARS */
+    --bg-color: #030303;
+    --surface-color: #0A0A0A;
+    --card-color: #111111;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -39,7 +44,7 @@
       --color-ink2: #A1A1AA;
       --color-ink3: #71717A;
       
-      --color-gold: #D4AF37; /* Used the premium gold from HTML prototype */
+      --color-gold: #D4AF37; 
       --color-gold-light: #FDE68A;
       --color-gold-pale: rgba(212, 175, 55, 0.08);
       --color-gold-border: rgba(212, 175, 55, 0.25);
@@ -55,6 +60,10 @@
       --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
       --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.8), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
       --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 1);
+
+      --bg-color: #030303;
+      --surface-color: #0A0A0A;
+      --card-color: #111111;
     }
   }
 
@@ -65,13 +74,22 @@
     scroll-behavior: smooth;
     padding-bottom: 100px; /* Space for macOS Dock */
   }
+
+  h1, h2, h3, h4, .display-font { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
 }
 
 @theme {
   --animate-dash: dash 1s linear infinite;
+  --animate-liquid: liquidDrift 14s ease-in-out infinite alternate;
   
   @keyframes dash {
     to { stroke-dashoffset: -20; }
+  }
+
+  @keyframes liquidDrift {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(-2%, 1%, 0) scale(1.03); }
+      100% { transform: translate3d(2%, -1%, 0) scale(1.02); }
   }
 }
 
@@ -80,6 +98,62 @@
     font-family: 'Plus Jakarta Sans', sans-serif; 
     letter-spacing: -0.02em; 
   }
+
+  .text-balance { text-wrap: balance; }
+  .type-lead { font-size: clamp(1.05rem, 0.9rem + 0.4vw, 1.2rem); line-height: 1.7; }
+  .type-h1 { font-size: clamp(2.7rem, 2.2rem + 2.1vw, 4.6rem); line-height: 1.03; }
+  .type-h2 { font-size: clamp(2rem, 1.6rem + 1.1vw, 3.1rem); line-height: 1.1; }
+  .type-kicker { letter-spacing: 0.16em; }
+
+  /* Brand gold glow surfaces */
+  .brand-gold-glow {
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+  }
+  .brand-gold-glow::before {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      z-index: 0;
+      pointer-events: none;
+      background:
+          radial-gradient(50% 56% at 18% 86%, rgba(212,175,55,0.22) 0%, rgba(212,175,55,0.0) 64%),
+          radial-gradient(56% 63% at 50% 74%, rgba(180,148,42,0.16) 0%, rgba(180,148,42,0.0) 66%),
+          radial-gradient(60% 66% at 82% 12%, rgba(140,112,34,0.14) 0%, rgba(140,112,34,0.0) 66%);
+      filter: blur(48px);
+      opacity: 0.82;
+      transform: translateZ(0);
+      animation: liquidDrift 14s ease-in-out infinite alternate;
+  }
+  .brand-gold-glow::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.09;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .brand-gold-glow > * { position: relative; z-index: 1; }
+
+  .brand-gold-glow--section {
+      background:
+          radial-gradient(120% 100% at 50% 0%, rgba(8,8,8,0.32) 0%, rgba(8,8,8,0.82) 46%, #070707 78%, #050505 100%),
+          #050505;
+  }
+  .brand-gold-glow--section::before {
+      background:
+          radial-gradient(42% 40% at 50% 2%, rgba(255, 220, 90, 0.78) 0%, rgba(255, 214, 74, 0.35) 38%, rgba(255, 214, 74, 0.0) 64%),
+          radial-gradient(34% 32% at 50% 8%, rgba(255, 236, 160, 0.52) 0%, rgba(255, 236, 160, 0.0) 66%),
+          radial-gradient(95% 70% at 50% -2%, rgba(212, 175, 55, 0.22) 0%, rgba(212, 175, 55, 0.0) 56%);
+      filter: blur(40px);
+      opacity: 0.92;
+      animation: liquidDrift 16s ease-in-out infinite alternate;
+  }
+
+  .hero-gradient { background: radial-gradient(circle at top, #151515 0%, var(--bg-color) 100%); }
 
   .hide-scroll::-webkit-scrollbar { display: none; }
   .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
@@ -144,4 +218,43 @@
   .fluid-btn-white:hover { box-shadow: 0 8px 25px rgba(255,255,255,0.3); }
   .fluid-btn-white .fluid-btn-bg { background-color: #111; }
   .fluid-btn-white .fluid-text-bottom { color: #fff; }
+
+  /* 3D TILT CARDS */
+  .tilt-card {
+      perspective: 1000px;
+      perspective-origin: 50% 50%;
+  }
+  .tilt-card__face {
+      position: relative;
+      transform-style: preserve-3d;
+      will-change: transform;
+      transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.45s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.35s ease;
+  }
+  .tilt-card__face.tilt-resetting {
+      transition: transform 0.65s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.65s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.35s ease;
+  }
+  .tilt-card__shine {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      z-index: 4;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      background: linear-gradient(
+          125deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.06) 42%,
+          rgba(212, 175, 55, 0.22) 50%,
+          rgba(255, 255, 255, 0.05) 58%,
+          transparent 100%
+      );
+      background-size: 200% 200%;
+      mix-blend-mode: soft-light;
+  }
+  .tilt-card.is-active .tilt-card__shine { opacity: 1; }
+  .tilt-card__parallax {
+      transform: translateZ(0);
+      transform-style: preserve-3d;
+  }
 }
