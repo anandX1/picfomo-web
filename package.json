@@ -19,7 +19,9 @@
     "@cloudflare/next-on-pages": "^1.13.16",
     "@opennextjs/cloudflare": "^1.17.1",
     "browser-image-compression": "^2.0.2",
+    "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
+    "lenis": "^1.3.23",
     "lucide-react": "^1.7.0",
     "next": "16.1.5",
     "react": "19.1.5",
@@ -28,7 +30,10 @@
     "replicate": "^1.4.0",
     "sonner": "^2.0.7",
     "svix": "^1.90.0",
-    "zod": "^4.3.6"
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

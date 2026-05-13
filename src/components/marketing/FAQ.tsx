@@ -64,7 +64,7 @@ export default function FAQ() {
         [ THE DETAILS ]
       </div>
       
-      <h2 className="mb-12 font-[family-name:var(--display)] text-[clamp(36px,4vw,60px)] leading-[0.9] tracking-[-0.5px] text-[var(--color-ink)] uppercase">
+      <h2 className="mb-12 font-[family-name:var(--display)] text-[clamp(36px,4vw,60px)] leading-[0.9] tracking-[-0.5px] text-[var(--color-page-text)] uppercase">
         Straight Answers.<br />
         No Corporate BS.
       </h2>
@@ -89,15 +89,15 @@ export default function FAQ() {
                 className="flex w-full items-start justify-between gap-4 p-5 text-left md:p-6"
               >
                 <div className="flex items-start gap-4">
-                  <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${isOpen ? "bg-[var(--color-gold)] text-[var(--color-ink)]" : "bg-[var(--color-cream2)] text-[var(--color-ink3)]"}`}>
+                  <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${isOpen ? "bg-[var(--color-gold)] text-[var(--color-page-text)]" : "bg-[var(--color-cream2)] text-[var(--color-ink3)]"}`}>
                     <Icon size={16} />
                   </div>
-                  <h3 className="font-[family-name:var(--display)] text-[16px] md:text-[18px] tracking-[0.5px] leading-[1.4] text-[var(--color-ink)]">
+                  <h3 className="font-[family-name:var(--display)] text-[16px] md:text-[18px] tracking-[0.5px] leading-[1.4] text-[var(--color-page-text)]">
                     {faq.q}
                   </h3>
                 </div>
                 
-                <div className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center transition-transform duration-300 ${isOpen ? "rotate-180 text-[var(--color-ink)]" : "text-[var(--color-ink3)]"}`}>
+                <div className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center transition-transform duration-300 ${isOpen ? "rotate-180 text-[var(--color-page-text)]" : "text-[var(--color-ink3)]"}`}>
                   <ChevronDown size={20} />
                 </div>
               </button>

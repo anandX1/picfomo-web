@@ -38,7 +38,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="flex h-full w-full flex-col bg-[var(--color-cream)] app-ui">
       
       {/* 🌟 THIS IS THE ONLY HEADER THAT WILL RENDER NOW */}
-      <header className="flex items-center justify-between border-b border-[var(--rule)] bg-[var(--color-white)] px-4 py-3 sm:px-6 sm:py-4 shrink-0">
+      <header className="flex items-center justify-between border-b border-[var(--rule)] bg-[var(--color-page-bg)] px-4 py-3 sm:px-6 sm:py-4 shrink-0">
         
         <div className="md:hidden flex items-center gap-2">
           <StoryLogo />

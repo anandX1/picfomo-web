@@ -43,7 +43,7 @@ export default function NotificationBell({
       {/* THE TRIGGER BUTTON */}
       <button 
         onClick={handleOpen}
-        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-[var(--color-ink)] shadow-sm transition-colors hover:bg-gray-50"
+        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-[var(--color-page-text)] shadow-sm transition-colors hover:bg-gray-50"
       >
         <Bell size={18} />
         {/* THE RED DOT */}
@@ -66,7 +66,7 @@ export default function NotificationBell({
             
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[var(--rule)] px-6 py-4">
-              <h2 className="font-[family-name:var(--display)] text-xl text-[var(--color-ink)]">Notifications</h2>
+              <h2 className="font-[family-name:var(--display)] text-xl text-[var(--color-page-text)]">Notifications</h2>
               <button 
                 onClick={() => setIsOpen(false)} 
                 className="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100"
@@ -101,11 +101,11 @@ export default function NotificationBell({
                     // THE INSTAGRAM GROUPING LOGIC
                     let textRender;
                     if (count === 1) {
-                      textRender = <><span className="font-bold text-[var(--color-ink)]">{firstActor}</span> {isLike ? "liked" : "remixed"} your post.</>;
+                      textRender = <><span className="font-bold text-[var(--color-page-text)]">{firstActor}</span> {isLike ? "liked" : "remixed"} your post.</>;
                     } else if (count === 2) {
-                      textRender = <><span className="font-bold text-[var(--color-ink)]">{firstActor}</span> and <span className="font-bold text-[var(--color-ink)]">{actors[1].username}</span> {isLike ? "liked" : "remixed"} your post.</>;
+                      textRender = <><span className="font-bold text-[var(--color-page-text)]">{firstActor}</span> and <span className="font-bold text-[var(--color-page-text)]">{actors[1].username}</span> {isLike ? "liked" : "remixed"} your post.</>;
                     } else {
-                      textRender = <><span className="font-bold text-[var(--color-ink)]">{firstActor}</span>, <span className="font-bold text-[var(--color-ink)]">{actors[1].username}</span> and <span className="font-bold text-[var(--color-ink)]">{count - 2} others</span> {isLike ? "liked" : "remixed"} your post.</>;
+                      textRender = <><span className="font-bold text-[var(--color-page-text)]">{firstActor}</span>, <span className="font-bold text-[var(--color-page-text)]">{actors[1].username}</span> and <span className="font-bold text-[var(--color-page-text)]">{count - 2} others</span> {isLike ? "liked" : "remixed"} your post.</>;
                     }
 
                     return (

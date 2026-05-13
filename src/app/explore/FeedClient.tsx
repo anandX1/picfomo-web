@@ -136,7 +136,7 @@ function PostCard({
               ? <Image src={post.profile_image_url} alt={displayUsername} fill className="object-cover" unoptimized />
               : <User size={14} className="text-[var(--color-ink3)]" />}
           </div>
-          <span className="truncate font-[family-name:var(--mono)] text-[12px] font-bold text-[var(--color-ink)]">{displayUsername}</span>
+          <span className="truncate font-[family-name:var(--mono)] text-[12px] font-bold text-[var(--color-page-text)]">{displayUsername}</span>
         </Link>
         <div className="flex items-center gap-3 text-[var(--color-ink3)]">
           <div className="flex md:hidden items-center gap-1">
@@ -169,7 +169,7 @@ function PostCard({
 
             {/* Footer / CTA */}
             <div className="h-[25%] w-full flex flex-col items-center justify-center bg-[var(--color-cream2)] border-t border-[var(--rule)] px-4 text-center">
-              <p className="text-[14px] font-[family-name:var(--display)] tracking-wide text-[var(--color-ink)]">Discover More</p>
+              <p className="text-[14px] font-[family-name:var(--display)] tracking-wide text-[var(--color-page-text)]">Discover More</p>
               <p className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-widest text-[var(--color-ink3)] mt-1">Support the Network</p>
             </div>
           </div>
@@ -180,7 +180,7 @@ function PostCard({
               <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[var(--color-cream2)] border border-[var(--rule)] flex items-center justify-center">
                 <Sparkles size={12} className="text-[var(--color-gold)]" />
               </div>
-              <span className="truncate font-[family-name:var(--mono)] text-[12px] font-bold text-[var(--color-ink)]">PicFOMO Network</span>
+              <span className="truncate font-[family-name:var(--mono)] text-[12px] font-bold text-[var(--color-page-text)]">PicFOMO Network</span>
             </div>
           </div>
 
@@ -305,19 +305,19 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
   const isLoading = isSearching || isTabLoading;
 
   return (
-    <div className="mx-auto max-w-[1600px] p-4 md:p-8 relative min-h-screen text-[var(--color-ink)]">
+    <div className="mx-auto max-w-[1600px] p-4 md:p-8 relative min-h-screen text-[var(--color-page-text)]">
 
       {/* COLLAB MODAL */}
       {showCollabModal && initialRemixData && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md px-4 animate-in fade-in duration-300">
-          <div className="relative w-full max-w-sm overflow-hidden rounded-[24px] bg-[var(--color-white)] border border-[var(--rule)] p-6 shadow-[var(--shadow-2xl)] flex flex-col items-center">
-            <button onClick={closeCollabModal} className="absolute right-4 top-4 z-10 rounded-full bg-[var(--color-cream)] p-2 text-[var(--color-ink3)] transition-colors hover:bg-[var(--color-cream2)] hover:text-[var(--color-ink)] shadow-sm"><X size={16} /></button>
+          <div className="relative w-full max-w-sm overflow-hidden rounded-[24px] bg-[var(--color-page-bg)] border border-[var(--rule)] p-6 shadow-[var(--shadow-2xl)] flex flex-col items-center">
+            <button onClick={closeCollabModal} className="absolute right-4 top-4 z-10 rounded-full bg-[var(--color-cream)] p-2 text-[var(--color-ink3)] transition-colors hover:bg-[var(--color-cream2)] hover:text-[var(--color-page-text)] shadow-sm"><X size={16} /></button>
             <h2 className="font-[family-name:var(--display)] text-2xl text-center mb-1 tracking-wide mt-2">Collab Request 🤝</h2>
-            <p className="font-[family-name:var(--mono)] text-[10px] text-[var(--color-ink3)] uppercase tracking-widest text-center mb-6">Remixing style from <span className="font-bold text-[var(--color-ink)]">@{initialRemixData.username || "creator"}</span></p>
+            <p className="font-[family-name:var(--mono)] text-[10px] text-[var(--color-ink3)] uppercase tracking-widest text-center mb-6">Remixing style from <span className="font-bold text-[var(--color-page-text)]">@{initialRemixData.username || "creator"}</span></p>
             <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden mb-6 shadow-md border border-[var(--rule)] bg-[var(--color-cream2)]">
               <Image src={initialRemixData.image_url} alt="Remix Target" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" unoptimized />
             </div>
-            <button onClick={() => handleRemix(initialRemixData.id)} disabled={isPending} className="w-full bg-[var(--color-ink)] text-[var(--color-white)] hover:bg-[var(--color-gold)] hover:text-black font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[1.5px] py-4 rounded-xl shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex justify-center items-center gap-2">
+            <button onClick={() => handleRemix(initialRemixData.id)} disabled={isPending} className="w-full bg-[var(--color-page-text)] text-[var(--color-page-bg)] hover:bg-[var(--color-gold)] hover:text-black font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[1.5px] py-4 rounded-xl shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex justify-center items-center gap-2">
               {isPending ? <Loader2 size={18} className="animate-spin" /> : <Zap size={18} />} REMIX STYLE (-10 Sparks)
             </button>
           </div>
@@ -327,17 +327,17 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
       {/* AUTH MODAL */}
       {showAuthModal && !currentUserId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md px-4 animate-in fade-in duration-300">
-          <div className="relative w-full max-w-md overflow-hidden rounded-[24px] bg-[var(--color-white)] p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)]">
+          <div className="relative w-full max-w-md overflow-hidden rounded-[24px] bg-[var(--color-page-bg)] p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)]">
             <div className="absolute -top-24 -left-24 h-48 w-48 rounded-full bg-[var(--color-gold)] opacity-10 blur-3xl animate-pulse"></div>
-            <button onClick={() => setShowAuthModal(false)} className="absolute right-4 top-4 z-10 rounded-full bg-[var(--color-cream)] p-2 text-[var(--color-ink3)] transition-colors hover:bg-[var(--color-cream2)] hover:text-[var(--color-ink)]">
+            <button onClick={() => setShowAuthModal(false)} className="absolute right-4 top-4 z-10 rounded-full bg-[var(--color-cream)] p-2 text-[var(--color-ink3)] transition-colors hover:bg-[var(--color-cream2)] hover:text-[var(--color-page-text)]">
               <X size={16} />
             </button>
             <div className="relative z-10 flex flex-col items-center text-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="PicFOMO Logo" className="mb-6 w-40 sm:w-48 h-auto rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] object-contain bg-black p-2" />
-              <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-ink)] tracking-tight">Unlock Your Aesthetic</h2>
+              <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-page-text)] tracking-tight">Unlock Your Aesthetic</h2>
               <p className="mb-8 font-[family-name:var(--mono)] text-[12px] uppercase leading-relaxed tracking-[1px] text-[var(--color-ink3)]">Drop your photo. Pick a trending style.<br/> Get your portrait in ~20 seconds.</p>
-              <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-[var(--color-ink)] py-4 font-[family-name:var(--display)] text-lg tracking-[1.5px] text-[var(--color-white)] transition-transform hover:scale-[1.02] shadow-md hover:bg-[var(--color-gold)] hover:text-black">
+              <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-[var(--color-page-text)] py-4 font-[family-name:var(--display)] text-lg tracking-[1.5px] text-[var(--color-page-bg)] transition-transform hover:scale-[1.02] shadow-md hover:bg-[var(--color-gold)] hover:text-black">
                 <span className="relative z-10">CREATE FREE ACCOUNT</span>
               </Link>
             </div>
@@ -348,11 +348,11 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
       {/* HEADER & SEARCH */}
       <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-[var(--rule)] pb-6">
         <div>
-          <h1 className="mb-2 font-[family-name:var(--display)] text-5xl tracking-[-1px] text-[var(--color-ink)]">DISCOVER</h1>
+          <h1 className="mb-2 font-[family-name:var(--display)] text-5xl tracking-[-1px] text-[var(--color-page-text)]">DISCOVER</h1>
           <p className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-ink3)]">Trending styles tailored to your taste</p>
         </div>
         <form onSubmit={handleSearch} className="w-full md:w-96 relative group">
-          <input type="text" placeholder="Search tags, creators, or prompts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] rounded-full py-4 pl-14 pr-6 font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-widest text-[var(--color-ink)] placeholder-[var(--color-ink3)] focus:outline-none focus:border-[var(--color-gold-border)] focus:bg-[var(--color-white)] transition-all shadow-sm group-hover:shadow-md" />
+          <input type="text" placeholder="Search tags, creators, or prompts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] rounded-full py-4 pl-14 pr-6 font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-widest text-[var(--color-page-text)] placeholder-[var(--color-ink3)] focus:outline-none focus:border-[var(--color-gold-border)] focus:bg-[var(--color-page-bg)] transition-all shadow-sm group-hover:shadow-md" />
           <Search size={18} className="absolute left-6 top-4 text-[var(--color-ink3)] group-focus-within:text-[var(--color-gold)] transition-colors" />
           <button type="submit" disabled={isSearching} className="hidden">Search</button>
         </form>
@@ -363,7 +363,7 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
         {TABS.map((tab) => (
           <button key={tab.id} onClick={() => handleTabChange(tab.id)} disabled={isTabLoading}
             className={`flex items-center gap-2 px-6 py-3 rounded-full font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1.5px] whitespace-nowrap transition-all shadow-sm ${
-              activeTab === tab.id ? 'bg-[var(--color-ink)] text-[var(--color-white)] shadow-md' : 'bg-[var(--color-cream)] text-[var(--color-ink)] border border-[var(--rule)] hover:bg-[var(--color-cream2)]'
+              activeTab === tab.id ? 'bg-[var(--color-page-text)] text-[var(--color-page-bg)] shadow-md' : 'bg-[var(--color-cream)] text-[var(--color-page-text)] border border-[var(--rule)] hover:bg-[var(--color-cream2)]'
             }`}
           >
             {tab.icon}{tab.label}
@@ -379,7 +379,7 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-32 text-center text-[var(--color-ink3)]">
           <Search size={64} className="mb-6 opacity-20" />
-          <h3 className="font-[family-name:var(--display)] text-3xl tracking-wide text-[var(--color-ink)] mb-2">NO POSTS FOUND</h3>
+          <h3 className="font-[family-name:var(--display)] text-3xl tracking-wide text-[var(--color-page-text)] mb-2">NO POSTS FOUND</h3>
           <p className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-widest">Try adjusting your search terms.</p>
         </div>
       ) : (

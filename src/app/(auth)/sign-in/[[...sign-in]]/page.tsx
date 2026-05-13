@@ -33,7 +33,7 @@ export default function SignInPage() {
         {/* Outer Glowing Ring (Rotating Aura) */}
         <div className="absolute top-0 h-[56px] w-[180px] rounded-2xl bg-gradient-to-r from-[var(--color-gold-light)] via-amber-500 to-orange-500 opacity-30 blur-xl animate-slow-spin"></div>
 
-        <Link href="/" className="relative flex h-[56px] w-[180px] items-center justify-center rounded-xl bg-[var(--color-ink)] shadow-2xl border border-white/10 overflow-hidden transition-transform hover:scale-105 active:scale-95">
+        <Link href="/" className="relative flex h-[56px] w-[180px] items-center justify-center rounded-xl bg-[var(--color-page-text)] shadow-2xl border border-white/10 overflow-hidden transition-transform hover:scale-105 active:scale-95">
 
           {/* The AI Scanner Laser */}
           <div className="absolute inset-0 w-full h-full">
@@ -74,8 +74,8 @@ export default function SignInPage() {
             },
             elements: {
               card: "shadow-[var(--shadow-lg)] border border-[var(--rule)]",
-              formButtonPrimary: "bg-[var(--color-gold)] text-[var(--color-ink)] hover:bg-[var(--color-gold-light)] text-[14px] tracking-[1px] font-bold uppercase border border-[var(--color-ink)]",
-              footerActionLink: "text-[var(--color-gold)] hover:text-[var(--color-ink)]",
+              formButtonPrimary: "bg-[var(--color-gold)] text-[var(--color-page-text)] hover:bg-[var(--color-gold-light)] text-[14px] tracking-[1px] font-bold uppercase border border-[var(--color-page-text)]",
+              footerActionLink: "text-[var(--color-gold)] hover:text-[var(--color-page-text)]",
             }
           }}
         />

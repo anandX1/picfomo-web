@@ -38,7 +38,7 @@ export default function SettingsClient({ initialData }: Props) {
       {/* LEFT COLUMN: PicFOMO Custom Identity Form (Fully Adaptive to Light/Dark Mode) */}
       <div className="w-full xl:w-1/3 flex-shrink-0">
         <div className="bg-[var(--color-cream)] rounded-[24px] border border-[var(--rule)] p-6 md:p-8 shadow-[var(--shadow-sm)] transition-shadow hover:shadow-[var(--shadow-md)]">
-          <h2 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)] mb-2">Public Profile</h2>
+          <h2 className="font-[family-name:var(--display)] text-2xl text-[var(--color-page-text)] mb-2">Public Profile</h2>
           <p className="font-[family-name:var(--mono)] text-[11px] uppercase tracking-[1px] text-[var(--color-ink3)] mb-8 leading-relaxed">
             This is how you appear on the Feed and your public aesthetic portfolio.
           </p>
@@ -56,7 +56,7 @@ export default function SettingsClient({ initialData }: Props) {
                 defaultValue={initialData.display_name}
                 placeholder="How should we call you?"
                 maxLength={30}
-                className="w-full bg-[var(--color-white)] border border-[var(--rule)] text-[var(--color-ink)] text-[14px] rounded-xl px-4 py-3 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-[var(--color-gold)] outline-none transition-all placeholder-[var(--color-ink3)] shadow-sm"
+                className="w-full bg-[var(--color-page-bg)] border border-[var(--rule)] text-[var(--color-page-text)] text-[14px] rounded-xl px-4 py-3 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-[var(--color-gold)] outline-none transition-all placeholder-[var(--color-ink3)] shadow-sm"
               />
             </div>
 
@@ -70,7 +70,7 @@ export default function SettingsClient({ initialData }: Props) {
                 name="website"
                 defaultValue={initialData.website || ""}
                 placeholder="https://instagram.com/yourhandle"
-                className="w-full bg-[var(--color-white)] border border-[var(--rule)] text-[var(--color-ink)] text-[14px] rounded-xl px-4 py-3 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-[var(--color-gold)] outline-none transition-all placeholder-[var(--color-ink3)] shadow-sm"
+                className="w-full bg-[var(--color-page-bg)] border border-[var(--rule)] text-[var(--color-page-text)] text-[14px] rounded-xl px-4 py-3 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-[var(--color-gold)] outline-none transition-all placeholder-[var(--color-ink3)] shadow-sm"
               />
             </div>
 
@@ -85,7 +85,7 @@ export default function SettingsClient({ initialData }: Props) {
                 placeholder="Digital creator exploring AI aesthetics..."
                 rows={4}
                 maxLength={160}
-                className="w-full bg-[var(--color-white)] border border-[var(--rule)] text-[var(--color-ink)] text-[14px] rounded-xl px-4 py-3 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-[var(--color-gold)] outline-none transition-all resize-none placeholder-[var(--color-ink3)] shadow-sm"
+                className="w-full bg-[var(--color-page-bg)] border border-[var(--rule)] text-[var(--color-page-text)] text-[14px] rounded-xl px-4 py-3 focus:ring-2 focus:ring-[var(--color-gold)] focus:border-[var(--color-gold)] outline-none transition-all resize-none placeholder-[var(--color-ink3)] shadow-sm"
               />
               <p className="mt-2 font-[family-name:var(--mono)] text-[10px] text-[var(--color-ink3)] text-right uppercase tracking-widest">
                 Max 160 characters
@@ -95,7 +95,7 @@ export default function SettingsClient({ initialData }: Props) {
             <button 
               type="submit" 
               disabled={isPending}
-              className="w-full flex justify-center items-center gap-2 bg-[var(--color-ink)] hover:bg-[var(--color-gold)] text-[var(--color-white)] hover:text-black font-[family-name:var(--mono)] font-bold uppercase tracking-[1.5px] text-[12px] rounded-xl px-6 py-4 transition-all shadow-md disabled:opacity-70 active:scale-[0.98]"
+              className="w-full flex justify-center items-center gap-2 bg-[var(--color-page-text)] hover:bg-[var(--color-gold)] text-[var(--color-page-bg)] hover:text-black font-[family-name:var(--mono)] font-bold uppercase tracking-[1.5px] text-[12px] rounded-xl px-6 py-4 transition-all shadow-md disabled:opacity-70 active:scale-[0.98]"
             >
               {isPending ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
               Save Profile

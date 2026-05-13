@@ -163,7 +163,7 @@ export default function StoryLogo() {
             <img 
               src="/logo.png" 
               alt="PicFOMO" 
-              className="h-5 md:h-6 w-auto object-contain brightness-125 contrast-125 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" 
+              className="h-6 md:h-8 w-auto object-contain brightness-125 contrast-125 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" 
             />
           )}
         </div>

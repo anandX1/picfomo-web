@@ -1,8 +1,6 @@
-import { setupDevPlatform } from "@cloudflare/next-on-pages/next-dev";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
-if (process.env.NODE_ENV === "development") {
-  setupDevPlatform();
-}
+initOpenNextCloudflareForDev();
 
 /** * EXPERT STANDARD SECURITY HEADERS
  * Prevents clickjacking, MIME-sniffing, and cross-site scripting attacks.

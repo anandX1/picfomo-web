@@ -127,18 +127,18 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
   const isMine = currentUserId === post.creator_id;
 
   return (
-    <div className="min-h-screen bg-[var(--color-cream)] app-ui p-4 md:p-10 text-[var(--color-ink)]">
+    <div className="min-h-screen bg-[var(--color-cream)] app-ui p-4 md:p-10 text-[var(--color-page-text)]">
       
       {/* 🌟 AUTH MODAL (Styled correctly for Dark Mode) */}
       {showAuthModal && !currentUserId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md px-4 animate-in fade-in duration-300">
-          <div className="relative w-full max-w-md overflow-hidden rounded-[24px] bg-[var(--color-white)] p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)]">
+          <div className="relative w-full max-w-md overflow-hidden rounded-[24px] bg-[var(--color-page-bg)] p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)]">
             
             <div className="absolute -top-24 -left-24 h-48 w-48 rounded-full bg-[var(--color-gold)] opacity-10 blur-3xl animate-pulse"></div>
             
             <button 
               onClick={() => setShowAuthModal(false)}
-              className="absolute right-4 top-4 z-10 rounded-full bg-[var(--color-cream)] p-2 text-[var(--color-ink3)] transition-colors hover:bg-[var(--color-cream2)] hover:text-[var(--color-ink)]"
+              className="absolute right-4 top-4 z-10 rounded-full bg-[var(--color-cream)] p-2 text-[var(--color-ink3)] transition-colors hover:bg-[var(--color-cream2)] hover:text-[var(--color-page-text)]"
             >
               <X size={16} />
             </button>
@@ -151,7 +151,7 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
                 className="mb-6 w-40 sm:w-48 h-auto rounded-2xl bg-black p-2 shadow-lg object-contain" 
               />
               
-              <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-ink)] tracking-tight">
+              <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-page-text)] tracking-tight">
                 Unlock Your Aesthetic
               </h2>
               <p className="mb-8 font-[family-name:var(--mono)] text-[12px] uppercase leading-relaxed tracking-[1px] text-[var(--color-ink3)]">
@@ -173,13 +173,13 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
                 </div>
               </div>
               
-              <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-[var(--color-ink)] py-4 font-[family-name:var(--display)] tracking-[1.5px] text-[16px] text-[var(--color-white)] transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-md hover:bg-[var(--color-gold)] hover:text-black">
+              <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-[var(--color-page-text)] py-4 font-[family-name:var(--display)] tracking-[1.5px] text-[16px] text-[var(--color-page-bg)] transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-md hover:bg-[var(--color-gold)] hover:text-black">
                 <span className="relative z-10">CREATE FREE ACCOUNT</span>
               </Link>
 
               <button 
                 onClick={() => setShowAuthModal(false)}
-                className="mt-5 text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-ink)] hover:underline"
+                className="mt-5 text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-page-text)] hover:underline"
               >
                 Maybe later, let me explore
               </button>
@@ -193,7 +193,7 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
         
         {/* Navigation Back */}
         <div className="mb-6">
-          <Link href="/explore" className="text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-ink)] transition-colors flex items-center gap-2 w-fit">
+          <Link href="/explore" className="text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-page-text)] transition-colors flex items-center gap-2 w-fit">
             ← BACK TO EXPLORE
           </Link>
         </div>
@@ -213,13 +213,13 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
               
               {/* Top Action Bar */}
               <div className="flex items-center justify-between mb-8">
-                <button onClick={handleShare} className="h-12 w-12 rounded-full bg-[var(--color-white)] border border-[var(--rule)] flex items-center justify-center text-[var(--color-ink)] hover:bg-[var(--color-cream2)] transition-colors shadow-sm">
+                <button onClick={handleShare} className="h-12 w-12 rounded-full bg-[var(--color-page-bg)] border border-[var(--rule)] flex items-center justify-center text-[var(--color-page-text)] hover:bg-[var(--color-cream2)] transition-colors shadow-sm">
                   <Share2 size={18} />
                 </button>
                 <button 
                   onClick={handleCollab}
                   disabled={isPending || isMine}
-                  className="flex items-center gap-2 bg-[var(--color-ink)] text-[var(--color-white)] hover:bg-[var(--color-gold)] hover:text-black px-6 py-3.5 rounded-xl font-[family-name:var(--mono)] font-bold text-[11px] uppercase tracking-widest transition-all disabled:opacity-50 shadow-sm active:scale-95"
+                  className="flex items-center gap-2 bg-[var(--color-page-text)] text-[var(--color-page-bg)] hover:bg-[var(--color-gold)] hover:text-black px-6 py-3.5 rounded-xl font-[family-name:var(--mono)] font-bold text-[11px] uppercase tracking-widest transition-all disabled:opacity-50 shadow-sm active:scale-95"
                 >
                   <Users size={16} />
                   {isMine ? "YOUR ASSET" : "COLLAB"}
@@ -227,7 +227,7 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
               </div>
 
               {/* 🌟 GROQ TITLE & DESCRIPTION */}
-              <h1 className="text-3xl md:text-4xl font-[family-name:var(--display)] tracking-tight text-[var(--color-ink)] mb-3 leading-tight">
+              <h1 className="text-3xl md:text-4xl font-[family-name:var(--display)] tracking-tight text-[var(--color-page-text)] mb-3 leading-tight">
                 {post.title || post.style_name || "Aesthetic Generation"}
               </h1>
 
@@ -250,7 +250,7 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
                   {post.tags.split(",").map((tag) => (
                     <span 
                       key={tag.trim()} 
-                      className="bg-[var(--color-white)] text-[var(--color-ink)] text-[10px] font-[family-name:var(--mono)] font-bold px-3 py-1.5 rounded-lg uppercase tracking-widest border border-[var(--rule)] shadow-sm"
+                      className="bg-[var(--color-page-bg)] text-[var(--color-page-text)] text-[10px] font-[family-name:var(--mono)] font-bold px-3 py-1.5 rounded-lg uppercase tracking-widest border border-[var(--rule)] shadow-sm"
                     >
                       #{tag.trim()}
                     </span>
@@ -265,20 +265,20 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
               </div>
 
               {/* 🌟 CREATOR INFO & FOLLOW BUTTON */}
-              <div className="flex items-center justify-between p-5 bg-[var(--color-white)] rounded-[20px] border border-[var(--rule)] shadow-sm">
+              <div className="flex items-center justify-between p-5 bg-[var(--color-page-bg)] rounded-[20px] border border-[var(--rule)] shadow-sm">
                 <Link href={`/u/${displayUsername}`} className="flex items-center gap-3 group">
                   <div className="h-12 w-12 rounded-full overflow-hidden bg-[var(--color-cream2)] border border-[var(--rule)] shrink-0 flex items-center justify-center relative">
                     {post.profile_image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={post.profile_image_url} alt={displayUsername} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] text-xl">
+                      <div className="w-full h-full flex items-center justify-center bg-[var(--color-page-text)] text-[var(--color-page-bg)] font-[family-name:var(--display)] text-xl">
                         {displayUsername.charAt(0).toUpperCase()}
                       </div>
                     )}
                   </div>
                   <div>
-                    <p className="font-[family-name:var(--mono)] text-[13px] font-bold text-[var(--color-ink)] group-hover:underline flex items-center gap-1">
+                    <p className="font-[family-name:var(--mono)] text-[13px] font-bold text-[var(--color-page-text)] group-hover:underline flex items-center gap-1">
                       {displayUsername}
                       <CheckCircle2 size={14} className="text-[var(--color-gold)] fill-[var(--color-gold)] drop-shadow-sm" style={{ color: 'white' }} />
                     </p>
@@ -294,8 +294,8 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
                     disabled={isPending}
                     className={`px-5 py-2.5 rounded-xl text-[10px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50 ${
                       isFollowing 
-                        ? 'bg-[var(--color-cream2)] text-[var(--color-ink)] border border-[var(--rule)] hover:bg-[var(--rule)]' 
-                        : 'bg-[var(--color-ink)] text-[var(--color-white)] hover:bg-[var(--color-gold)] hover:text-black'
+                        ? 'bg-[var(--color-cream2)] text-[var(--color-page-text)] border border-[var(--rule)] hover:bg-[var(--rule)]' 
+                        : 'bg-[var(--color-page-text)] text-[var(--color-page-bg)] hover:bg-[var(--color-gold)] hover:text-black'
                     }`}
                   >
                     {isFollowing ? 'Following' : 'Follow'}
@@ -312,7 +312,7 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
                 className="flex items-center gap-2.5 group"
               >
                 <Heart size={26} className={`${likesCount > 0 ? 'fill-red-500 text-red-500' : 'text-[var(--color-ink3)] group-hover:text-red-500'} transition-colors`} />
-                <span className="font-[family-name:var(--display)] text-3xl text-[var(--color-ink)]">{likesCount}</span>
+                <span className="font-[family-name:var(--display)] text-3xl text-[var(--color-page-text)]">{likesCount}</span>
               </button>
 
               <div className="flex items-center gap-2.5 text-[var(--color-ink3)]">

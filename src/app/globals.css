@@ -3,10 +3,10 @@
 @layer base {
   :root {
     /* ☀️ LIGHT MODE (SYSTEM DEFAULT) */
-    --color-white: #FAFAF8;
+    --color-page-bg: #FAFAF8;
     --color-cream: #F5F1EA;
     --color-cream2: #EDE8DE;
-    --color-ink: #111009;
+    --color-page-text: #111009;
     --color-ink2: #3A3830;
     --color-ink3: #8A8478;
     
@@ -31,16 +31,18 @@
     --bg-color: #030303;
     --surface-color: #0A0A0A;
     --card-color: #111111;
+    --gold: #D4AF37;
+    --gold-glow: rgba(212,175,55,0.8);
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
       /* 🌙 PREMIUM AI DARK MODE */
-      --color-white: #09090B;
+      --color-page-bg: #09090B;
       --color-cream: #18181B;
       --color-cream2: #27272A;
       
-      --color-ink: #FAFAFA;
+      --color-page-text: #FAFAFA;
       --color-ink2: #A1A1AA;
       --color-ink3: #71717A;
       
@@ -67,9 +69,12 @@
     }
   }
 
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+
   body {
-    background-color: var(--color-white);
-    color: var(--color-ink);
+    background-color: var(--color-page-bg);
+    color: var(--color-page-text);
     -webkit-font-smoothing: antialiased;
     scroll-behavior: smooth;
     padding-bottom: 100px; /* Space for macOS Dock */
@@ -139,24 +144,57 @@
   .brand-gold-glow > * { position: relative; z-index: 1; }
 
   .brand-gold-glow--section {
-      background:
-          radial-gradient(120% 100% at 50% 0%, rgba(8,8,8,0.32) 0%, rgba(8,8,8,0.82) 46%, #070707 78%, #050505 100%),
-          #050505;
+      background-color: #050505;
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
   }
   .brand-gold-glow--section::before {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      z-index: -1;
       background:
-          radial-gradient(42% 40% at 50% 2%, rgba(255, 220, 90, 0.78) 0%, rgba(255, 214, 74, 0.35) 38%, rgba(255, 214, 74, 0.0) 64%),
-          radial-gradient(34% 32% at 50% 8%, rgba(255, 236, 160, 0.52) 0%, rgba(255, 236, 160, 0.0) 66%),
-          radial-gradient(95% 70% at 50% -2%, rgba(212, 175, 55, 0.22) 0%, rgba(212, 175, 55, 0.0) 56%);
-      filter: blur(40px);
-      opacity: 0.92;
+          radial-gradient(42% 40% at 50% 2%, rgba(255, 220, 90, 0.15) 0%, transparent 64%),
+          radial-gradient(95% 70% at 50% -2%, rgba(212, 175, 55, 0.08) 0%, transparent 56%);
+      filter: blur(60px);
       animation: liquidDrift 16s ease-in-out infinite alternate;
+      pointer-events: none;
   }
 
   .hero-gradient { background: radial-gradient(circle at top, #151515 0%, var(--bg-color) 100%); }
 
   .hide-scroll::-webkit-scrollbar { display: none; }
   .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ========================================= */
+  /* SPECTRA NOISE BACKGROUND EFFECT           */
+  /* ========================================= */
+  .spectra-bg {
+      position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+      background-color: #050505;
+  }
+  .spectra-gradient {
+      position: absolute; width: 150vw; height: 150vh; top: -25vh; left: -25vw;
+      background: radial-gradient(circle at 40% 50%, rgba(212, 175, 55, 0.15), transparent 50%),
+                  radial-gradient(circle at 70% 30%, rgba(133, 150, 20, 0.1), transparent 40%);
+      filter: blur(60px);
+      animation: warpDrift 15s infinite alternate ease-in-out;
+      will-change: transform;
+  }
+  .spectra-noise {
+      position: absolute; inset: 0; opacity: 0.12; mix-blend-mode: screen;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+  .spectra-scanlines {
+      position: absolute; inset: 0; opacity: 0.4; pointer-events: none; mix-blend-mode: overlay;
+      background: repeating-linear-gradient(to bottom, transparent, transparent 2px, rgba(0,0,0,0.8) 2px, rgba(0,0,0,0.8) 4px);
+  }
+  @keyframes warpDrift {
+      0% { transform: rotate(0deg) scale(1) translate(0, 0); }
+      50% { transform: rotate(3deg) scale(1.05) translate(3%, 4%); }
+      100% { transform: rotate(-3deg) scale(1.1) translate(-2%, -3%); }
+  }
 
   /* ========================================= */
   /* GLOBAL DRAG STATE CLASSES                 */
@@ -257,4 +295,8 @@
       transform: translateZ(0);
       transform-style: preserve-3d;
   }
+
+  /* FLANKING CARDS 3D TILT */
+  .flank-card { transform-style: preserve-3d; will-change: transform; transition: transform 0.08s linear, box-shadow 0.08s linear, border-color 0.3s ease; }
+  .flank-card.tilt-resetting { transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.3s ease; }
 }

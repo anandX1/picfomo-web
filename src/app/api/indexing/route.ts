@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const { env } = await getCloudflareContext({ async: true });
+    const env: any = (await getCloudflareContext({ async: true })).env;
 
     const secret = (env.INDEXING_CRON_SECRET as string | undefined) ?? process.env.INDEXING_CRON_SECRET;
     const headerSecret = req.headers.get("x-indexing-secret") ?? "";
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const db = env.DB as any;
 
     const res = await drainIndexingQueue(db, limit, key);
-    return NextResponse.json({ ok: true, ...res });
+    return NextResponse.json({ ...res });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message ?? "Indexing failed" }, { status: 500 });
   }

@@ -88,7 +88,7 @@ export default function StudioClient({ sparksBalance, styles }: Props) {
       {/* HEADER */}
       <div className="mb-8 border-b border-[var(--rule)] pb-6 flex justify-between items-end">
         <div>
-          <h1 className="font-[family-name:var(--display)] text-4xl text-[var(--color-ink)] flex items-center gap-3">
+          <h1 className="font-[family-name:var(--display)] text-4xl text-[var(--color-page-text)] flex items-center gap-3">
             <Wand2 className="text-[var(--color-gold)]" size={32} /> The Studio
           </h1>
           <p className="mt-2 font-[family-name:var(--mono)] text-[12px] uppercase tracking-[1px] text-[var(--color-ink2)]">
@@ -110,7 +110,7 @@ export default function StudioClient({ sparksBalance, styles }: Props) {
           
           {/* STEP 1: DRAG & DROP ZONE */}
           <div className="rounded-xl border border-[var(--rule)] bg-white p-6 shadow-sm">
-            <label className="mb-4 block font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-ink)]">
+            <label className="mb-4 block font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-page-text)]">
               1. Upload Subject
             </label>
             <div className="relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center transition-all hover:border-[var(--color-gold)] hover:bg-[var(--color-gold-pale)]">
@@ -136,7 +136,7 @@ export default function StudioClient({ sparksBalance, styles }: Props) {
                   <div className="mb-3 rounded-full bg-white p-3 shadow-sm border border-gray-100">
                     <Upload size={24} className="text-gray-400" />
                   </div>
-                  <h3 className="font-[family-name:var(--display)] text-lg text-[var(--color-ink)]">Drop selfie here</h3>
+                  <h3 className="font-[family-name:var(--display)] text-lg text-[var(--color-page-text)]">Drop selfie here</h3>
                   <p className="mt-1 font-[family-name:var(--mono)] text-[9px] text-gray-500 uppercase tracking-widest">JPEG, PNG max 5MB</p>
                 </div>
               )}
@@ -145,7 +145,7 @@ export default function StudioClient({ sparksBalance, styles }: Props) {
 
           {/* STEP 2: STYLES (Dynamic from your Database!) */}
           <div className="rounded-xl border border-[var(--rule)] bg-white p-6 shadow-sm">
-            <label className="mb-4 block font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-ink)]">
+            <label className="mb-4 block font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-page-text)]">
               2. Choose Reality
             </label>
             
@@ -181,7 +181,7 @@ export default function StudioClient({ sparksBalance, styles }: Props) {
                       </div>
 
                       {style.badge && (
-                        <div className="absolute top-1 left-1 bg-[var(--color-ink)] text-[var(--color-gold)] text-[7px] px-1.5 py-0.5 rounded-sm font-bold tracking-widest shadow-md">
+                        <div className="absolute top-1 left-1 bg-[var(--color-page-text)] text-[var(--color-gold)] text-[7px] px-1.5 py-0.5 rounded-sm font-bold tracking-widest shadow-md">
                           {style.badge}
                         </div>
                       )}
@@ -194,14 +194,14 @@ export default function StudioClient({ sparksBalance, styles }: Props) {
 
           {/* STEP 3: PROMPT & GENERATE */}
           <div className="rounded-xl border border-[var(--rule)] bg-white p-6 shadow-sm">
-            <label className="mb-3 block font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-ink)]">
+            <label className="mb-3 block font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-page-text)]">
               3. Describe details
             </label>
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Neon lights, cinematic lighting, looking at camera..."
-              className="h-24 w-full resize-none rounded-lg border border-[var(--rule)] bg-[var(--color-cream)] p-4 font-[family-name:var(--mono)] text-[13px] text-[var(--color-ink)] focus:border-[var(--color-ink)] focus:outline-none"
+              className="h-24 w-full resize-none rounded-lg border border-[var(--rule)] bg-[var(--color-cream)] p-4 font-[family-name:var(--mono)] text-[13px] text-[var(--color-page-text)] focus:border-[var(--color-page-text)] focus:outline-none"
             />
 
             {!canAfford && (
@@ -219,7 +219,7 @@ export default function StudioClient({ sparksBalance, styles }: Props) {
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
                   : isGenerating 
                     ? 'bg-[#0a0a0a] text-white cursor-wait' 
-                    : 'bg-[var(--color-ink)] text-[var(--color-gold)] hover:scale-[1.02] active:scale-95 hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]'
+                    : 'bg-[var(--color-page-text)] text-[var(--color-gold)] hover:scale-[1.02] active:scale-95 hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]'
                 }`}
             >
               {!isGenerating && imageBase64 && prompt && canAfford && (

@@ -70,9 +70,9 @@ const SCROLL_ROW_1 = [...REVIEWS_ROW_1, ...REVIEWS_ROW_1];
 const SCROLL_ROW_2 = [...REVIEWS_ROW_2, ...REVIEWS_ROW_2];
 
 export default function SocialProof() {
-  // 🌟 FIX: Removed bg-[var(--color-ink)], using bg-[var(--color-white)] so it matches the theme flow
+  // 🌟 FIX: Removed bg-[var(--color-page-text)], using bg-[var(--color-page-bg)] so it matches the theme flow
   return (
-    <section className="relative overflow-hidden bg-[var(--color-white)] py-20 md:py-32" id="testimonials">
+    <section className="relative overflow-hidden bg-[var(--color-page-bg)] py-20 md:py-32" id="testimonials">
       
       {/* 🌟 CUSTOM ANIMATIONS */}
       <style>{`
@@ -102,8 +102,8 @@ export default function SocialProof() {
           [ THE WALL OF FOMO ]
         </div>
         
-        {/* 🌟 FIX: Standardized text color to var(--color-ink) */}
-        <h2 className="mb-6 font-[family-name:var(--display)] text-[clamp(36px,5vw,64px)] leading-[0.9] tracking-[-0.5px] text-[var(--color-ink)]">
+        {/* 🌟 FIX: Standardized text color to var(--color-page-text) */}
+        <h2 className="mb-6 font-[family-name:var(--display)] text-[clamp(36px,5vw,64px)] leading-[0.9] tracking-[-0.5px] text-[var(--color-page-text)]">
           DON'T JUST TAKE<br />
           OUR WORD FOR IT.
         </h2>
@@ -131,9 +131,9 @@ export default function SocialProof() {
 
       </div>
 
-      {/* 🌟 FIX: Updated fade masks to use var(--color-white) so they blend perfectly */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-12 md:w-32 bg-gradient-to-r from-[var(--color-white)] to-transparent"></div>
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-12 md:w-32 bg-gradient-to-l from-[var(--color-white)] to-transparent"></div>
+      {/* 🌟 FIX: Updated fade masks to use var(--color-page-bg) so they blend perfectly */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-12 md:w-32 bg-gradient-to-r from-[var(--color-page-bg)] to-transparent"></div>
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-12 md:w-32 bg-gradient-to-l from-[var(--color-page-bg)] to-transparent"></div>
 
     </section>
   );
@@ -156,7 +156,7 @@ function ReviewCard({ review }: { review: any }) {
           </div>
           <div>
             {/* 🌟 FIX: Text uses standard ink colors */}
-            <div className="font-[family-name:var(--display)] text-[15px] tracking-[0.5px] text-[var(--color-ink)]">
+            <div className="font-[family-name:var(--display)] text-[15px] tracking-[0.5px] text-[var(--color-page-text)]">
               {review.name}
             </div>
             <div className="font-[family-name:var(--mono)] text-[11px] text-[var(--color-ink3)]">

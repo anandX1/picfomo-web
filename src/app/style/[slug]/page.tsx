@@ -78,7 +78,7 @@ export default async function StyleSeoPage({ params }: { params: Promise<{ slug:
   `).bind(`%${cleanName.toLowerCase()}%`, `%${cleanName.toLowerCase()}%`).all();
 
   return (
-    <main className="min-h-screen bg-[var(--color-white)] flex flex-col">
+    <main className="min-h-screen bg-[var(--color-page-bg)] flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
       
@@ -91,7 +91,7 @@ export default async function StyleSeoPage({ params }: { params: Promise<{ slug:
               <Sparkles size={12} /> #1 Trending Aesthetic
             </div>
             
-            <h1 className="mb-6 font-[family-name:var(--display)] text-[clamp(40px,6vw,72px)] leading-[0.9] tracking-[-1px] text-[var(--color-ink)]">
+            <h1 className="mb-6 font-[family-name:var(--display)] text-[clamp(40px,6vw,72px)] leading-[0.9] tracking-[-1px] text-[var(--color-page-text)]">
               Create your perfect<br/>
               <span className="text-[var(--color-gold)]">{cleanName}</span>.
             </h1>
@@ -105,7 +105,7 @@ export default async function StyleSeoPage({ params }: { params: Promise<{ slug:
               <li className="flex items-center gap-3 text-[14px] text-[var(--color-ink2)]"><CheckCircle2 size={18} className="text-green-500" /> Downloads in gorgeous 4K resolution</li>
             </ul>
 
-            <Link href="/sign-up" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-ink)] px-8 py-4 font-[family-name:var(--display)] text-[16px] tracking-[1.5px] text-[var(--color-gold-light)] shadow-xl transition-all hover:-translate-y-1 hover:bg-[var(--color-gold)] hover:text-[var(--color-ink)] w-full sm:w-auto">
+            <Link href="/sign-up" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-page-text)] px-8 py-4 font-[family-name:var(--display)] text-[16px] tracking-[1.5px] text-[var(--color-gold-light)] shadow-xl transition-all hover:-translate-y-1 hover:bg-[var(--color-gold)] hover:text-[var(--color-page-text)] w-full sm:w-auto">
               <Wand2 size={18} /> GENERATE YOURS FREE <ChevronRight size={18} />
             </Link>
           </div>
@@ -116,7 +116,7 @@ export default async function StyleSeoPage({ params }: { params: Promise<{ slug:
               // eslint-disable-next-line @next/next/no-img-element
               <img src={(recentPosts[0] as any).image_url} alt={`${cleanName} example`} className="w-full h-full object-cover" />
             ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--color-ink)] text-white p-8 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--color-page-text)] text-white p-8 text-center">
                  <Sparkles size={48} className="text-[var(--color-gold)] mb-6 opacity-50" />
                  <h3 className="font-[family-name:var(--display)] text-2xl mb-2 text-[var(--color-gold-light)]">Your Face Here</h3>
                  <p className="font-[family-name:var(--mono)] text-xs text-gray-400 uppercase tracking-widest leading-relaxed">Processing {cleanName} Synthesis...</p>
@@ -130,7 +130,7 @@ export default async function StyleSeoPage({ params }: { params: Promise<{ slug:
       {recentPosts && recentPosts.length > 0 && (
         <section className="bg-[var(--color-cream)] py-20 px-6 md:px-10 border-t border-[var(--rule)]">
           <div className="max-w-[1120px] mx-auto">
-            <h2 className="font-[family-name:var(--display)] text-3xl md:text-4xl text-[var(--color-ink)] mb-10 text-center">
+            <h2 className="font-[family-name:var(--display)] text-3xl md:text-4xl text-[var(--color-page-text)] mb-10 text-center">
               Made by the PicFOMO Community
             </h2>
             

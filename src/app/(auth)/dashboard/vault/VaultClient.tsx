@@ -39,7 +39,7 @@ export default function VaultClient({ initialPosts }: { initialPosts: VaultPost[
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center text-[var(--color-ink3)]">
         <DatabaseBackup size={64} className="mb-6 opacity-20" />
-        <h3 className="font-[family-name:var(--display)] text-3xl tracking-wide text-[var(--color-ink)] mb-2">VAULT IS EMPTY</h3>
+        <h3 className="font-[family-name:var(--display)] text-3xl tracking-wide text-[var(--color-page-text)] mb-2">VAULT IS EMPTY</h3>
         <p className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-widest">Head to the Studio to create your first aesthetic.</p>
       </div>
     );

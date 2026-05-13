@@ -234,7 +234,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto animate-in fade-in duration-500 pb-20 px-4 mt-6 text-[var(--color-ink)] min-h-[80vh]">
+    <div className="max-w-6xl mx-auto animate-in fade-in duration-500 pb-20 px-4 mt-6 text-[var(--color-page-text)] min-h-[80vh]">
       
       {/* =========================================================================
           VIEW 1: THE GRID (Selection)
@@ -251,8 +251,8 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
           </div>
 
           <div className="flex bg-[var(--color-cream)] p-1.5 rounded-xl w-full md:w-fit border border-[var(--rule)] shadow-sm mb-8">
-            <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>Premium Styles</button>
-            <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>Imagine (Fast)</button>
+            <button onClick={() => setActiveTab("styles")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "styles" ? "bg-[var(--color-page-bg)] text-[var(--color-page-text)] shadow-[var(--shadow-sm)]" : "text-[var(--color-page-text)] opacity-50 hover:opacity-100"}`}>Premium Styles</button>
+            <button onClick={() => setActiveTab("imagine")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === "imagine" ? "bg-[var(--color-page-bg)] text-[var(--color-page-text)] shadow-[var(--shadow-sm)]" : "text-[var(--color-page-text)] opacity-50 hover:opacity-100"}`}>Imagine (Fast)</button>
           </div>
 
           {activeTab === "styles" ? (
@@ -282,13 +282,13 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
               ))}
             </div>
           ) : (
-            <div className="max-w-2xl border border-[var(--rule)] bg-[var(--color-white)] p-6 rounded-3xl shadow-sm">
+            <div className="max-w-2xl border border-[var(--rule)] bg-[var(--color-page-bg)] p-6 rounded-3xl shadow-sm">
                <div className="flex justify-between items-center mb-4">
-                  <label className="text-[12px] font-[family-name:var(--mono)] font-bold text-[var(--color-ink)] uppercase tracking-wider">Describe your vision</label>
+                  <label className="text-[12px] font-[family-name:var(--mono)] font-bold text-[var(--color-page-text)] uppercase tracking-wider">Describe your vision</label>
                   <span className="bg-green-500/10 text-green-600 text-[10px] px-2 py-1 rounded-md font-bold uppercase tracking-wider flex items-center gap-1"><CheckCircle2 size={12} /> NSFW Protected</span>
                 </div>
-                <textarea placeholder="A sleek futuristic car racing through neon streets..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] rounded-xl p-4 text-[var(--color-ink)] focus:outline-none focus:border-[var(--color-gold-border)] resize-none h-32 text-[15px] leading-relaxed shadow-inner" />
-                <button onClick={handleGenerate} className="mt-4 w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] text-[16px] py-4 rounded-xl hover:bg-[var(--color-gold)] hover:text-black transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2">
+                <textarea placeholder="A sleek futuristic car racing through neon streets..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] rounded-xl p-4 text-[var(--color-page-text)] focus:outline-none focus:border-[var(--color-gold-border)] resize-none h-32 text-[15px] leading-relaxed shadow-inner" />
+                <button onClick={handleGenerate} className="mt-4 w-full bg-[var(--color-page-text)] text-[var(--color-page-bg)] font-[family-name:var(--display)] tracking-[2px] text-[16px] py-4 rounded-xl hover:bg-[var(--color-gold)] hover:text-black transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2">
                   <Sparkles size={18} /> GENERATE (2 SPARKS)
                 </button>
             </div>
@@ -301,7 +301,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
           ========================================================================= */}
       {view === "upload" && selectedStyle && (
         <div className="animate-in slide-in-from-right-8 duration-500 max-w-5xl mx-auto">
-          <button onClick={() => setView("grid")} className="mb-6 flex items-center gap-2 text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-ink)] transition-colors w-fit">
+          <button onClick={() => setView("grid")} className="mb-6 flex items-center gap-2 text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-page-text)] transition-colors w-fit">
             <ChevronLeft size={16} /> Back to Styles
           </button>
 
@@ -321,7 +321,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
               </div>
               <div className="bg-[var(--color-cream)] border border-[var(--rule)] p-5 rounded-2xl flex items-center justify-between">
                 <span className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-widest text-[var(--color-ink2)]">Generation Cost</span>
-                <span className="font-[family-name:var(--display)] text-2xl flex items-center gap-1.5 text-[var(--color-ink)]"><Zap size={20} className="text-[var(--color-gold)] fill-[var(--color-gold)]" /> {selectedStyle.spark_cost}</span>
+                <span className="font-[family-name:var(--display)] text-2xl flex items-center gap-1.5 text-[var(--color-page-text)]"><Zap size={20} className="text-[var(--color-gold)] fill-[var(--color-gold)]" /> {selectedStyle.spark_cost}</span>
               </div>
             </div>
 
@@ -330,13 +330,13 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
               
               {/* MOBILE ONLY: Quick Style Info Header */}
               <div className="lg:hidden flex items-center justify-between bg-[var(--color-cream)] border border-[var(--rule)] p-4 rounded-xl shadow-sm">
-                <div className="font-[family-name:var(--display)] text-[18px] text-[var(--color-ink)]">{selectedStyle.name}</div>
+                <div className="font-[family-name:var(--display)] text-[18px] text-[var(--color-page-text)]">{selectedStyle.name}</div>
                 <div className="flex items-center gap-1 text-[var(--color-gold)] font-bold text-[12px]"><Zap size={14} className="fill-current" /> {selectedStyle.spark_cost} ⚡</div>
               </div>
 
               {/* FACE UPLOAD ONLY */}
-              <div className="bg-[var(--color-white)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm">
-                <h3 className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-4 flex items-center gap-2">
+              <div className="bg-[var(--color-page-bg)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm">
+                <h3 className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-page-text)] mb-4 flex items-center gap-2">
                   <ScanFace className="text-[var(--color-gold)]" size={18} /> Upload Your Face
                 </h3>
                 <div className={`relative border-2 border-dashed rounded-[20px] p-8 md:p-10 text-center transition-all cursor-pointer overflow-hidden ${file ? 'border-[var(--color-gold)] bg-[var(--color-gold-pale)]' : 'border-[var(--rule)] bg-[var(--color-cream)] hover:bg-[var(--color-cream2)]'}`}>
@@ -345,13 +345,13 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                     {file ? (
                        <>
                          <CheckCircle2 size={48} className="text-[var(--color-gold)] mb-4" />
-                         <h4 className="font-[family-name:var(--display)] text-xl md:text-2xl text-[var(--color-ink)] px-4 truncate w-full">{file.name}</h4>
+                         <h4 className="font-[family-name:var(--display)] text-xl md:text-2xl text-[var(--color-page-text)] px-4 truncate w-full">{file.name}</h4>
                          <p className="text-[var(--color-ink3)] font-bold text-[11px] mt-2 uppercase tracking-widest">Tap to replace</p>
                        </>
                     ) : (
                        <>
-                         <div className="bg-[var(--color-white)] p-4 rounded-full shadow-sm mb-4 border border-[var(--rule)]"><ImageIcon size={32} className="text-[var(--color-ink3)]" /></div>
-                         <h4 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)]">Select clear selfie</h4>
+                         <div className="bg-[var(--color-page-bg)] p-4 rounded-full shadow-sm mb-4 border border-[var(--rule)]"><ImageIcon size={32} className="text-[var(--color-ink3)]" /></div>
+                         <h4 className="font-[family-name:var(--display)] text-2xl text-[var(--color-page-text)]">Select clear selfie</h4>
                          <p className="text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[10px] mt-2 uppercase tracking-[2px] font-bold">Good lighting • No sunglasses</p>
                        </>
                     )}
@@ -360,11 +360,11 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
               </div>
 
               {/* PROMPT OVERRIDE */}
-              <div className="bg-[var(--color-white)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm">
-                <label className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-3 flex items-center justify-between">
+              <div className="bg-[var(--color-page-bg)] border border-[var(--rule)] p-6 md:p-8 rounded-[24px] shadow-sm">
+                <label className="font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[2px] text-[var(--color-page-text)] mb-3 flex items-center justify-between">
                   Additional Details <span className="text-[9px] text-[var(--color-ink3)] tracking-widest">(Optional)</span>
                 </label>
-                <input type="text" placeholder="e.g., make it dark and cinematic..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] rounded-xl p-4 text-[14px] focus:outline-none focus:border-[var(--color-gold-border)] transition-colors shadow-inner" />
+                <input type="text" placeholder="e.g., make it dark and cinematic..." value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-page-text)] rounded-xl p-4 text-[14px] focus:outline-none focus:border-[var(--color-gold-border)] transition-colors shadow-inner" />
               </div>
 
               {error && <div className="text-red-500 font-[family-name:var(--mono)] text-[11px] uppercase tracking-widest font-bold text-center bg-red-500/10 p-4 rounded-xl border border-red-500/20">{error}</div>}
@@ -372,7 +372,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
               <button 
                 onClick={handleGenerate} 
                 disabled={!file} 
-                className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] text-[18px] py-5 rounded-2xl hover:bg-[var(--color-gold)] hover:text-black transition-all disabled:opacity-50 disabled:hover:bg-[var(--color-ink)] disabled:hover:text-[var(--color-white)] shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 mt-4"
+                className="w-full bg-[var(--color-page-text)] text-[var(--color-page-bg)] font-[family-name:var(--display)] tracking-[2px] text-[18px] py-5 rounded-2xl hover:bg-[var(--color-gold)] hover:text-black transition-all disabled:opacity-50 disabled:hover:bg-[var(--color-page-text)] disabled:hover:text-[var(--color-page-bg)] shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 mt-4"
               >
                 <Sparkles size={20} /> INITIALIZE SYNTHESIS
               </button>
@@ -401,7 +401,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                   <Zap size={32} className="text-[var(--color-gold)] fill-[var(--color-gold)]" />
                 </div>
               </div>
-              <h2 className="font-[family-name:var(--display)] text-3xl md:text-4xl tracking-tight text-[var(--color-ink)] mb-6 text-center">Synthesizing...</h2>
+              <h2 className="font-[family-name:var(--display)] text-3xl md:text-4xl tracking-tight text-[var(--color-page-text)] mb-6 text-center">Synthesizing...</h2>
               <div className="w-full max-w-md bg-[var(--color-cream2)] rounded-full h-3 overflow-hidden relative shadow-inner z-10">
                 <div className="bg-[var(--color-gold)] h-full transition-all duration-700 ease-out relative" style={{ width: `${progress}%` }}>
                   <div className="absolute top-0 right-0 bottom-0 w-10 bg-gradient-to-r from-transparent to-white/50"></div>
@@ -417,7 +417,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
                    Ads help us keep PicFOMO free for everyone. Thanks for your patience! 💛
                  </p>
               </div>
-              <div className="w-full min-h-[120px] bg-[var(--color-white)] rounded-xl border border-[var(--rule)] flex items-center justify-center overflow-hidden shadow-sm">
+              <div className="w-full min-h-[120px] bg-[var(--color-page-bg)] rounded-xl border border-[var(--rule)] flex items-center justify-center overflow-hidden shadow-sm">
                  {/* Native Ad injects safely here! */}
                  <NativeAd />
               </div>
@@ -434,7 +434,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto flex flex-col items-center">
           
           <div className="w-full flex justify-between items-center mb-6 px-2">
-            <button onClick={() => setView("grid")} className="flex items-center gap-2 text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-ink)] transition-colors">
+            <button onClick={() => setView("grid")} className="flex items-center gap-2 text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-page-text)] transition-colors">
               <ChevronLeft size={16} /> Studio Home
             </button>
             <div className="flex items-center gap-2 bg-green-500/10 text-green-600 px-3 py-1.5 rounded-full border border-green-500/20 font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-widest">
@@ -442,34 +442,34 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
             </div>
           </div>
 
-          <div className="w-full bg-[var(--color-white)] rounded-[32px] md:rounded-[40px] p-4 md:p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)] flex flex-col md:flex-row gap-8 items-center relative">
+          <div className="w-full bg-[var(--color-page-bg)] rounded-[32px] md:rounded-[40px] p-4 md:p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)] flex flex-col md:flex-row gap-8 items-center relative">
             
             {/* 🌟 AGGRESSIVE PUBLISH UPSELL MODAL (DELAYED 5.5 SECONDS) */}
             {showPublishModal && (
               <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-md rounded-[32px] md:rounded-[40px] flex items-center justify-center p-6 animate-in zoom-in-95 duration-300">
-                <div className="bg-[var(--color-white)] p-8 rounded-3xl shadow-2xl max-w-md w-full border border-[var(--rule)] text-center relative overflow-hidden">
+                <div className="bg-[var(--color-page-bg)] p-8 rounded-3xl shadow-2xl max-w-md w-full border border-[var(--rule)] text-center relative overflow-hidden">
                   <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-[var(--color-gold)] opacity-20 blur-2xl animate-pulse"></div>
                   
-                  <button onClick={() => setShowPublishModal(false)} className="absolute right-4 top-4 text-[var(--color-ink3)] hover:text-[var(--color-ink)] bg-[var(--color-cream)] rounded-full p-2 border border-[var(--rule)]">
+                  <button onClick={() => setShowPublishModal(false)} className="absolute right-4 top-4 text-[var(--color-ink3)] hover:text-[var(--color-page-text)] bg-[var(--color-cream)] rounded-full p-2 border border-[var(--rule)]">
                     <X size={16} />
                   </button>
 
                   <div className="mx-auto w-16 h-16 bg-[var(--color-gold-pale)] border border-[var(--color-gold-border)] text-[var(--color-gold)] flex items-center justify-center rounded-full mb-6">
                     <Globe size={32} />
                   </div>
-                  <h3 className="font-[family-name:var(--display)] text-3xl mb-2 text-[var(--color-ink)]">Publish to Explore</h3>
+                  <h3 className="font-[family-name:var(--display)] text-3xl mb-2 text-[var(--color-page-text)]">Publish to Explore</h3>
                   <p className="text-[var(--color-ink2)] text-[13px] mb-6 leading-relaxed">
-                    Your masterpiece is ready. Publish it to the public feed to earn <strong className="text-[var(--color-ink)] font-bold">+5 ⚡ instantly</strong>, plus <strong className="text-[var(--color-ink)] font-bold">+1 ⚡</strong> every time someone likes it!
+                    Your masterpiece is ready. Publish it to the public feed to earn <strong className="text-[var(--color-page-text)] font-bold">+5 ⚡ instantly</strong>, plus <strong className="text-[var(--color-page-text)] font-bold">+1 ⚡</strong> every time someone likes it!
                   </p>
                   
                   <button 
                     onClick={handlePublish}
                     disabled={isPublishing}
-                    className="w-full bg-[var(--color-ink)] text-[var(--color-white)] hover:bg-[var(--color-gold)] hover:text-black transition-colors font-bold uppercase tracking-[2px] text-[12px] py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 mb-3 disabled:opacity-50"
+                    className="w-full bg-[var(--color-page-text)] text-[var(--color-page-bg)] hover:bg-[var(--color-gold)] hover:text-black transition-colors font-bold uppercase tracking-[2px] text-[12px] py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 mb-3 disabled:opacity-50"
                   >
                     {isPublishing ? <Loader2 size={18} className="animate-spin" /> : <><Zap size={16} className="fill-current" /> PUBLISH & EARN SPARKS</>}
                   </button>
-                  <button onClick={() => setShowPublishModal(false)} className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-ink)] hover:underline">
+                  <button onClick={() => setShowPublishModal(false)} className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-page-text)] hover:underline">
                     Keep it Private
                   </button>
                 </div>
@@ -507,7 +507,7 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
             {/* Right: Actions */}
             <div className="w-full md:w-1/2 flex flex-col gap-6 px-2 md:px-6">
               <div>
-                <h2 className="font-[family-name:var(--display)] text-4xl md:text-5xl text-[var(--color-ink)] mb-3 tracking-tight">Masterpiece.</h2>
+                <h2 className="font-[family-name:var(--display)] text-4xl md:text-5xl text-[var(--color-page-text)] mb-3 tracking-tight">Masterpiece.</h2>
                 <p className="text-[var(--color-ink2)] text-[15px] leading-relaxed">
                   {sourcePreviewUrl ? `Your identity has been successfully locked into the ${selectedStyle?.name} universe.` : "Your prompt has been fully realized into an aesthetic creation."}
                 </p>
@@ -515,12 +515,12 @@ export default function StudioUI({ dynamicStyles }: { dynamicStyles: any[] }) {
 
               <div className="flex flex-col gap-4 mt-4">
                 {/* Download works for both Tabs now! */}
-                <button onClick={handleDownload} className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] text-[18px] py-5 rounded-2xl hover:bg-[var(--color-gold)] hover:text-black transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2">
+                <button onClick={handleDownload} className="w-full bg-[var(--color-page-text)] text-[var(--color-page-bg)] font-[family-name:var(--display)] tracking-[2px] text-[18px] py-5 rounded-2xl hover:bg-[var(--color-gold)] hover:text-black transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2">
                   <Download size={20} /> DOWNLOAD 4K
                 </button>
                 
                 <div className="grid grid-cols-2 gap-4">
-                  <button onClick={handleShare} className="bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-ink)] font-[family-name:var(--mono)] uppercase tracking-[1.5px] font-bold text-[12px] py-4 rounded-2xl hover:bg-[var(--color-cream2)] transition-colors flex items-center justify-center gap-2 shadow-sm">
+                  <button onClick={handleShare} className="bg-[var(--color-cream)] border border-[var(--rule)] text-[var(--color-page-text)] font-[family-name:var(--mono)] uppercase tracking-[1.5px] font-bold text-[12px] py-4 rounded-2xl hover:bg-[var(--color-cream2)] transition-colors flex items-center justify-center gap-2 shadow-sm">
                     <Share size={16} /> Share
                   </button>
                   

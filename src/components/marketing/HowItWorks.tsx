@@ -7,7 +7,7 @@ export default function HowItWorks() {
         See it in action
       </div>
       
-      <h2 className="mb-4 font-[family-name:var(--display)] text-[clamp(36px,4vw,60px)] leading-[0.88] tracking-[-0.5px] text-[var(--color-ink)]">
+      <h2 className="mb-4 font-[family-name:var(--display)] text-[clamp(36px,4vw,60px)] leading-[0.88] tracking-[-0.5px] text-[var(--color-page-text)]">
         THREE STEPS.<br />
         TWENTY SECONDS.
       </h2>
@@ -21,7 +21,7 @@ export default function HowItWorks() {
         md:aspect-[16/9] makes it widescreen on desktop.
         (This strict aspect ratio prevents CLS!)
       */}
-      <div className="relative mx-auto w-full max-w-[1040px] aspect-[4/5] overflow-hidden border border-[var(--rule)] bg-[var(--color-ink)] shadow-[var(--shadow-2xl)] md:aspect-video rounded-xl">
+      <div className="relative mx-auto w-full max-w-[1040px] aspect-[4/5] overflow-hidden border border-[var(--rule)] bg-[var(--color-page-text)] shadow-[var(--shadow-2xl)] md:aspect-video rounded-xl">
         
         {/* 🌟 OPTIMIZED VIDEO TAG: Added 'poster' and changed preload to 'metadata' */}
         <video 

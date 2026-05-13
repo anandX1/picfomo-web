@@ -28,11 +28,11 @@ export default function TrustBar() {
 
   return (
     // 🌟 Blends into the page background with a subtle border
-    <div className="relative w-full border-b border-[var(--rule)] bg-[var(--color-white)] overflow-hidden py-3.5">
+    <div className="relative w-full border-b border-[var(--rule)] bg-[var(--color-page-bg)] overflow-hidden py-3.5">
       
       {/* 🌟 Fade Masks: Makes the text smoothly disappear at the edges of the screen */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 md:w-24 bg-gradient-to-r from-[var(--color-white)] to-transparent"></div>
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 md:w-24 bg-gradient-to-l from-[var(--color-white)] to-transparent"></div>
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 md:w-24 bg-gradient-to-r from-[var(--color-page-bg)] to-transparent"></div>
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 md:w-24 bg-gradient-to-l from-[var(--color-page-bg)] to-transparent"></div>
 
       {/* Infinite Scroll Track */}
       <div className="flex w-max animate-scroll-left items-center gap-4 px-4 hover:[animation-play-state:paused]">

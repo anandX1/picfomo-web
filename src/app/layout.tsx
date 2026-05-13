@@ -68,9 +68,9 @@ export const metadata: Metadata = {
     siteName: "PicFOMO",
     images: [
       {
-        url: "/logo2.png", // Next.js will auto-prefix this with metadataBase!
-        width: 1600, 
-        height: 1600,
+        url: "/logo2.png", 
+        width: 1200, 
+        height: 630,
         alt: "PicFOMO Logo",
       },
     ],
@@ -99,7 +99,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className="antialiased bg-[var(--color-white)] text-[var(--color-ink)] selection:bg-[var(--color-gold)] selection:text-black">
+        <body className="antialiased bg-[var(--color-page-bg)] text-[var(--color-page-text)] selection:bg-[var(--color-gold)] selection:text-black">
           
           <ClientLayout>
             {children}

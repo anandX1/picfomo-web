@@ -113,7 +113,7 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const isGuest = !userId;
 
     const body = (await req.json()) as any;
     // We drop customBgImage and targetImage entirely for Plan A
@@ -155,21 +155,23 @@ export async function POST(req: Request) {
     }
 
     // --- B. SECURE BILLING ---
-    const userWallet = await db.prepare("SELECT sparks_balance FROM users WHERE id = ?").bind(userId).first();
-    const currentBalance = (userWallet?.sparks_balance as number) || 0;
+    if (!isGuest) {
+      const userWallet = await db.prepare("SELECT sparks_balance FROM users WHERE id = ?").bind(userId).first();
+      const currentBalance = (userWallet?.sparks_balance as number) || 0;
 
-    if (currentBalance < sparkCost) {
-      return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
+      if (currentBalance < sparkCost) {
+        return NextResponse.json({ error: "Insufficient Sparks." }, { status: 402 });
+      }
+
+      const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
+      const txReason = styleId === 'custom' ? 'Custom Style Generation' : 'Generated Portrait';
+      
+      // Deduct Sparks & Record Transaction
+      await db.batch([
+        db.prepare("UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ?").bind(sparkCost, userId),
+        db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(txId, userId, -sparkCost, txReason)
+      ]);
     }
-
-    const txId = `tx_${Date.now()}_gen_${Math.random().toString(36).substring(7)}`;
-    const txReason = styleId === 'custom' ? 'Custom Style Generation' : 'Generated Portrait';
-    
-    // Deduct Sparks & Record Transaction
-    await db.batch([
-      db.prepare("UPDATE users SET sparks_balance = sparks_balance - ? WHERE id = ?").bind(sparkCost, userId),
-      db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(txId, userId, -sparkCost, txReason)
-    ]);
 
     try {
       // --- C. AI GENERATION & SEO ---
@@ -222,18 +224,22 @@ export async function POST(req: Request) {
         INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, title, description, tags, is_public)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0) 
       `).bind(
-        postId, userId, outputImageUrl, finalPrompt, styleId || "schnell", seoData.title, seoData.description, seoData.tags
+        postId, isGuest ? 'guest_user' : userId, outputImageUrl, finalPrompt, styleId || "schnell", seoData.title, seoData.description, seoData.tags
       ).run();
 
-      return NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
+      const response = NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
+      if (isGuest) response.cookies.set('picfomo_guest_pass', 'used', { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 60 * 60 * 24 * 30 });
+      return response;
 
     } catch (aiError: any) {
-      // Refund Sparks
-      const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
-      await db.batch([
-        db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId),
-        db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(refundTxId, userId, sparkCost, 'Refund: Generation Failed')
-      ]);
+      if (!isGuest) {
+        // Refund Sparks
+        const refundTxId = `tx_${Date.now()}_refund_${Math.random().toString(36).substring(7)}`;
+        await db.batch([
+          db.prepare("UPDATE users SET sparks_balance = sparks_balance + ? WHERE id = ?").bind(sparkCost, userId),
+          db.prepare("INSERT INTO spark_transactions (id, user_id, amount, reason) VALUES (?, ?, ?, ?)").bind(refundTxId, userId, sparkCost, 'Refund: Generation Failed')
+        ]);
+      }
       
       console.error("AI Pipeline Error:", aiError);
       if (aiError.message === "NSFW_VIOLATION") return NextResponse.json({ error: "Upload rejected: Violates safety guidelines." }, { status: 400 });

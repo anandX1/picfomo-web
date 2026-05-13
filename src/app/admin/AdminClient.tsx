@@ -87,24 +87,24 @@ export default function AdminClient({ initialStyles }: { initialStyles: any[] })
   };
 
   return (
-    <div className="w-full text-[var(--color-ink)] animate-in fade-in duration-500">
+    <div className="w-full text-[var(--color-page-text)] animate-in fade-in duration-500">
       
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-2 flex items-center gap-2">
+          <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-page-text)] mb-2 flex items-center gap-2">
             <Settings size={16} /> Style Catalog ({styles.length})
           </h2>
         </div>
         <button 
           onClick={() => openModal()}
-          className="bg-[var(--color-ink)] text-[var(--color-white)] hover:bg-[var(--color-gold)] hover:text-black transition-all flex items-center gap-2 px-5 py-2.5 rounded-xl font-[family-name:var(--mono)] font-bold text-[11px] uppercase tracking-widest shadow-md active:scale-95"
+          className="bg-[var(--color-page-text)] text-[var(--color-page-bg)] hover:bg-[var(--color-gold)] hover:text-black transition-all flex items-center gap-2 px-5 py-2.5 rounded-xl font-[family-name:var(--mono)] font-bold text-[11px] uppercase tracking-widest shadow-md active:scale-95"
         >
           <Plus size={16} /> New Style
         </button>
       </div>
 
       {/* 🌟 THE STYLES LIST */}
-      <div className="bg-[var(--color-white)] rounded-xl border border-[var(--rule)] shadow-sm overflow-hidden mb-12">
+      <div className="bg-[var(--color-page-bg)] rounded-xl border border-[var(--rule)] shadow-sm overflow-hidden mb-12">
         {styles.length === 0 ? (
           <div className="p-16 text-center text-[var(--color-ink3)] font-[family-name:var(--mono)] text-[12px]">No styles found. Add one above!</div>
         ) : (
@@ -120,10 +120,10 @@ export default function AdminClient({ initialStyles }: { initialStyles: any[] })
                   
                   {/* Reorder Arrows */}
                   <div className="flex flex-col gap-1 pr-3 border-r border-[var(--rule)]">
-                    <button onClick={() => moveStyle(index, -1)} disabled={index === 0 || isPending} className="p-1 text-[var(--color-ink3)] hover:text-[var(--color-ink)] hover:bg-[var(--color-cream2)] rounded disabled:opacity-30 transition-colors">
+                    <button onClick={() => moveStyle(index, -1)} disabled={index === 0 || isPending} className="p-1 text-[var(--color-ink3)] hover:text-[var(--color-page-text)] hover:bg-[var(--color-cream2)] rounded disabled:opacity-30 transition-colors">
                       <ArrowUp size={16} />
                     </button>
-                    <button onClick={() => moveStyle(index, 1)} disabled={index === styles.length - 1 || isPending} className="p-1 text-[var(--color-ink3)] hover:text-[var(--color-ink)] hover:bg-[var(--color-cream2)] rounded disabled:opacity-30 transition-colors">
+                    <button onClick={() => moveStyle(index, 1)} disabled={index === styles.length - 1 || isPending} className="p-1 text-[var(--color-ink3)] hover:text-[var(--color-page-text)] hover:bg-[var(--color-cream2)] rounded disabled:opacity-30 transition-colors">
                       <ArrowDown size={16} />
                     </button>
                   </div>
@@ -140,20 +140,20 @@ export default function AdminClient({ initialStyles }: { initialStyles: any[] })
                   <div className="flex-1 flex flex-col min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-[family-name:var(--display)] text-[16px] truncate">{style.name}</h3>
-                      {style.badge && <span className="bg-[var(--color-ink)] text-[var(--color-gold)] text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm">{style.badge}</span>}
+                      {style.badge && <span className="bg-[var(--color-page-text)] text-[var(--color-gold)] text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm">{style.badge}</span>}
                       {style.is_active === 0 && <span className="bg-red-50 text-red-600 border border-red-200 text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm flex items-center gap-1"><EyeOff size={10}/> Hidden</span>}
                       {style.expires_at && <span className="bg-orange-50 border border-orange-200 text-orange-600 text-[8px] px-2 py-0.5 rounded-sm font-bold tracking-widest">TIMER SET</span>}
                     </div>
                     <p className="font-[family-name:var(--mono)] text-[11px] text-[var(--color-ink3)] truncate w-full mt-1.5">
-                      <span className="font-bold text-[var(--color-ink)]">Cost:</span> {style.spark_cost}⚡ &nbsp;|&nbsp; 
-                      <span className="font-bold text-[var(--color-ink)]">Images:</span> {images.length > 0 ? images.length : 1} &nbsp;|&nbsp; 
+                      <span className="font-bold text-[var(--color-page-text)]">Cost:</span> {style.spark_cost}⚡ &nbsp;|&nbsp; 
+                      <span className="font-bold text-[var(--color-page-text)]">Images:</span> {images.length > 0 ? images.length : 1} &nbsp;|&nbsp; 
                       {style.description}
                     </p>
                   </div>
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 pl-4">
-                    <button onClick={() => openModal(style)} className="p-2.5 bg-[var(--color-white)] border border-[var(--rule)] rounded-xl text-[var(--color-ink)] hover:bg-[var(--color-cream2)] shadow-sm transition-colors">
+                    <button onClick={() => openModal(style)} className="p-2.5 bg-[var(--color-page-bg)] border border-[var(--rule)] rounded-xl text-[var(--color-page-text)] hover:bg-[var(--color-cream2)] shadow-sm transition-colors">
                       <Edit3 size={16} />
                     </button>
                     <button onClick={() => handleToggleActive(style.id, style.is_active)} className={`p-2.5 rounded-xl border transition-colors shadow-sm ${style.is_active ? 'border-green-200 bg-green-50 text-green-700 hover:bg-red-50 hover:text-red-700 hover:border-red-200' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-green-50 hover:text-green-700 hover:border-green-200'}`}>
@@ -174,13 +174,13 @@ export default function AdminClient({ initialStyles }: { initialStyles: any[] })
       {/* 🌟 ADD / EDIT MODAL (Preserves your exact URL input architecture!) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-[var(--color-white)] w-full max-w-2xl rounded-2xl border border-[var(--rule)] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-[var(--color-page-bg)] w-full max-w-2xl rounded-2xl border border-[var(--rule)] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
             
             <div className="flex items-center justify-between p-5 border-b border-[var(--rule)] bg-[var(--color-cream)]">
               <h2 className="font-[family-name:var(--display)] text-2xl tracking-tight">
                 {editingStyle ? "Edit Style" : "Create New Style"}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 rounded-full bg-[var(--color-white)] border border-[var(--rule)] text-[var(--color-ink3)] hover:text-[var(--color-ink)] hover:bg-[var(--color-cream2)] transition-colors">
+              <button onClick={() => setIsModalOpen(false)} className="p-2 rounded-full bg-[var(--color-page-bg)] border border-[var(--rule)] text-[var(--color-ink3)] hover:text-[var(--color-page-text)] hover:bg-[var(--color-cream2)] transition-colors">
                 <X size={16} />
               </button>
             </div>
@@ -211,7 +211,7 @@ export default function AdminClient({ initialStyles }: { initialStyles: any[] })
 
                 {/* Legacy 5 Image URLs (Preview Gallery) */}
                 <div className="rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-5">
-                  <label className="text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-[1.5px] text-[var(--color-ink)] flex items-center gap-2 mb-4">
+                  <label className="text-[11px] font-[family-name:var(--mono)] font-bold uppercase tracking-[1.5px] text-[var(--color-page-text)] flex items-center gap-2 mb-4">
                     <Images size={16} /> Preview Gallery (URLs)
                   </label>
                   <div className="space-y-3">
@@ -263,14 +263,14 @@ export default function AdminClient({ initialStyles }: { initialStyles: any[] })
 
             {/* Footer */}
             <div className="p-5 border-t border-[var(--rule)] bg-[var(--color-cream)] flex justify-end gap-3">
-              <button onClick={() => setIsModalOpen(false)} className="px-6 py-3 font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-ink)] transition-colors hover:bg-[var(--color-cream2)] rounded-xl">
+              <button onClick={() => setIsModalOpen(false)} className="px-6 py-3 font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-widest text-[var(--color-ink3)] hover:text-[var(--color-page-text)] transition-colors hover:bg-[var(--color-cream2)] rounded-xl">
                 Cancel
               </button>
               <button 
                 type="submit" 
                 form="styleForm"
                 disabled={isPending}
-                className="bg-[var(--color-ink)] text-[var(--color-white)] hover:bg-[var(--color-gold)] hover:text-black transition-all flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-[family-name:var(--mono)] font-bold text-[11px] uppercase tracking-widest shadow-md disabled:opacity-50 active:scale-95"
+                className="bg-[var(--color-page-text)] text-[var(--color-page-bg)] hover:bg-[var(--color-gold)] hover:text-black transition-all flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-[family-name:var(--mono)] font-bold text-[11px] uppercase tracking-widest shadow-md disabled:opacity-50 active:scale-95"
               >
                 {isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} 
                 {isPending ? "Processing..." : (editingStyle ? "Update Style" : "Deploy Style")}

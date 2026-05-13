@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 const DOCK_ITEMS = [
   { id: "home", label: "Home", icon: "P", type: "brand" },
@@ -49,71 +48,107 @@ const DOCK_ITEMS = [
   },
 ];
 
-function DockItem({ item, mouseX, activeId, onClick }: { 
-  item: any; 
-  mouseX: any; 
-  activeId: string;
-  onClick: (id: string) => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const distance = useTransform(mouseX, (val: number) => {
-    const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
-    return val - bounds.x - bounds.width / 2;
-  });
-
-  const widthSync = useTransform(distance, [-150, 0, 150], [62, 100, 62]);
-  const width = useSpring(widthSync, { mass: 0.1, stiffness: 150, damping: 12 });
-
-  return (
-    <motion.div
-      ref={ref}
-      style={{ width }}
-      onClick={() => onClick(item.id)}
-      className="dock-item group relative flex flex-col items-center justify-end cursor-pointer h-[62px] shrink-0"
-    >
-      <div className="dock-tooltip absolute top-[-45px] bg-black/90 border border-white/15 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-2 group-hover:translate-y-0 pointer-events-none whitespace-nowrap backdrop-blur-md shadow-xl z-[210]">
-        {item.label}
-      </div>
-      
-      <motion.div 
-        className={`dock-icon w-full aspect-square rounded-2xl flex items-center justify-center transition-colors duration-200 border border-white/10 shadow-lg 
-          ${item.id === activeId ? 'bg-white text-black' : 'bg-white/5 text-gray-400'} 
-          group-hover:bg-[var(--color-gold)] group-hover:text-black group-hover:border-white/20 group-hover:shadow-[0_14px_28px_rgba(0,0,0,0.65),0_0_32px_rgba(212,175,55,0.35)]
-          ${item.isGold ? 'text-[var(--color-gold)]' : ''}`}
-      >
-        {typeof item.icon === 'string' ? (
-          <span className="text-xl font-extrabold font-plus">{item.icon}</span>
-        ) : (
-          <div className="w-[52%] h-[52%]">{item.icon}</div>
-        )}
-      </motion.div>
-      
-      <div className={`dock-dot w-1 h-1 rounded-full mt-1.5 transition-all duration-300 ${item.id === activeId ? 'bg-[var(--color-gold)] shadow-[0_0_8px_var(--color-gold)]' : 'bg-transparent'}`} />
-    </motion.div>
-  );
-}
-
 export default function MacDock({ activePage, setActivePage }: { activePage: string; setActivePage: (p: string) => void }) {
-  const mouseX = useMotionValue(Infinity);
+  const dockRef = useRef<HTMLDivElement>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (window.matchMedia('(hover: none)').matches) return;
+    const dock = dockRef.current;
+    if (!dock) return;
+
+    const items = Array.from(dock.querySelectorAll<HTMLElement>('.dock-item'));
+    const maxScale = 1.55;
+    const influence = 160;
+
+    const onMouseMove = (e: MouseEvent) => {
+        let closest: HTMLElement | null = null;
+        let closestDist = Infinity;
+
+        items.forEach(item => {
+            const rect = item.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const distance = Math.abs(e.clientX - centerX);
+            if (distance < closestDist) {
+                closestDist = distance;
+                closest = item;
+            }
+        });
+
+        items.forEach(item => {
+            const icon = item.querySelector<HTMLElement>('.dock-icon');
+            if (!icon) return;
+            
+            if (item !== closest || closestDist >= influence) {
+                icon.style.transform = '';
+                icon.style.boxShadow = '';
+                return;
+            }
+
+            const normalized = 1 - (closestDist / influence);
+            const scale = 1 + (Math.min(maxScale, 1.32) - 1) * Math.sin(normalized * Math.PI / 2);
+            const lift = (scale - 1) * -10;
+            
+            icon.style.transform = `translate3d(0, ${lift}px, 0) scale(${scale})`;
+            icon.style.boxShadow = `0 14px 28px rgba(0,0,0,0.65), 0 0 ${18 + (scale-1)*30}px rgba(212,175,55,0.18)`;
+        });
+    };
+
+    const onMouseLeave = () => {
+        items.forEach(item => {
+            const icon = item.querySelector<HTMLElement>('.dock-icon');
+            if (icon) {
+                icon.style.transform = '';
+                icon.style.boxShadow = '';
+            }
+        });
+    };
+
+    dock.addEventListener('mousemove', onMouseMove);
+    dock.addEventListener('mouseleave', onMouseLeave);
+    return () => {
+        dock.removeEventListener('mousemove', onMouseMove);
+        dock.removeEventListener('mouseleave', onMouseLeave);
+    };
+  }, []);
 
   return (
-    <div className="mac-dock-wrapper fixed bottom-8 left-1/2 -translate-x-1/2 z-[200]">
-      <motion.div
-        onMouseMove={(e) => mouseX.set(e.pageX)}
-        onMouseLeave={() => mouseX.set(Infinity)}
-        className="mac-dock flex items-end gap-4 p-2.5 px-3 bg-black/55 backdrop-blur-[22px] rounded-[24px] border border-white/12 shadow-[0_18px_50px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)]"
+    <div className="mac-dock-wrapper fixed top-6 left-1/2 -translate-x-1/2 z-[200]">
+      <div
+        ref={dockRef}
+        className="mac-dock flex items-start gap-4 p-2.5 px-3 bg-black/55 backdrop-blur-[22px] rounded-[24px] border border-white/12 shadow-[0_18px_50px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)]"
       >
         {DOCK_ITEMS.map((item) => (
-          <DockItem 
-            key={item.id} 
-            item={item} 
-            mouseX={mouseX} 
-            activeId={activePage}
-            onClick={setActivePage}
-          />
+          <div
+            key={item.id}
+            onClick={() => setActivePage(item.id)}
+            onMouseEnter={() => setHoveredId(item.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            className={`dock-item group relative flex flex-col items-center justify-start cursor-pointer w-[62px] h-[62px] shrink-0 ${item.type === 'brand' ? 'brand' : ''} ${item.id === activePage ? 'active' : ''}`}
+          >
+            <div className={`dock-tooltip absolute bottom-[-45px] bg-black/90 border border-white/15 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white transition-all duration-200 pointer-events-none whitespace-nowrap backdrop-blur-md shadow-xl z-[210] 
+                ${hoveredId === item.id ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-2 scale-95'}`}
+            >
+              {item.label}
+            </div>
+            
+            <div 
+              className={`dock-icon w-full aspect-square rounded-2xl flex items-center justify-center transition-all duration-200 border border-white/10 shadow-lg 
+                ${item.id === activePage ? 'bg-white text-black' : 'bg-white/5 text-gray-400'} 
+                group-hover:bg-[var(--gold)] group-hover:text-black group-hover:border-white/20 
+                ${item.isGold && item.id !== activePage ? 'text-[var(--gold)]' : ''}`}
+            >
+              {typeof item.icon === 'string' ? (
+                <span className="text-xl font-extrabold font-plus">{item.icon}</span>
+              ) : (
+                <div className="w-[52%] h-[52%]">{item.icon}</div>
+              )}
+            </div>
+            
+            <div className={`dock-dot w-1 h-1 rounded-full mt-1.5 transition-all duration-300 ${item.id === activePage ? 'bg-[var(--gold)] shadow-[0_0_8px_var(--gold)]' : 'bg-transparent'}`} />
+          </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

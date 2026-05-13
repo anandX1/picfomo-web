@@ -47,7 +47,7 @@ function BountyCard({ task }: { task: any }) {
       
       <div className="flex items-center gap-3 mb-2 pr-24">
         {task.task_type === 'link' ? <ExternalLink className="text-[var(--color-gold)]" size={24} /> : <Target className="text-[var(--color-gold)]" size={24} />}
-        <h3 className="font-[family-name:var(--display)] text-xl text-[var(--color-ink)] tracking-tight">{task.title}</h3>
+        <h3 className="font-[family-name:var(--display)] text-xl text-[var(--color-page-text)] tracking-tight">{task.title}</h3>
       </div>
       
       <p className="text-[13px] text-[var(--color-ink2)] mb-6 leading-relaxed">
@@ -56,7 +56,7 @@ function BountyCard({ task }: { task: any }) {
 
       {task.task_type === 'survey' && (
         <div className="flex flex-col gap-4 mb-6">
-          <div className="bg-[var(--color-white)] p-4 rounded-xl border border-[var(--rule)]">
+          <div className="bg-[var(--color-page-bg)] p-4 rounded-xl border border-[var(--rule)]">
             <div className="flex justify-between items-center mb-2">
               <label className="text-[10px] font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] text-[var(--color-ink3)]">Value</label>
               <span className="text-md font-bold text-[var(--color-gold)]">{sliderValue}</span>
@@ -73,7 +73,7 @@ function BountyCard({ task }: { task: any }) {
             placeholder="Feedback / Contact info..." 
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
-            className="w-full rounded-xl border border-[var(--rule)] bg-[var(--color-white)] p-3 text-[13px] text-[var(--color-ink)] focus:border-[var(--color-gold)] focus:outline-none"
+            className="w-full rounded-xl border border-[var(--rule)] bg-[var(--color-page-bg)] p-3 text-[13px] text-[var(--color-page-text)] focus:border-[var(--color-gold)] focus:outline-none"
           />
         </div>
       )}
@@ -89,7 +89,7 @@ function BountyCard({ task }: { task: any }) {
       <button 
         onClick={handleClaim}
         disabled={isPending}
-        className="w-full rounded-xl bg-[var(--color-ink)] py-3.5 font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[1.5px] text-[var(--color-white)] shadow-md disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-center items-center gap-2"
+        className="w-full rounded-xl bg-[var(--color-page-text)] py-3.5 font-[family-name:var(--mono)] text-[12px] font-bold uppercase tracking-[1.5px] text-[var(--color-page-bg)] shadow-md disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-center items-center gap-2"
       >
         {isPending ? <Loader2 size={16} className="animate-spin" /> : `Complete & Claim +${task.reward_amount} ⚡`}
       </button>
@@ -151,12 +151,12 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
   const recentSpent = transactions.filter(t => t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
   return (
-    <div className="mx-auto max-w-[1200px] p-4 md:p-8 animate-in fade-in duration-500 text-[var(--color-ink)]">
+    <div className="mx-auto max-w-[1200px] p-4 md:p-8 animate-in fade-in duration-500 text-[var(--color-page-text)]">
       
       {/* HEADER & BALANCE */}
       <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b border-[var(--rule)] pb-6">
         <div>
-          <h1 className="font-[family-name:var(--display)] text-4xl text-[var(--color-ink)] flex items-center gap-3">
+          <h1 className="font-[family-name:var(--display)] text-4xl text-[var(--color-page-text)] flex items-center gap-3">
             <Zap className="text-[var(--color-gold)]" size={32} /> Sparks Hub
           </h1>
           <p className="mt-2 font-[family-name:var(--mono)] text-[12px] uppercase tracking-[2px] text-[var(--color-ink3)]">
@@ -177,13 +177,13 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
 
       {/* TABS: Adaptive background & hover states */}
       <div className="flex bg-[var(--color-cream)] p-1.5 rounded-xl w-full md:w-fit border border-[var(--rule)] shadow-sm mb-8">
-        <button onClick={() => setActiveTab("quests")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-xs font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === "quests" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>
+        <button onClick={() => setActiveTab("quests")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-xs font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === "quests" ? "bg-[var(--color-page-bg)] text-[var(--color-page-text)] shadow-[var(--shadow-sm)]" : "text-[var(--color-page-text)] opacity-50 hover:opacity-100"}`}>
           <Target size={14} /> Quests
         </button>
-        <button onClick={() => setActiveTab("ledger")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-xs font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === "ledger" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>
+        <button onClick={() => setActiveTab("ledger")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-xs font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === "ledger" ? "bg-[var(--color-page-bg)] text-[var(--color-page-text)] shadow-[var(--shadow-sm)]" : "text-[var(--color-page-text)] opacity-50 hover:opacity-100"}`}>
           <List size={14} /> Ledger
         </button>
-        <button onClick={() => setActiveTab("referrals")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-xs font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === "referrals" ? "bg-[var(--color-white)] text-[var(--color-ink)] shadow-[var(--shadow-sm)]" : "text-[var(--color-ink)] opacity-50 hover:opacity-100"}`}>
+        <button onClick={() => setActiveTab("referrals")} className={`flex-1 md:px-8 py-2.5 rounded-lg text-xs font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === "referrals" ? "bg-[var(--color-page-bg)] text-[var(--color-page-text)] shadow-[var(--shadow-sm)]" : "text-[var(--color-page-text)] opacity-50 hover:opacity-100"}`}>
           <Users size={14} /> Referrals
         </button>
       </div>
@@ -194,17 +194,17 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
           
           <div className="flex flex-col gap-6">
             <section>
-              <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-3 flex items-center gap-2">
+              <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-page-text)] mb-3 flex items-center gap-2">
                 <Flame size={14} className="text-orange-500" /> Daily Streak
               </h2>
               <div className={`rounded-xl border p-6 transition-all ${hasClaimedDaily ? 'border-[var(--rule)] bg-[var(--color-cream)]' : 'border-[var(--color-gold-border)] bg-[var(--color-gold-pale)] shadow-sm'}`}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-full ${hasClaimedDaily ? 'bg-[var(--color-white)] border border-[var(--rule)]' : 'bg-white shadow-sm border border-yellow-200'}`}>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-full ${hasClaimedDaily ? 'bg-[var(--color-page-bg)] border border-[var(--rule)]' : 'bg-white shadow-sm border border-yellow-200'}`}>
                       {hasClaimedDaily ? <CheckCircle size={20} className="text-green-600" /> : <Gift size={20} className="text-[var(--color-gold)]" />}
                     </div>
                     <div>
-                      <h3 className="font-[family-name:var(--display)] text-[16px] tracking-wide text-[var(--color-ink)]">Daily Login Drop</h3>
+                      <h3 className="font-[family-name:var(--display)] text-[16px] tracking-wide text-[var(--color-page-text)]">Daily Login Drop</h3>
                       <p className="text-[12px] font-[family-name:var(--mono)] text-[var(--color-ink3)]">+5 Sparks for showing up.</p>
                     </div>
                   </div>
@@ -216,7 +216,7 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
                     <button 
                       onClick={handleClaimDaily}
                       disabled={isPending}
-                      className="rounded-full bg-[var(--color-ink)] px-6 py-3 font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[1px] text-[var(--color-white)] shadow-md transition-transform hover:scale-105 disabled:opacity-50"
+                      className="rounded-full bg-[var(--color-page-text)] px-6 py-3 font-[family-name:var(--mono)] text-[10px] font-bold uppercase tracking-[1px] text-[var(--color-page-bg)] shadow-md transition-transform hover:scale-105 disabled:opacity-50"
                     >
                       {isPending ? <Loader2 size={14} className="animate-spin" /> : "Claim +5 ⚡"}
                     </button>
@@ -257,7 +257,7 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
 
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-ink)]">The Creator Dividend</h2>
+                <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-page-text)]">The Creator Dividend</h2>
                 <span className="flex items-center gap-1 font-[family-name:var(--mono)] text-[10px] uppercase tracking-[1px] text-green-600 font-bold bg-green-500/10 px-2.5 py-1 rounded-md border border-green-500/20">
                   <TrendingUp size={12} /> Today: +{earnedFromLikes + earnedFromRemixes} ⚡
                 </span>
@@ -269,7 +269,7 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
                       <Star size={20} />
                     </div>
                     <div>
-                      <h3 className="font-[family-name:var(--mono)] text-[13px] font-bold text-[var(--color-ink)] uppercase tracking-wider">Get Liked</h3>
+                      <h3 className="font-[family-name:var(--mono)] text-[13px] font-bold text-[var(--color-page-text)] uppercase tracking-wider">Get Liked</h3>
                       <p className="text-[11px] text-[var(--color-ink2)] mt-0.5">Earned Today: +{earnedFromLikes} ⚡</p>
                     </div>
                   </div>
@@ -281,7 +281,7 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
                       <Share2 size={20} />
                     </div>
                     <div>
-                      <h3 className="font-[family-name:var(--mono)] text-[13px] font-bold text-[var(--color-ink)] uppercase tracking-wider">Get Remixed</h3>
+                      <h3 className="font-[family-name:var(--mono)] text-[13px] font-bold text-[var(--color-page-text)] uppercase tracking-wider">Get Remixed</h3>
                       <p className="text-[11px] text-[var(--color-ink2)] mt-0.5">Earned Today: +{earnedFromRemixes} ⚡</p>
                     </div>
                   </div>
@@ -293,7 +293,7 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
 
           {/* Right Column: DYNAMIC BOUNTIES */}
           <div className="flex flex-col">
-            <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-3 flex items-center gap-2">
+            <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-page-text)] mb-3 flex items-center gap-2">
               <Target size={14} className={availableTasks.length > 0 ? "text-[var(--color-gold)]" : "text-[var(--color-ink3)]"} /> Active Bounties
             </h2>
             
@@ -304,9 +304,9 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
                 ))}
               </div>
             ) : (
-               <div className="rounded-[20px] border-2 border-dashed border-[var(--rule)] bg-[var(--color-white)] p-12 flex flex-col items-center justify-center text-center mt-2">
+               <div className="rounded-[20px] border-2 border-dashed border-[var(--rule)] bg-[var(--color-page-bg)] p-12 flex flex-col items-center justify-center text-center mt-2">
                  <Target size={32} className="text-[var(--color-ink3)] mb-4" />
-                 <h3 className="font-[family-name:var(--display)] text-2xl text-[var(--color-ink)] mb-2">All Caught Up</h3>
+                 <h3 className="font-[family-name:var(--display)] text-2xl text-[var(--color-page-text)] mb-2">All Caught Up</h3>
                  <p className="text-[13px] text-[var(--color-ink2)] max-w-xs font-light">You've claimed all available bounties. Check back later for more ways to earn Sparks.</p>
                </div>
             )}
@@ -330,8 +330,8 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
           </div>
 
           <section>
-            <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-3">Transaction History</h2>
-            <div className="rounded-[20px] border border-[var(--rule)] bg-[var(--color-white)] overflow-hidden shadow-[var(--shadow-sm)]">
+            <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-page-text)] mb-3">Transaction History</h2>
+            <div className="rounded-[20px] border border-[var(--rule)] bg-[var(--color-page-bg)] overflow-hidden shadow-[var(--shadow-sm)]">
               
               {transactions.length === 0 ? (
                 <div className="p-16 text-center text-[var(--color-ink3)] flex flex-col items-center">
@@ -347,13 +347,13 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
                           {tx.amount > 0 ? <ArrowUpRight size={20} className="text-green-600" /> : <ArrowDownRight size={20} className="text-red-500" />}
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-[family-name:var(--mono)] text-[14px] font-bold text-[var(--color-ink)] uppercase tracking-wider">{tx.reason}</span>
+                          <span className="font-[family-name:var(--mono)] text-[14px] font-bold text-[var(--color-page-text)] uppercase tracking-wider">{tx.reason}</span>
                           <span className="text-[11px] text-[var(--color-ink3)] font-medium mt-1">
                             {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(tx.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
                       </div>
-                      <span className={`font-[family-name:var(--display)] text-2xl tracking-tight ${tx.amount > 0 ? 'text-green-600' : 'text-[var(--color-ink)]'}`}>
+                      <span className={`font-[family-name:var(--display)] text-2xl tracking-tight ${tx.amount > 0 ? 'text-green-600' : 'text-[var(--color-page-text)]'}`}>
                         {tx.amount > 0 ? '+' : ''}{tx.amount}
                       </span>
                     </div>
@@ -372,22 +372,22 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
             
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[var(--color-gold)] to-orange-500"></div>
             
-            <div className="w-24 h-24 bg-[var(--color-white)] rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-[var(--rule)]">
+            <div className="w-24 h-24 bg-[var(--color-page-bg)] rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-[var(--rule)]">
               <Users size={40} className="text-[var(--color-gold)]" />
             </div>
             
-            <h2 className="font-[family-name:var(--display)] text-5xl text-[var(--color-ink)] mb-4 tracking-tight">Invite & Earn</h2>
+            <h2 className="font-[family-name:var(--display)] text-5xl text-[var(--color-page-text)] mb-4 tracking-tight">Invite & Earn</h2>
             <p className="text-[15px] text-[var(--color-ink2)] mb-10 leading-relaxed max-w-md mx-auto font-light">
-              Give your friends a head start. When they sign up using your link, they get <strong className="text-[var(--color-ink)] font-bold">55 Sparks</strong>, and you earn a permanent <strong className="text-[var(--color-ink)] font-bold">+35 Sparks</strong>.
+              Give your friends a head start. When they sign up using your link, they get <strong className="text-[var(--color-page-text)] font-bold">55 Sparks</strong>, and you earn a permanent <strong className="text-[var(--color-page-text)] font-bold">+35 Sparks</strong>.
             </p>
             
-            <div className="bg-[var(--color-white)] border border-[var(--rule)] rounded-xl p-2.5 flex items-center justify-between shadow-inner group">
-              <div className="px-4 font-[family-name:var(--mono)] text-[12px] text-[var(--color-ink)] truncate max-w-[200px] md:max-w-xs select-all">
+            <div className="bg-[var(--color-page-bg)] border border-[var(--rule)] rounded-xl p-2.5 flex items-center justify-between shadow-inner group">
+              <div className="px-4 font-[family-name:var(--mono)] text-[12px] text-[var(--color-page-text)] truncate max-w-[200px] md:max-w-xs select-all">
                 {fullReferralLink}
               </div>
               <button 
                 onClick={copyReferralLink}
-                className="bg-[var(--color-ink)] hover:bg-[var(--color-gold)] hover:text-black text-[var(--color-white)] rounded-lg px-6 py-3 font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2 shadow-md"
+                className="bg-[var(--color-page-text)] hover:bg-[var(--color-gold)] hover:text-black text-[var(--color-page-bg)] rounded-lg px-6 py-3 font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2 shadow-md"
               >
                 <Copy size={14} /> Copy Link
               </button>
@@ -395,7 +395,7 @@ export default function SparksHubClient({ balance, unclaimedSparks, transactions
             
             <div className="mt-10 pt-10 border-t border-[var(--rule)] flex justify-around">
               <div className="text-center">
-                <span className="block font-[family-name:var(--display)] text-4xl text-[var(--color-ink)] mb-1">{friendsJoined}</span>
+                <span className="block font-[family-name:var(--display)] text-4xl text-[var(--color-page-text)] mb-1">{friendsJoined}</span>
                 <span className="text-[10px] font-[family-name:var(--mono)] uppercase font-bold text-[var(--color-ink3)] tracking-[2px]">Friends Joined</span>
               </div>
               <div className="text-center">

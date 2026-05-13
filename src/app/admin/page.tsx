@@ -48,7 +48,7 @@ export default async function AdminDashboard() {
         {/* Header */}
         <div className="mb-10 flex items-center justify-between border-b border-[var(--rule)] pb-6">
           <div>
-            <h1 className="font-[family-name:var(--display)] text-4xl text-[var(--color-ink)] flex items-center gap-3">
+            <h1 className="font-[family-name:var(--display)] text-4xl text-[var(--color-page-text)] flex items-center gap-3">
               <ShieldAlert className="text-red-500" size={32} /> God Mode
             </h1>
             <p className="mt-2 font-[family-name:var(--mono)] text-[12px] uppercase tracking-[1px] text-[var(--color-ink2)]">
@@ -72,7 +72,7 @@ export default async function AdminDashboard() {
           </div>
 
           <div className="lg:col-span-2 flex flex-col gap-4">
-            <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-2 flex items-center gap-2">
+            <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-page-text)] mb-2 flex items-center gap-2">
               <Target size={16} className="text-blue-500" /> Active Bounties ({tasks.length})
             </h2>
             
@@ -87,7 +87,7 @@ export default async function AdminDashboard() {
                     <div key={task.id} className={`flex items-center justify-between p-4 transition-colors ${task.is_active ? 'hover:bg-blue-50/30' : 'bg-gray-50 opacity-60'}`}>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="font-[family-name:var(--mono)] text-[14px] font-bold text-[var(--color-ink)]">{task.title}</span>
+                          <span className="font-[family-name:var(--mono)] text-[14px] font-bold text-[var(--color-page-text)]">{task.title}</span>
                           <span className="bg-blue-100 text-blue-700 border border-blue-200 text-[9px] px-2 py-0.5 rounded-sm font-bold tracking-widest uppercase">{task.task_type}</span>
                         </div>
                         <span className="text-[11px] text-[var(--color-ink3)] mt-1 max-w-md truncate">{task.description}</span>

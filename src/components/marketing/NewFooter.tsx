@@ -7,12 +7,12 @@ export default function NewFooter({ setActivePage }: { setActivePage: (p: string
     <footer className="border-t border-white/5 py-16 relative z-50 brand-gold-glow brand-gold-glow--footer">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
-          <div className="col-span-1 md:col-span-1 flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[var(--color-gold)] rounded-full flex items-center justify-center font-bold text-black">P</div>
-              <span className="text-lg font-bold tracking-tight text-white display-font">picfomo<span className="text-[var(--color-gold)]">.com</span></span>
+          <div className="col-span-1 md:col-span-1 flex flex-col gap-6">
+            <div className="flex items-center cursor-pointer transition-opacity hover:opacity-80" onClick={() => setActivePage('home')}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/full logo.png" alt="PicFOMO" className="h-16 md:h-20 w-auto object-contain" />
             </div>
-            <p className="text-gray-200/70 text-sm mt-2 leading-relaxed">
+            <p className="text-gray-200/70 text-sm leading-relaxed">
               The fastest way to generate studio-grade AI portraits and remix viral aesthetics—without prompts.
             </p>
           </div>

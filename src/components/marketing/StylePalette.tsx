@@ -13,7 +13,7 @@ export default function StylePalette() {
         [ THE PICFOMO ECOSYSTEM ]
       </div>
       
-      <h2 className="mb-4 font-[family-name:var(--display)] text-[clamp(36px,4vw,60px)] leading-[0.9] tracking-[-0.5px] text-[var(--color-ink)] uppercase">
+      <h2 className="mb-4 font-[family-name:var(--display)] text-[clamp(36px,4vw,60px)] leading-[0.9] tracking-[-0.5px] text-[var(--color-page-text)] uppercase">
         Not just a studio.<br />
         A Visual Arsenal.
       </h2>
@@ -34,33 +34,33 @@ export default function StylePalette() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
             <div className="flex gap-4 items-start">
-              <div className="bg-[var(--color-white)] border border-[var(--rule)] p-3 rounded-xl"><Briefcase size={20} className="text-[var(--color-gold)]" /></div>
+              <div className="bg-[var(--color-page-bg)] border border-[var(--rule)] p-3 rounded-xl"><Briefcase size={20} className="text-[var(--color-gold)]" /></div>
               <div>
-                <h4 className="font-bold text-[14px] text-[var(--color-ink)] mb-1">Pro Headshots</h4>
+                <h4 className="font-bold text-[14px] text-[var(--color-page-text)] mb-1">Pro Headshots</h4>
                 <p className="text-[13px] text-[var(--color-ink3)] leading-relaxed">Turn casual selfies into crisp, studio-lit LinkedIn and corporate portraits.</p>
               </div>
             </div>
             
             <div className="flex gap-4 items-start">
-              <div className="bg-[var(--color-white)] border border-[var(--rule)] p-3 rounded-xl"><ShoppingBag size={20} className="text-[var(--color-gold)]" /></div>
+              <div className="bg-[var(--color-page-bg)] border border-[var(--rule)] p-3 rounded-xl"><ShoppingBag size={20} className="text-[var(--color-gold)]" /></div>
               <div>
-                <h4 className="font-bold text-[14px] text-[var(--color-ink)] mb-1">E-Commerce Ready</h4>
+                <h4 className="font-bold text-[14px] text-[var(--color-page-text)] mb-1">E-Commerce Ready</h4>
                 <p className="text-[13px] text-[var(--color-ink3)] leading-relaxed">Generate perfect product modeling shots without hiring a photographer.</p>
               </div>
             </div>
 
             <div className="flex gap-4 items-start">
-              <div className="bg-[var(--color-white)] border border-[var(--rule)] p-3 rounded-xl"><Shirt size={20} className="text-[var(--color-gold)]" /></div>
+              <div className="bg-[var(--color-page-bg)] border border-[var(--rule)] p-3 rounded-xl"><Shirt size={20} className="text-[var(--color-gold)]" /></div>
               <div>
-                <h4 className="font-bold text-[14px] text-[var(--color-ink)] mb-1">Virtual Try-On</h4>
+                <h4 className="font-bold text-[14px] text-[var(--color-page-text)] mb-1">Virtual Try-On</h4>
                 <p className="text-[13px] text-[var(--color-ink3)] leading-relaxed">Test luxury streetwear, tactical gear, or bespoke suits instantly.</p>
               </div>
             </div>
 
             <div className="flex gap-4 items-start">
-              <div className="bg-[var(--color-white)] border border-[var(--rule)] p-3 rounded-xl"><TrendingUp size={20} className="text-[var(--color-gold)]" /></div>
+              <div className="bg-[var(--color-page-bg)] border border-[var(--rule)] p-3 rounded-xl"><TrendingUp size={20} className="text-[var(--color-gold)]" /></div>
               <div>
-                <h4 className="font-bold text-[14px] text-[var(--color-ink)] mb-1">Viral Aesthetics</h4>
+                <h4 className="font-bold text-[14px] text-[var(--color-page-text)] mb-1">Viral Aesthetics</h4>
                 <p className="text-[13px] text-[var(--color-ink3)] leading-relaxed">Ride the algorithm. Become a PS2 character or a Ghibli anime hero.</p>
               </div>
             </div>
@@ -92,26 +92,26 @@ export default function StylePalette() {
               {/* Fake Earnings Stream - Now dynamically themed */}
               {[1, 2].map((loop) => (
                 <div key={loop} className="flex flex-col gap-3">
-                  <div className="bg-[var(--color-white)] border border-[var(--rule)] p-3 rounded-xl flex items-center justify-between shadow-[var(--shadow-sm)]">
+                  <div className="bg-[var(--color-page-bg)] border border-[var(--rule)] p-3 rounded-xl flex items-center justify-between shadow-[var(--shadow-sm)]">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center"><UserAvatar /></div>
-                      <div className="text-[10px] text-[var(--color-ink3)]">Used <span className="text-[var(--color-ink)] font-bold">Cyberpunk</span></div>
+                      <div className="text-[10px] text-[var(--color-ink3)]">Used <span className="text-[var(--color-page-text)] font-bold">Cyberpunk</span></div>
                     </div>
                     <div className="text-[11px] font-bold text-[var(--color-grn)] flex items-center gap-1">+2 <Zap size={10} className="fill-[var(--color-grn)]"/></div>
                   </div>
                   
-                  <div className="bg-[var(--color-white)] border border-[var(--rule)] p-3 rounded-xl flex items-center justify-between ml-4 shadow-[var(--shadow-sm)]">
+                  <div className="bg-[var(--color-page-bg)] border border-[var(--rule)] p-3 rounded-xl flex items-center justify-between ml-4 shadow-[var(--shadow-sm)]">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center"><UserAvatar /></div>
-                      <div className="text-[10px] text-[var(--color-ink3)]">Used <span className="text-[var(--color-ink)] font-bold">Old Money</span></div>
+                      <div className="text-[10px] text-[var(--color-ink3)]">Used <span className="text-[var(--color-page-text)] font-bold">Old Money</span></div>
                     </div>
                     <div className="text-[11px] font-bold text-[var(--color-grn)] flex items-center gap-1">+2 <Zap size={10} className="fill-[var(--color-grn)]"/></div>
                   </div>
 
-                  <div className="bg-[var(--color-white)] border border-[var(--rule)] p-3 rounded-xl flex items-center justify-between shadow-[var(--shadow-sm)]">
+                  <div className="bg-[var(--color-page-bg)] border border-[var(--rule)] p-3 rounded-xl flex items-center justify-between shadow-[var(--shadow-sm)]">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center"><UserAvatar /></div>
-                      <div className="text-[10px] text-[var(--color-ink3)]">Used <span className="text-[var(--color-ink)] font-bold">Ghibli</span></div>
+                      <div className="text-[10px] text-[var(--color-ink3)]">Used <span className="text-[var(--color-page-text)] font-bold">Ghibli</span></div>
                     </div>
                     <div className="text-[11px] font-bold text-[var(--color-grn)] flex items-center gap-1">+2 <Zap size={10} className="fill-[var(--color-grn)]"/></div>
                   </div>
@@ -126,7 +126,7 @@ export default function StylePalette() {
             ========================================= */}
         <div className="rounded-2xl border border-[var(--rule)] bg-[var(--color-cream)] shadow-[var(--shadow-sm)] p-6 md:p-8 flex flex-col justify-between group transition-shadow hover:shadow-[var(--shadow-md)] overflow-hidden relative">
           <div className="relative z-10">
-            <h3 className="font-[family-name:var(--display)] text-[22px] tracking-[1px] text-[var(--color-ink)] mb-2">The Time Machine</h3>
+            <h3 className="font-[family-name:var(--display)] text-[22px] tracking-[1px] text-[var(--color-page-text)] mb-2">The Time Machine</h3>
             <p className="text-[13px] text-[var(--color-ink3)]">Restore the past. Turn blurry or old black & white family photos into crisp, 4K colorized reality.</p>
           </div>
           
@@ -146,14 +146,14 @@ export default function StylePalette() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Coins size={18} className="text-[var(--color-gold)]" />
-              <h3 className="font-[family-name:var(--display)] text-[22px] tracking-[1px] text-[var(--color-ink)]">First Mover</h3>
+              <h3 className="font-[family-name:var(--display)] text-[22px] tracking-[1px] text-[var(--color-page-text)]">First Mover</h3>
             </div>
             <p className="text-[13px] text-[var(--color-ink3)]">Join Phase 1 now. Early adopters get massive advantages when the Phase 2 Creator Economy fully unlocks.</p>
           </div>
           
           <div className="mt-6">
-            {/* Using text-[var(--color-white)] so it flips beautifully between themes! */}
-            <button className="w-full bg-[var(--color-ink)] text-[var(--color-white)] font-[family-name:var(--display)] tracking-[2px] py-3.5 rounded-xl shadow-[var(--shadow-lg)] flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95">
+            {/* Using text-[var(--color-page-bg)] so it flips beautifully between themes! */}
+            <button className="w-full bg-[var(--color-page-text)] text-[var(--color-page-bg)] font-[family-name:var(--display)] tracking-[2px] py-3.5 rounded-xl shadow-[var(--shadow-lg)] flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95">
               SECURE SPOT
             </button>
           </div>

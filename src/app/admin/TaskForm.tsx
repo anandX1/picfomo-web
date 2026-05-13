@@ -29,8 +29,8 @@ export default function TaskForm() {
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--rule)] bg-[var(--color-white)] p-6 shadow-sm sticky top-6 transition-shadow hover:shadow-md">
-      <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-6 flex items-center gap-2">
+    <div className="rounded-2xl border border-[var(--rule)] bg-[var(--color-page-bg)] p-6 shadow-sm sticky top-6 transition-shadow hover:shadow-md">
+      <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-page-text)] mb-6 flex items-center gap-2">
         <Target size={16} className="text-blue-500" /> Add New Bounty
       </h2>
       
@@ -44,18 +44,18 @@ export default function TaskForm() {
         
         <div>
           <label className="text-[10px] font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] text-[var(--color-ink3)]">Bounty Title</label>
-          <input required name="title" type="text" placeholder="e.g. Help price the Pro Tier" className="w-full mt-2 rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-3.5 text-[13px] text-[var(--color-ink)] focus:border-blue-500 focus:bg-[var(--color-white)] transition-colors focus:outline-none" />
+          <input required name="title" type="text" placeholder="e.g. Help price the Pro Tier" className="w-full mt-2 rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-3.5 text-[13px] text-[var(--color-page-text)] focus:border-blue-500 focus:bg-[var(--color-page-bg)] transition-colors focus:outline-none" />
         </div>
 
         <div>
           <label className="text-[10px] font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] text-[var(--color-ink3)]">Description & Rules</label>
-          <textarea required name="description" placeholder="Explain what the user needs to do..." className="w-full mt-2 h-24 resize-none rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-3.5 text-[13px] text-[var(--color-ink)] focus:border-blue-500 focus:bg-[var(--color-white)] transition-colors focus:outline-none" />
+          <textarea required name="description" placeholder="Explain what the user needs to do..." className="w-full mt-2 h-24 resize-none rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-3.5 text-[13px] text-[var(--color-page-text)] focus:border-blue-500 focus:bg-[var(--color-page-bg)] transition-colors focus:outline-none" />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-[10px] font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] text-[var(--color-ink3)]">Reward (⚡)</label>
-            <input required name="reward_amount" type="number" min="1" max="500" defaultValue="12" className="w-full mt-2 rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-3.5 text-[13px] text-[var(--color-ink)] focus:border-blue-500 focus:bg-[var(--color-white)] transition-colors focus:outline-none" />
+            <input required name="reward_amount" type="number" min="1" max="500" defaultValue="12" className="w-full mt-2 rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-3.5 text-[13px] text-[var(--color-page-text)] focus:border-blue-500 focus:bg-[var(--color-page-bg)] transition-colors focus:outline-none" />
           </div>
           <div>
             <label className="text-[10px] font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] text-[var(--color-ink3)]">Action Type</label>
@@ -63,7 +63,7 @@ export default function TaskForm() {
               name="task_type" 
               value={taskType}
               onChange={(e) => setTaskType(e.target.value)}
-              className="w-full mt-2 rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-3.5 text-[13px] text-[var(--color-ink)] focus:border-blue-500 focus:bg-[var(--color-white)] transition-colors focus:outline-none cursor-pointer"
+              className="w-full mt-2 rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-3.5 text-[13px] text-[var(--color-page-text)] focus:border-blue-500 focus:bg-[var(--color-page-bg)] transition-colors focus:outline-none cursor-pointer"
             >
               <option value="survey">Slider Survey</option>
               <option value="link">External Link</option>
@@ -74,7 +74,7 @@ export default function TaskForm() {
         {taskType === "link" && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-300">
             <label className="text-[10px] font-[family-name:var(--mono)] font-bold uppercase tracking-[1px] text-[var(--color-ink3)]">Target URL</label>
-            <input required name="action_url" type="url" placeholder="https://twitter.com/..." className="w-full mt-2 rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-3.5 text-[13px] text-[var(--color-ink)] focus:border-blue-500 focus:bg-[var(--color-white)] transition-colors focus:outline-none" />
+            <input required name="action_url" type="url" placeholder="https://twitter.com/..." className="w-full mt-2 rounded-xl border border-[var(--rule)] bg-[var(--color-cream)] p-3.5 text-[13px] text-[var(--color-page-text)] focus:border-blue-500 focus:bg-[var(--color-page-bg)] transition-colors focus:outline-none" />
           </div>
         )}
 

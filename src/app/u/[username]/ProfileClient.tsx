@@ -92,22 +92,22 @@ export default function ProfileClient({
   const displayTitle = user.display_name || user.username;
 
   return (
-    <div className="mx-auto max-w-5xl p-4 md:p-8 animate-in fade-in duration-500 text-[var(--color-ink)]">
+    <div className="mx-auto max-w-5xl p-4 md:p-8 animate-in fade-in duration-500 text-[var(--color-page-text)]">
       
       {/* AUTH MODAL */}
       {showAuthModal && !currentUserId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md px-4 animate-in fade-in duration-300">
-          <div className="relative w-full max-w-md overflow-hidden rounded-[24px] bg-[var(--color-white)] p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)]">
+          <div className="relative w-full max-w-md overflow-hidden rounded-[24px] bg-[var(--color-page-bg)] p-8 shadow-[var(--shadow-2xl)] border border-[var(--rule)]">
             <div className="absolute -top-24 -left-24 h-48 w-48 rounded-full bg-[var(--color-gold)] opacity-10 blur-3xl animate-pulse"></div>
-            <button onClick={() => setShowAuthModal(false)} className="absolute right-4 top-4 z-10 rounded-full bg-[var(--color-cream)] p-2 text-[var(--color-ink3)] transition-colors hover:bg-[var(--color-cream2)] hover:text-[var(--color-ink)]">
+            <button onClick={() => setShowAuthModal(false)} className="absolute right-4 top-4 z-10 rounded-full bg-[var(--color-cream)] p-2 text-[var(--color-ink3)] transition-colors hover:bg-[var(--color-cream2)] hover:text-[var(--color-page-text)]">
               <X size={16} />
             </button>
             <div className="relative z-10 flex flex-col items-center text-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="PicFOMO Logo" className="mb-6 w-40 sm:w-48 h-auto rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] object-contain bg-black p-2" />
-              <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-ink)] tracking-tight">Unlock Your Aesthetic</h2>
+              <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-page-text)] tracking-tight">Unlock Your Aesthetic</h2>
               <p className="mb-8 font-[family-name:var(--mono)] text-[12px] uppercase leading-relaxed tracking-[1px] text-[var(--color-ink3)]">Drop your photo. Pick a trending style.<br/> Get your portrait in ~20 seconds.</p>
-              <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-[var(--color-ink)] py-4 font-[family-name:var(--display)] text-lg tracking-[1.5px] text-[var(--color-white)] transition-transform hover:scale-[1.02] shadow-md hover:bg-[var(--color-gold)] hover:text-black">
+              <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-[var(--color-page-text)] py-4 font-[family-name:var(--display)] text-lg tracking-[1.5px] text-[var(--color-page-bg)] transition-transform hover:scale-[1.02] shadow-md hover:bg-[var(--color-gold)] hover:text-black">
                 <span className="relative z-10">CREATE FREE ACCOUNT</span>
               </Link>
             </div>
@@ -131,7 +131,7 @@ export default function ProfileClient({
           
           {/* Row 1: Name, TICKS & Buttons */}
           <div className="flex flex-col md:flex-row items-center gap-4 mb-2 w-full">
-            <h1 className="text-3xl md:text-4xl font-[family-name:var(--display)] text-[var(--color-ink)] flex items-center gap-2 tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-[family-name:var(--display)] text-[var(--color-page-text)] flex items-center gap-2 tracking-tight">
               {displayTitle}
               {/* THE RPG TICK SYSTEM */}
               {userStatus.tick === 'bronze' && <BadgeCheck className="w-6 h-6 text-[#cd7f32] fill-[#cd7f32] drop-shadow-sm" style={{ color: 'white' }} />}
@@ -146,19 +146,19 @@ export default function ProfileClient({
             <div className="flex items-center gap-2 mt-2 md:mt-0 md:ml-auto">
               {isOwner ? (
                 <>
-                  <Link href="/dashboard/settings" className="px-5 py-2 border border-[var(--rule)] bg-[var(--color-cream)] rounded-xl font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-ink)] hover:bg-[var(--color-cream2)] transition-colors shadow-sm">Edit Profile</Link>
-                  <Link href="/dashboard/vault" className="px-5 py-2 border border-[var(--rule)] bg-[var(--color-cream)] rounded-xl font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-ink)] hover:bg-[var(--color-cream2)] transition-colors shadow-sm">View Vault</Link>
+                  <Link href="/dashboard/settings" className="px-5 py-2 border border-[var(--rule)] bg-[var(--color-cream)] rounded-xl font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-page-text)] hover:bg-[var(--color-cream2)] transition-colors shadow-sm">Edit Profile</Link>
+                  <Link href="/dashboard/vault" className="px-5 py-2 border border-[var(--rule)] bg-[var(--color-cream)] rounded-xl font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-page-text)] hover:bg-[var(--color-cream2)] transition-colors shadow-sm">View Vault</Link>
                 </>
               ) : (
                 <button 
                   onClick={handleFollow} 
                   disabled={isPending}
-                  className={`px-6 py-2 rounded-xl font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] transition-all shadow-sm disabled:opacity-50 ${isFollowing ? 'border border-[var(--rule)] bg-[var(--color-cream)] text-[var(--color-ink)] hover:bg-[var(--color-cream2)]' : 'bg-[var(--color-ink)] text-[var(--color-white)] hover:bg-[var(--color-gold)] hover:text-black'}`}
+                  className={`px-6 py-2 rounded-xl font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] transition-all shadow-sm disabled:opacity-50 ${isFollowing ? 'border border-[var(--rule)] bg-[var(--color-cream)] text-[var(--color-page-text)] hover:bg-[var(--color-cream2)]' : 'bg-[var(--color-page-text)] text-[var(--color-page-bg)] hover:bg-[var(--color-gold)] hover:text-black'}`}
                 >
                   {isFollowing ? 'Following' : 'Follow'}
                 </button>
               )}
-              <button onClick={handleShareProfile} className="p-2 border border-[var(--rule)] bg-[var(--color-cream)] rounded-xl text-[var(--color-ink)] hover:bg-[var(--color-cream2)] transition-colors shadow-sm">
+              <button onClick={handleShareProfile} className="p-2 border border-[var(--rule)] bg-[var(--color-cream)] rounded-xl text-[var(--color-page-text)] hover:bg-[var(--color-cream2)] transition-colors shadow-sm">
                 <Share2 size={16} />
               </button>
             </div>
@@ -170,15 +170,15 @@ export default function ProfileClient({
           {/* Row 3: Stats */}
           <div className="flex items-center gap-8 mb-6 font-[family-name:var(--mono)] text-[11px] uppercase tracking-[1.5px] text-[var(--color-ink3)]">
             <div className="flex flex-col items-center md:items-start">
-              <span className="text-2xl font-[family-name:var(--display)] tracking-normal text-[var(--color-ink)] mb-0.5 leading-none">{publicImages.length}</span>
+              <span className="text-2xl font-[family-name:var(--display)] tracking-normal text-[var(--color-page-text)] mb-0.5 leading-none">{publicImages.length}</span>
               <span className="font-bold">Posts</span>
             </div>
             <div className="flex flex-col items-center md:items-start">
-              <span className="text-2xl font-[family-name:var(--display)] tracking-normal text-[var(--color-ink)] mb-0.5 leading-none">{followersCount}</span>
+              <span className="text-2xl font-[family-name:var(--display)] tracking-normal text-[var(--color-page-text)] mb-0.5 leading-none">{followersCount}</span>
               <span className="font-bold">Followers</span>
             </div>
             <div className="flex flex-col items-center md:items-start">
-              <span className="text-2xl font-[family-name:var(--display)] tracking-normal text-[var(--color-ink)] mb-0.5 leading-none">0</span>
+              <span className="text-2xl font-[family-name:var(--display)] tracking-normal text-[var(--color-page-text)] mb-0.5 leading-none">0</span>
               <span className="font-bold">Collabs</span>
             </div>
           </div>
@@ -211,13 +211,13 @@ export default function ProfileClient({
       <div className="flex justify-center border-t border-[var(--rule)] mb-8 max-w-4xl mx-auto relative">
         <button 
           onClick={() => setActiveTab('posts')} 
-          className={`flex items-center gap-2 px-8 py-5 text-[11px] font-[family-name:var(--mono)] font-bold tracking-[2px] uppercase border-t-[2px] -mt-[1px] transition-colors ${activeTab === 'posts' ? 'border-[var(--color-ink)] text-[var(--color-ink)]' : 'border-transparent text-[var(--color-ink3)] hover:text-[var(--color-ink)]'}`}
+          className={`flex items-center gap-2 px-8 py-5 text-[11px] font-[family-name:var(--mono)] font-bold tracking-[2px] uppercase border-t-[2px] -mt-[1px] transition-colors ${activeTab === 'posts' ? 'border-[var(--color-page-text)] text-[var(--color-page-text)]' : 'border-transparent text-[var(--color-ink3)] hover:text-[var(--color-page-text)]'}`}
         >
           <Grid size={14} /> Posts
         </button>
         <button 
           onClick={() => setActiveTab('collabs')} 
-          className={`flex items-center gap-2 px-8 py-5 text-[11px] font-[family-name:var(--mono)] font-bold tracking-[2px] uppercase border-t-[2px] -mt-[1px] transition-colors ${activeTab === 'collabs' ? 'border-[var(--color-ink)] text-[var(--color-ink)]' : 'border-transparent text-[var(--color-ink3)] hover:text-[var(--color-ink)]'}`}
+          className={`flex items-center gap-2 px-8 py-5 text-[11px] font-[family-name:var(--mono)] font-bold tracking-[2px] uppercase border-t-[2px] -mt-[1px] transition-colors ${activeTab === 'collabs' ? 'border-[var(--color-page-text)] text-[var(--color-page-text)]' : 'border-transparent text-[var(--color-ink3)] hover:text-[var(--color-page-text)]'}`}
         >
           <Users size={14} /> Collabs
         </button>

@@ -2,99 +2,223 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import PublicFunnelModal from "./PublicFunnelModal"; // 🌟 IMPORT THE NEW MODAL
 
-const COMMUNITY_POSTS = [
-  { id: 1, style: "DSLR", image_url: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80" },
-  { id: 2, style: "Ghibli", image_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80" },
-  { id: 3, style: "Cyberpunk", image_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80" },
-  { id: 4, style: "Vogue", image_url: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&q=80" },
+const HERO_IMAGES = [
+  { id: 1, style: "Ghibli", url: "/hero/1.png" },
+  { id: 2, style: "DSLR", url: "/hero/2.png" },
+  { id: 3, style: "Cyberpunk", url: "/hero/3.png" },
+  { id: 4, style: "Vogue", url: "/hero/4.png" },
 ];
 
-export default function NewHero() {
-  const [dragState, setDragState] = useState<"idle" | "dragging" | "processing">("idle");
+const MARQUEE_IMAGES = [...HERO_IMAGES, ...HERO_IMAGES];
+
+export default function NewHero({ dynamicStyles }: { dynamicStyles: any[] }) {
+  const [mounted, setMounted] = useState(false);
+  const [dragState, setDragState] = useState<"idle" | "dragging">("idle");
+  
+  // 🌟 NEW STATE FOR THE MODAL & FILE
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [capturedFile, setCapturedFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    
+    // 🌟 ENHANCED 3D Tilt & Slide Effect
+    if (window.matchMedia("(hover: hover)").matches) {
+        const cards = document.querySelectorAll<HTMLElement>(".flank-card");
+        cards.forEach((card) => {
+            card.style.willChange = "transform, box-shadow, border-color";
+            let raf: number | null = null;
+            const handleMove = (e: MouseEvent) => {
+                if (raf) cancelAnimationFrame(raf);
+                raf = requestAnimationFrame(() => {
+                    const r = card.getBoundingClientRect();
+                    const nx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+                    const ny = ((e.clientY - r.top) / r.height - 0.5) * 2;
+                    
+                    const rotY = nx * 10; 
+                    const rotX = -ny * 10;
+                    const moveX = nx * 8;
+                    const moveY = ny * 8;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) translate3d(${moveX}px, ${moveY}px, 30px) scale3d(1.05,1.05,1.05)`;
+                    card.style.boxShadow = `${-nx * 15}px ${ny * 15}px 40px rgba(0,0,0,0.5), 0 0 30px rgba(212,175,55,0.15)`;
+                    card.style.borderColor = 'rgba(212,175,55,0.4)';
+                });
+            };
+            const handleLeave = () => {
+                if (raf) cancelAnimationFrame(raf);
+                card.style.transform = "perspective(1000px) rotateX(0) rotateY(0) translate3d(0,0,0) scale3d(1,1,1)";
+                card.style.boxShadow = ""; 
+                card.style.borderColor = "";
+            };
+            card.addEventListener("mousemove", handleMove);
+            card.addEventListener("mouseleave", handleLeave);
+        });
+    }
+  }, []);
+
+  // 🌟 FILE CAPTURE LOGIC
+  const handleFileCapture = (file: File | undefined | null) => {
+    if (!file) return;
+    setCapturedFile(file);
+    setIsModalOpen(true); // Boom. Open the funnel.
+    setDragState("idle");
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragState("dragging");
+  };
+
+  const onDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragState("idle");
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragState("idle");
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileCapture(e.dataTransfer.files[0]);
+    }
+  };
 
   return (
-    <section id="hero-section" className="w-full flex flex-col items-center justify-center min-h-[calc(100vh-140px)] pb-16 relative overflow-hidden">
-      
-      <div className="text-center mb-10 px-6 relative z-20">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-[var(--color-gold)] mb-5 uppercase backdrop-blur-md type-kicker">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-gold)] animate-pulse"></span>
-          AI Portrait Studio + Creator Economy
-        </div>
-        <h1 className="font-extrabold mb-5 display-font type-h1 text-balance text-white">
-          Identity‑Lock portraits.<br />One click. Viral aesthetics.
-        </h1>
-        <p className="text-gray-300/80 max-w-2xl mx-auto type-lead text-balance">
-          PicFOMO turns a single selfie into studio‑grade portraits in ~20 seconds—no prompts, no “uncanny valley.”
-          Browse a live style feed, hit Generate, then Remix the exact aesthetic you love.
-        </p>
-      </div>
-
-      <div className="w-full max-w-[1400px] mx-auto px-4 flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12 relative z-10">
+    <>
+      <section id="hero-section" className="relative flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden pb-4 pt-[100px] lg:pt-[120px] hero-gradient">
         
-        {/* Left Flank */}
-        <div className="hidden lg:flex flex-col gap-6 w-[260px] xl:w-[280px] shrink-0">
-          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[-8deg] translate-y-12 translate-x-4 relative">
-            <Image src={COMMUNITY_POSTS[0].image_url} alt="DSLR" fill className="object-cover" />
-            <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">DSLR</div>
-          </div>
-          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[-3deg] -translate-x-6 relative">
-            <Image src={COMMUNITY_POSTS[1].image_url} alt="Ghibli" fill className="object-cover" />
-            <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">Ghibli</div>
-          </div>
+        <style jsx>{`
+          @keyframes dash { to { stroke-dashoffset: -20; } }
+          .animate-dash { animation: dash 1s linear infinite; }
+          @keyframes mobile-marquee {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+          }
+          .animate-mobile-marquee {
+            animation: mobile-marquee 25s linear infinite;
+          }
+        `}</style>
+
+        {/* 🌟 PREMIUM TYPOGRAPHY */}
+        <div className="relative z-30 mb-6 lg:mb-10 w-full max-w-5xl px-4 text-center shrink-0">
+          <h1 className="display-font mb-3 lg:mb-5 text-[2.2rem] sm:text-5xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-2xl text-balance will-change-transform">
+              Turn One Selfie<br className="hidden sm:block"/> Into Any Trend.
+          </h1>
+          <p className="mx-auto max-w-lg text-[13px] sm:text-base lg:text-lg font-medium leading-relaxed text-white/80 text-balance">
+              Choose a style, upload your photo, and watch the magic.
+          </p>
         </div>
 
-        {/* Dropzone */}
-        <div className="w-full max-w-xl lg:max-w-[500px] xl:max-w-[550px] relative group shrink-0">
-          <div className="dropzone-glow absolute -inset-1.5 bg-gradient-to-r from-yellow-500 to-[var(--color-gold)] rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-40 transition duration-500"></div>
+        {/* 🌟 COMPACT WORKSPACE */}
+        <div className="relative z-20 flex w-full max-w-[1200px] flex-col items-center justify-center gap-4 px-4 lg:flex-row lg:gap-8 shrink-0">
           
-          <div id="dropzone-container" className="relative bg-[#0A0A0A] border-2 border-white/20 group-hover:border-[var(--color-gold)] rounded-[2rem] p-8 md:p-12 flex flex-col items-center justify-center min-h-[420px] transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.05)] group-hover:shadow-[0_0_60px_rgba(212,175,55,0.3)] overflow-hidden">
-            <svg className="absolute inset-2 w-[calc(100%-16px)] h-[calc(100%-16px)] pointer-events-none rounded-[1.5rem]" preserveAspectRatio="none">
-              <rect x="0" y="0" width="100%" height="100%" rx="24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeDasharray="10 10" className="dropzone-dashed-border animate-dash group-hover:stroke-[var(--color-gold)] transition-colors duration-500"></rect>
-            </svg>
-            <div id="dropzone-icon" className="bg-white w-20 h-20 rounded-2xl border border-white/30 flex items-center justify-center mb-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)] text-black group-hover:scale-110 group-hover:bg-[var(--color-gold)] group-hover:border-[var(--color-gold)] group-hover:shadow-[0_0_40px_rgba(212,175,55,0.8)] transition-all duration-500">
-              <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          {/* Left Flank */}
+          <div className="hidden shrink-0 flex-col gap-4 lg:flex w-[180px] xl:w-[220px]">
+            <div className="flank-card relative aspect-[4/5] translate-x-4 translate-y-4 rotate-[-8deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300">
+              <Image src={HERO_IMAGES[0].url} alt={HERO_IMAGES[0].style} fill className="object-cover" priority sizes="220px" />
+              <div className="absolute bottom-3 left-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[0].style}</div>
             </div>
-            <h3 id="dropzone-title" className="text-2xl md:text-3xl font-bold display-font mb-2 text-white group-hover:text-[var(--color-gold)] transition-colors duration-500">Upload a selfie</h3>
-            <p id="dropzone-desc" className="text-gray-400 text-sm text-center px-4 mb-8">Drag & drop your photo here, or browse.</p>
+            <div className="flank-card relative aspect-[4/5] -translate-x-4 rotate-[-3deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300">
+              <Image src={HERO_IMAGES[1].url} alt={HERO_IMAGES[1].style} fill className="object-cover" priority sizes="220px" />
+              <div className="absolute bottom-3 left-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[1].style}</div>
+            </div>
+          </div>
+
+          {/* 🌟 HIGH-CONTRAST UPLOAD BOX */}
+          <div className="group relative w-full max-w-[95%] sm:max-w-xl shrink-0 lg:max-w-[460px]">
+            <div className="pointer-events-none absolute -inset-8 rounded-full bg-[var(--color-gold)]/10 blur-[80px] opacity-0 transition-opacity duration-1000 group-hover:opacity-100 hidden md:block"></div>
             
-            <button className="fluid-btn fluid-btn-gold px-8 py-3 rounded-xl font-bold text-sm">
-                <span className="fluid-btn-bg"></span>
-                <span className="fluid-text-wrapper">
-                    <span className="fluid-text fluid-text-top">Select Photo</span>
-                    <span className="fluid-text fluid-text-bottom">Select Photo</span>
-                </span>
-            </button>
-            
-            <div className="absolute bottom-6 flex items-center gap-2 text-gray-500 text-[11px] font-semibold uppercase tracking-wider group-hover:text-[var(--color-gold)] transition-colors duration-500">
-              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              No signup required
+            <div id="dropzone-container" 
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              className={`relative flex min-h-[240px] lg:min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 bg-[#080808]/90 p-6 lg:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] transition-all duration-700 cursor-pointer group-active:scale-[0.98] will-change-transform ${dragState === "dragging" ? 'bg-[rgba(212,175,55,0.05)] border-[var(--color-gold)] scale-105' : 'border-white/30 hover:border-[var(--color-gold)]/80'}`}
+            >
+              {/* 🌟 INVISIBLE FILE INPUT FOR CLICKS */}
+              <input 
+                type="file" 
+                accept="image/jpeg, image/png, image/webp" 
+                onChange={(e) => handleFileCapture(e.target.files?.[0])}
+                className="absolute inset-0 z-50 w-full h-full opacity-0 cursor-pointer" 
+              />
+
+              <svg className="absolute inset-3 h-[calc(100%-24px)] w-[calc(100%-24px)] pointer-events-none rounded-[1.5rem]" preserveAspectRatio="none">
+                <rect x="0" y="0" width="100%" height="100%" rx="24" fill="none" 
+                  strokeWidth="2" strokeDasharray="10 10" 
+                  className={`transition-colors duration-500 ${dragState === "dragging" ? 'stroke-[var(--color-gold)] animate-dash' : 'stroke-white/30 group-hover:stroke-[var(--color-gold)]/80 group-hover:animate-dash'}`}>
+                </rect>
+              </svg>
+
+              <div id="dropzone-icon" className={`mb-3 lg:mb-5 flex h-12 w-12 lg:h-16 lg:w-16 items-center justify-center rounded-[1rem] shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-500 ${dragState === "dragging" ? 'scale-110 bg-[var(--color-gold)] text-black shadow-[0_0_30px_rgba(212,175,55,0.6)]' : 'bg-white text-black group-hover:scale-110 group-hover:bg-[var(--color-gold)]'}`}>
+                <svg width="24" height="24" className="lg:h-7 lg:w-7" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+
+              <h3 className={`display-font mb-1 text-lg lg:text-2xl font-bold transition-colors duration-500 ${dragState === "dragging" ? 'text-[var(--color-gold)]' : 'text-white group-hover:text-[var(--color-gold)]'}`}>
+                  {dragState === "dragging" ? "Drop it like it's hot!" : "Upload Photo"}
+              </h3>
+              
+              <p className={`mb-5 lg:mb-6 px-4 text-center text-[11px] lg:text-xs font-medium transition-colors duration-300 ${dragState === "dragging" ? 'text-gray-400' : 'text-white/60 group-hover:text-white/90'}`}>
+                  {dragState === "dragging" ? "Release to start the magic..." : "Drag & drop or click to browse."}
+              </p>
+              
+              <button className="fluid-btn fluid-btn-gold z-10 rounded-xl px-10 py-3 lg:px-12 lg:py-3 font-bold uppercase tracking-widest shadow-xl transition-all duration-500 border border-white/20 group-hover:border-transparent pointer-events-none">
+                  <span className="fluid-btn-bg"></span>
+                  <span className="fluid-text-wrapper">
+                      <span className="fluid-text fluid-text-top text-[9px] lg:text-[10px]">Select File</span>
+                      <span className="fluid-text fluid-text-bottom text-[9px] lg:text-[10px]">Select File</span>
+                  </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Flank */}
+          <div className="hidden shrink-0 flex-col gap-4 lg:flex w-[180px] xl:w-[220px]">
+            <div className="flank-card relative aspect-[4/5] -translate-x-4 translate-y-4 rotate-[8deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300">
+              <Image src={HERO_IMAGES[2].url} alt={HERO_IMAGES[2].style} fill className="object-cover" priority sizes="220px" />
+              <div className="absolute bottom-3 right-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[2].style}</div>
+            </div>
+            <div className="flank-card relative aspect-[4/5] translate-x-4 rotate-[3deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300">
+              <Image src={HERO_IMAGES[3].url} alt={HERO_IMAGES[3].style} fill className="object-cover" priority sizes="220px" />
+              <div className="absolute bottom-3 right-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[3].style}</div>
             </div>
           </div>
         </div>
 
-        {/* Right Flank */}
-        <div className="hidden lg:flex flex-col gap-6 w-[260px] xl:w-[280px] shrink-0">
-          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[8deg] translate-y-12 -translate-x-4 relative">
-            <Image src={COMMUNITY_POSTS[2].image_url} alt="Cyberpunk" fill className="object-cover" />
-            <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">Cyberpunk</div>
-          </div>
-          <div className="flank-card aspect-[4/5] rounded-[1.5rem] border border-white/10 overflow-hidden bg-[#111] shadow-2xl transform rotate-[3deg] translate-x-6 relative">
-            <Image src={COMMUNITY_POSTS[3].image_url} alt="Vogue" fill className="object-cover" />
-            <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold text-white shadow-lg">Vogue</div>
+        {/* 📱 MOBILE: ULTRA-COMPACT MARQUEE */}
+        <div className="relative z-10 mt-5 flex w-full overflow-hidden lg:hidden shrink-0">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-black to-transparent"></div>
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-black to-transparent"></div>
+          
+          <div className="animate-mobile-marquee flex w-max gap-3 pl-3 will-change-transform">
+            {MARQUEE_IMAGES.map((post, idx) => (
+              <div key={idx} className="relative aspect-[4/5] w-[110px] shrink-0 overflow-hidden rounded-[1rem] border border-white/20 bg-[#111] shadow-lg">
+                <Image 
+                  src={post.url} 
+                  alt={post.style} 
+                  fill 
+                  className="object-cover" 
+                  sizes="110px"
+                  {...(idx < 4 ? { priority: true } : { loading: "lazy" })}
+                />
+                <div className="absolute bottom-1.5 left-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[8px] font-bold text-white backdrop-blur-md border border-white/10">{post.style}</div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Mobile Feed */}
-      <div className="flex lg:hidden w-full overflow-x-auto hide-scroll gap-4 px-6 mt-10 snap-x snap-mandatory pb-6">
-        {COMMUNITY_POSTS.map((post) => (
-          <div key={post.id} className="w-[160px] shrink-0 aspect-[4/5] rounded-2xl border border-white/10 overflow-hidden snap-center relative shadow-lg">
-            <Image src={post.image_url} alt={post.style} fill className="object-cover" />
-            <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded border border-white/10 text-[10px] font-bold text-white">{post.style}</div>
-          </div>
-        ))}
-      </div>
-    </section>
+      {/* 🌟 THE FUNNEL MODAL */}
+      <PublicFunnelModal 
+        isOpen={isModalOpen} 
+        initialFile={capturedFile} 
+        dynamicStyles={dynamicStyles}
+        onClose={() => {
+          setIsModalOpen(false);
+          setCapturedFile(null);
+        }} 
+      />
+    </>
   );
 }

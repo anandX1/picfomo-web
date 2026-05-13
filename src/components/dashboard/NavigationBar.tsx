@@ -23,7 +23,7 @@ export default function NavigationBar() {
 
   return (
     <>
-      <nav className="hidden w-64 flex-col border-r border-[var(--rule)] bg-[var(--color-white)] p-6 md:flex h-screen sticky top-0">
+      <nav className="hidden w-64 flex-col border-r border-[var(--rule)] bg-[var(--color-page-bg)] p-6 md:flex h-screen sticky top-0">
         
         <div className="mb-12 flex items-center justify-start">
           <StoryLogo />
@@ -39,14 +39,14 @@ export default function NavigationBar() {
                 href={item.href}
                 className={`group flex items-center gap-3 rounded-xl px-4 py-3 font-[family-name:var(--display)] tracking-[1px] transition-all ${
                   isActive
-                    ? "bg-[var(--color-gold-pale)] text-[var(--color-ink)] shadow-sm"
-                    : "text-[var(--color-ink2)] hover:bg-[var(--color-cream)] hover:text-[var(--color-ink)]"
+                    ? "bg-[var(--color-gold-pale)] text-[var(--color-page-text)] shadow-sm"
+                    : "text-[var(--color-ink2)] hover:bg-[var(--color-cream)] hover:text-[var(--color-page-text)]"
                 }`}
               >
                 <Icon 
                   size={20} 
                   strokeWidth={isActive ? 2.5 : 2} 
-                  className={isActive ? "text-[var(--color-gold)]" : "text-[var(--color-ink3)] group-hover:text-[var(--color-ink)]"} 
+                  className={isActive ? "text-[var(--color-gold)]" : "text-[var(--color-ink3)] group-hover:text-[var(--color-page-text)]"} 
                 />
                 {item.name}
               </Link>
@@ -55,7 +55,7 @@ export default function NavigationBar() {
         </div>
       </nav>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-[var(--rule)] bg-[var(--color-white)] pb-safe pt-2 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-[var(--rule)] bg-[var(--color-page-bg)] pb-safe pt-2 md:hidden">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || (item.name === "Profile" && pathname.startsWith('/u/'));
           const Icon = item.icon;
@@ -64,7 +64,7 @@ export default function NavigationBar() {
               key={item.name}
               href={item.href}
               className={`flex flex-col items-center gap-1 p-2 ${
-                isActive ? "text-[var(--color-ink)]" : "text-[var(--color-ink3)] opacity-60"
+                isActive ? "text-[var(--color-page-text)]" : "text-[var(--color-ink3)] opacity-60"
               }`}
             >
               <div className={`transition-transform ${isActive ? "-translate-y-1 scale-110 text-[var(--color-gold)]" : ""}`}>

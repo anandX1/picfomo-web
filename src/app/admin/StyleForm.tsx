@@ -31,7 +31,7 @@ export default function StyleForm() {
 
   return (
     <div className="rounded-xl border border-[var(--rule)] bg-white p-6 shadow-sm sticky top-6">
-      <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-ink)] mb-6 flex items-center gap-2">
+      <h2 className="font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[2px] text-[var(--color-page-text)] mb-6 flex items-center gap-2">
         <Plus size={16} /> Add New Style
       </h2>
       
@@ -47,11 +47,11 @@ export default function StyleForm() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)]">Display Name</label>
-            <input required name="name" type="text" placeholder="e.g. Studio Ghibli" className="w-full mt-1 rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
+            <input required name="name" type="text" placeholder="e.g. Studio Ghibli" className="w-full mt-1 rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-page-text)] focus:outline-none" />
           </div>
           <div>
             <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)]">Spark Cost</label>
-            <input required name="spark_cost" type="number" min="0" max="500" defaultValue="10" className="w-full mt-1 rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
+            <input required name="spark_cost" type="number" min="0" max="500" defaultValue="10" className="w-full mt-1 rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-page-text)] focus:outline-none" />
           </div>
         </div>
         
@@ -59,20 +59,20 @@ export default function StyleForm() {
           <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)] flex items-center gap-2">
             <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-sm">Secret Prompt (Hidden)</span>
           </label>
-          <textarea required name="description" placeholder="e.g. in the style of Hayao Miyazaki, anime, highly detailed..." className="w-full mt-1 h-24 resize-none rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
+          <textarea required name="description" placeholder="e.g. in the style of Hayao Miyazaki, anime, highly detailed..." className="w-full mt-1 h-24 resize-none rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-page-text)] focus:outline-none" />
         </div>
 
         {/* NEW: 5 Image URLs (Preview Gallery) */}
         <div className="rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-4">
-          <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink)] flex items-center gap-2 mb-3">
+          <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-page-text)] flex items-center gap-2 mb-3">
             <Images size={14} /> Preview Gallery (Min 1, Up to 5)
           </label>
           <div className="space-y-2">
-            <input required name="url_1" type="url" placeholder="Main Image URL (Required)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
-            <input name="url_2" type="url" placeholder="Image URL 2 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
-            <input name="url_3" type="url" placeholder="Image URL 3 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
-            <input name="url_4" type="url" placeholder="Image URL 4 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
-            <input name="url_5" type="url" placeholder="Image URL 5 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-ink)] focus:outline-none" />
+            <input required name="url_1" type="url" placeholder="Main Image URL (Required)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-page-text)] focus:outline-none" />
+            <input name="url_2" type="url" placeholder="Image URL 2 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-page-text)] focus:outline-none" />
+            <input name="url_3" type="url" placeholder="Image URL 3 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-page-text)] focus:outline-none" />
+            <input name="url_4" type="url" placeholder="Image URL 4 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-page-text)] focus:outline-none" />
+            <input name="url_5" type="url" placeholder="Image URL 5 (Optional)" className="w-full rounded-md border border-[var(--rule)] bg-white p-2 text-[12px] focus:border-[var(--color-page-text)] focus:outline-none" />
           </div>
         </div>
 
@@ -80,7 +80,7 @@ export default function StyleForm() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-[10px] font-[family-name:var(--mono)] uppercase tracking-[1px] text-[var(--color-ink3)]">Badge (Optional)</label>
-            <select name="badge" className="w-full mt-1 rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-ink)] focus:outline-none">
+            <select name="badge" className="w-full mt-1 rounded-md border border-[var(--rule)] bg-[var(--color-cream)] p-3 text-[12px] focus:border-[var(--color-page-text)] focus:outline-none">
               <option value="">None</option>
               <option value="HOT">HOT</option>
               <option value="NEW">NEW</option>
@@ -106,7 +106,7 @@ export default function StyleForm() {
         <button 
           type="submit" 
           disabled={isPending}
-          className="mt-4 flex items-center justify-center gap-2 w-full rounded-full bg-[var(--color-ink)] py-3 font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-gold)] transition-transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+          className="mt-4 flex items-center justify-center gap-2 w-full rounded-full bg-[var(--color-page-text)] py-3 font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-gold)] transition-transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
         >
           {isPending ? <Loader2 size={16} className="animate-spin" /> : "Deploy Style"}
         </button>

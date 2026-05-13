@@ -102,7 +102,7 @@ export default function GeneratorUI() {
           
           {/* DRAG & DROP ZONE */}
           <div className="rounded-xl border border-[var(--rule)] bg-white p-6 shadow-sm">
-            <label className="mb-4 block font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-ink)]">
+            <label className="mb-4 block font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-page-text)]">
               1. Upload Subject
             </label>
             
@@ -114,7 +114,7 @@ export default function GeneratorUI() {
                 <div className="mb-4 rounded-full bg-white p-4 shadow-sm border border-gray-100 transition-transform group-hover:scale-110 group-hover:-translate-y-1">
                   <ImageIcon size={32} className="text-gray-400" />
                 </div>
-                <h3 className="font-[family-name:var(--display)] text-xl text-[var(--color-ink)]">Drop selfie here</h3>
+                <h3 className="font-[family-name:var(--display)] text-xl text-[var(--color-page-text)]">Drop selfie here</h3>
                 <p className="mt-1 font-[family-name:var(--mono)] text-[9px] text-gray-500 uppercase tracking-widest font-bold">Tap to browse</p>
               </div>
             ) : (
@@ -135,7 +135,7 @@ export default function GeneratorUI() {
 
           {/* STYLE SELECTOR */}
           <div className={`rounded-xl border border-[var(--rule)] bg-white p-6 shadow-sm transition-all duration-500 ${previewUrl ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-            <label className="mb-4 block font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-ink)]">
+            <label className="mb-4 block font-[family-name:var(--mono)] text-[11px] font-bold uppercase tracking-[1px] text-[var(--color-page-text)]">
               2. Pick a World
             </label>
             
@@ -158,7 +158,7 @@ export default function GeneratorUI() {
                   <span className={`text-3xl mb-2 transition-transform duration-300 ${selectedStyle === style.id ? 'scale-110' : 'group-hover:scale-110'}`}>
                     {style.icon}
                   </span>
-                  <span className={`font-[family-name:var(--mono)] text-[9px] font-bold text-center uppercase tracking-widest ${selectedStyle === style.id ? 'text-[var(--color-ink)]' : 'text-gray-500'}`}>
+                  <span className={`font-[family-name:var(--mono)] text-[9px] font-bold text-center uppercase tracking-widest ${selectedStyle === style.id ? 'text-[var(--color-page-text)]' : 'text-gray-500'}`}>
                     {style.name}
                   </span>
                 </button>
@@ -174,7 +174,7 @@ export default function GeneratorUI() {
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
                   : isGenerating 
                     ? 'bg-[#0a0a0a] text-white cursor-wait' 
-                    : 'bg-[var(--color-ink)] text-[var(--color-gold)] hover:scale-[1.02] active:scale-95 hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]'
+                    : 'bg-[var(--color-page-text)] text-[var(--color-gold)] hover:scale-[1.02] active:scale-95 hover:shadow-[0_0_20px_rgba(251,191,36,0.3)]'
                 }`}
             >
               {!isGenerating && isReadyToGenerate && (
