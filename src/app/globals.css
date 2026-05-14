@@ -72,16 +72,16 @@
     }
   }
 
-  html.lenis, html.lenis body { height: auto; }
+  html.lenis, html.lenis body { height: auto; overflow-x: hidden; }
   .lenis.lenis-smooth { scroll-behavior: auto !important; }
 
   body {
     background-color: var(--color-page-bg);
     color: var(--color-page-text);
     -webkit-font-smoothing: antialiased;
-    scroll-behavior: smooth;
     padding-bottom: 100px; /* Space for macOS Dock */
     font-family: var(--font-inter), sans-serif;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, .display-font { font-family: var(--font-jakarta), sans-serif; letter-spacing: -0.02em; }

@@ -24,6 +24,16 @@ const SEO_KEYWORD_MAP: Record<string, string> = {
   "twitch": "/use-case/twitch-streamer-avatars",
   "medical": "/use-case/doctor-medical-portraits",
   "founder": "/use-case/tech-founder-headshots",
+  "financial advisor": "/use-case/financial-advisor-portraits",
+  "sales team": "/use-case/sales-team-headshots",
+  "product manager": "/use-case/product-manager-photos",
+  "architect": "/use-case/architect-designer-portraits",
+  "athlete": "/use-case/dancer-athlete-photos",
+  "podcast": "/use-case/podcast-host-avatars",
+  "virtual assistant": "/use-case/virtual-assistant-headshots",
+  "ecommerce": "/use-case/ecommerce-seller-portraits",
+  "journalist": "/use-case/journalist-writer-photos",
+  "wellness": "/use-case/yoga-wellness-portraits",
   
   // Glossary / Technical (TOPICAL AUTHORITY)
   "pulid": "/glossary/pulid",

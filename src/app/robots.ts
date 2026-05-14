@@ -1,4 +1,4 @@
-import type { MetadataRoute } from "next";
+import { MetadataRoute } from "next";
 
 /**
  * 🌟 PROFESSIONAL ROBOTS.TS CONFIGURATION (2026 Standard)
@@ -13,23 +13,23 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         disallow: [
-          "/api/",        // Internal APIs
-          "/admin/",      // Admin Dashboard
-          "/dashboard/",  // User Dashboard
-          "/sandbox/",    // Testing environment
-          "/sign-in",     // Auth routes
-          "/sign-up",     // Auth routes
-          "/*?_rsc=",     // Next.js React Server Component internal data
-          "/*?_data=",    // Next.js internal data fetching
+          "/admin",
+          "/dashboard",
+          "/api/",
+          "/_next/",
+          "/static/",
+          "/sign-in",
+          "/sign-up",
+          "/*?*", // Block all URL parameters (prevents faceted navigation bloat)
         ],
       },
       {
-        // 🤖 AI BOT MANAGEMENT: Block aggressive scrapers from training on proprietary content
+        // 🌟 AGGRESSIVE BOT PROTECTION
+        // We block AI scrapers that don't provide search value but eat crawl budget.
         userAgent: ["GPTBot", "CCBot", "Google-Extended", "anthropic-ai", "Omgilibot", "FacebookBot"],
         disallow: ["/style/", "/post/", "/u/"],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
-    host: siteUrl,
   };
 }

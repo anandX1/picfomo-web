@@ -92,5 +92,67 @@ export const USE_CASES: Record<string, UseCase> = {
     subtitle: 'Creative, moody, and expressive personal brand art.',
     styles: ['moody', 'cinematic', 'vibrant', 'vintage'],
     description: 'Express your creative soul with unique artist portraits. Perfect for Spotify profiles, album covers, and promotional material.'
+  },
+
+  // --- WAVE 2 USE CASES (MAY 2026) ---
+  'financial-advisor-portraits': {
+    title: 'AI Portraits for Financial Advisors',
+    subtitle: 'Build investor confidence with elite, trustworthy portraits.',
+    styles: ['corporate', 'classic', 'studio'],
+    description: 'Project stability and expertise to your clients. Our AI creates sophisticated headshots that help financial planners and advisors stand out on LinkedIn and wealth management portals.'
+  },
+  'sales-team-headshots': {
+    title: 'AI Headshots for Sales Teams',
+    subtitle: 'Close more leads with charismatic, high-energy portraits.',
+    styles: ['modern', 'dslr', 'corporate'],
+    description: 'Standardize your sales team’s professional image instantly. Generate consistent, approachable headshots that drive higher response rates on cold outreach and CRM profiles.'
+  },
+  'product-manager-photos': {
+    title: 'AI Photos for Product Managers',
+    subtitle: 'Visionary, collaborative portraits for tech leaders.',
+    styles: ['lifestyle', 'modern', 'studio'],
+    description: 'Command the roadmap with a professional profile that reflects your leadership. Perfect for PMs at startups and Big Tech who need a sharp, modern digital identity.'
+  },
+  'architect-designer-portraits': {
+    title: 'AI Portraits for Architects & Designers',
+    subtitle: 'Clean, structured portraits for the creative industry.',
+    styles: ['modern', 'classic', 'cinematic'],
+    description: 'Showcase your design sensibility with a high-end portrait. Ideal for architecture firm websites, portfolio pages, and design industry awards.'
+  },
+  'dancer-athlete-photos': {
+    title: 'AI Photos for Dancers & Athletes',
+    subtitle: 'Dynamic, high-motion portraits that capture your power.',
+    styles: ['vibrant', 'cinematic', 'athletic'],
+    description: 'Break the mold with high-energy action shots. Our AI maintains your identity while placing you in cinematic studio environments that highlight your physical craft.'
+  },
+  'podcast-host-avatars': {
+    title: 'AI Avatars for Podcast Hosts',
+    subtitle: 'Captivating profile art for the audio industry.',
+    styles: ['vibrant', 'cinematic', 'studio'],
+    description: 'Stand out in Spotify and Apple Podcast directories. Generate unique, high-contrast avatars that reflect your show’s personality and brand identity.'
+  },
+  'virtual-assistant-headshots': {
+    title: 'AI Headshots for Virtual Assistants',
+    subtitle: 'Approachable, tech-savvy portraits for global freelancers.',
+    styles: ['bright', 'lifestyle', 'corporate'],
+    description: 'Build immediate trust with remote clients. Our AI generates friendly, professional headshots that help VAs and freelancers win more contracts on Upwork and Fiverr.'
+  },
+  'ecommerce-seller-portraits': {
+    title: 'AI Portraits for E-commerce Sellers',
+    subtitle: 'Clean, commercial headshots for Shopify & Amazon sellers.',
+    styles: ['bright', 'studio', 'modern'],
+    description: 'Humanize your brand with a professional founder photo. Perfect for the "About Us" page of your Shopify store or Amazon Seller profile.'
+  },
+  'journalist-writer-photos': {
+    title: 'AI Portraits for Journalists & Writers',
+    subtitle: 'Serious, investigative portraits for authors and press.',
+    styles: ['classic', 'moody', 'dslr'],
+    description: 'Establish your byline with a sharp, professional portrait. Ideal for press badges, book jackets, and newsroom bios.'
+  },
+  'yoga-wellness-portraits': {
+    title: 'AI Portraits for Wellness Instructors',
+    subtitle: 'Zen, organic portraits for yoga and fitness leaders.',
+    styles: ['bright', 'lifestyle', 'vogue'],
+    description: 'Reflect your peaceful energy with high-end, organic portraits. Perfect for booking apps, retreat posters, and health and wellness social channels.'
   }
 };

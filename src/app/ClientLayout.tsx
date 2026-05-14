@@ -16,6 +16,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                        pathname.startsWith("/compare/") ||
                        pathname.startsWith("/guides/") ||
                        pathname === "/grader" ||
+                       pathname === "/creators" ||
                        pathname === "/glossary" ||
                        pathname.startsWith("/glossary/") ||
                        pathname === "/blog" ||
@@ -25,12 +26,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                        pathname.startsWith("/sign-up");
 
   const content = isPublicPage ? (
-    <>{children}</>
+    <div className="relative min-h-screen">
+      {children}
+    </div>
   ) : (
     <div className="flex h-screen w-full overflow-hidden">
       <VaultHandoff />
       <NavigationBar />
-      <main className="flex-1 h-full overflow-y-auto pb-20 md:pb-0">
+      <main className="flex-1 h-full overflow-y-auto pb-20 md:pb-0 hide-scroll">
         {children}
       </main>
     </div>
