@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { USE_CASES } from '@/data/use-cases';
 import { COMPARISONS } from '@/data/comparisons';
+import { GLOSSARY_TERMS } from '@/data/glossary';
 
 /**
  * 🌟 PROFESSIONAL SITEMAP ENGINE (2026 Standard)
@@ -33,6 +34,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 2. PROGRAMMATIC SEO LANDING PAGES
   // ==========================================
   const programmaticPages: MetadataRoute.Sitemap = [
+    // Glossary index
+    '/glossary',
+    // Glossary terms (Dynamically generated from data/glossary.ts)
+    ...Object.keys(GLOSSARY_TERMS).map((slug) => `/glossary/${slug}`),
+
     // Use-Cases (Dynamically generated from data/use-cases.ts)
     ...Object.keys(USE_CASES).map((slug) => `/use-case/${slug}`),
     

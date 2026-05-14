@@ -75,16 +75,16 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "PicFOMO — AI Portrait Generator",
-    description: "Your Selfie and unlimited Styles. ALL IN ONE PLACE. Pick a trending style — Ghibli, IPL cricket card, Bollywood poster. Drop a selfie. Get a portrait so stunning you'll actually change your Profile Picture.",
-    url: "/", // Next.js will auto-prefix this with metadataBase!
+    title: "PicFOMO — Your Best DP is 20 Seconds Away",
+    description: "The world's most realistic AI portrait generator. Drop one selfie, pick a style, and get a stunning masterpiece in 20 seconds. No photographer needed.",
+    url: "https://www.picfomo.com",
     siteName: "PicFOMO",
     images: [
       {
-        url: "/logo2.png", 
-        width: 1200, 
+        url: "/hero/8.webp", // Using a high-impact cinematic generation instead of just a logo
+        width: 1200,
         height: 630,
-        alt: "PicFOMO Logo",
+        alt: "PicFOMO Cinematic AI Portraits",
       },
     ],
     locale: "en_IN",
@@ -93,9 +93,10 @@ export const metadata: Metadata = {
   
   twitter: {
     card: "summary_large_image",
-    title: "PicFOMO — AI Portrait Generator",
-    description: "PicFOMO — Your Best Self is 20 Seconds Away.",
-    images: ["/logo2.png"],
+    title: "PicFOMO — Your Best DP is 20 Seconds Away",
+    description: "Drop your photo. Pick a style. Get your masterpiece. The #1 AI Portrait Generator.",
+    images: ["/hero/8.webp"], // Same high-impact image for Twitter cards
+    creator: "@picfomo",
   },
 
   // OPTIONAL: Add this once you connect to Google Search Console

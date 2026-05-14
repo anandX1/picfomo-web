@@ -145,6 +145,7 @@ export default async function StyleSeoPage({ params }: { params: Promise<{ slug:
                 alt={`${cleanName} AI portrait example generated with PicFOMO Identity-Lock™`} 
                 fill
                 priority
+                fetchPriority="high"
                 sizes="(max-width: 768px) 100vw, 440px"
                 className="object-cover" 
               />

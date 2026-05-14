@@ -16,6 +16,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                        pathname.startsWith("/compare/") ||
                        pathname.startsWith("/guides/") ||
                        pathname === "/grader" ||
+                       pathname === "/glossary" ||
+                       pathname.startsWith("/glossary/") ||
                        pathname === "/blog" ||
                        pathname.startsWith("/blog/") ||
                        pathname === "/join" || 

@@ -73,6 +73,14 @@ These are the core architectural and stylistic mandates for building the PicFOMO
   - **Hardware Acceleration:** Added `will-change` properties to all high-frequency animation elements (Hero cards, SVG paths, liquid backgrounds) to ensure 60fps smoothness.
   - **Responsive Image Assets:** Refined `sizes` attributes across the landing page to prevent downloading desktop-sized assets on mobile devices.
 
+### 6. Information Gain: Deep-Dive AI Glossary
+- **Achievement:** Established PicFOMO as a technical authority via a comprehensive AI Glossary.
+- **Implementation:**
+  - **Data Repository:** `src/data/glossary.ts` containing hyper-detailed technical definitions for 10+ core AI concepts (PuLID, LoRA, Identity-Lock, CFG Scale, etc.).
+  - **Semantic SEO:** Fully implemented `DefinedTermSet` and `DefinedTerm` JSON-LD schemas to explicitly signal educational value to Googlebot.
+  - **Dynamic Routing:** Scalable `/glossary/[slug]` architecture with a searchable, alphabetized index at `/glossary`.
+  - **Conversion Pivot:** Every glossary term deep-dive concludes with a high-contrast CTA to use the "Zero-Prompt" generator, turning educational traffic into users.
+
 ---
 
 ## graphify

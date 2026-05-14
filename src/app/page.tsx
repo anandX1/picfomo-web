@@ -21,10 +21,10 @@ export default async function Home() {
   } catch (error) {
     console.error("D1 DB Error (Serving Fallback Styles):", error);
     dynamicStyles = [
-      { id: "ghibli_fallback", name: "Ghibli", spark_cost: 2, preview_image_url: "/hero/1.png" },
-      { id: "dslr_fallback", name: "DSLR", spark_cost: 2, preview_image_url: "/hero/2.png" },
-      { id: "cyberpunk_fallback", name: "Cyberpunk", spark_cost: 2, preview_image_url: "/hero/3.png" },
-      { id: "vogue_fallback", name: "Vogue", spark_cost: 2, preview_image_url: "/hero/4.png" }
+      { id: "ghibli_fallback", name: "Ghibli", spark_cost: 2, preview_image_url: "/hero/1.webp" },
+      { id: "dslr_fallback", name: "DSLR", spark_cost: 2, preview_image_url: "/hero/2.webp" },
+      { id: "cyberpunk_fallback", name: "Cyberpunk", spark_cost: 2, preview_image_url: "/hero/3.webp" },
+      { id: "vogue_fallback", name: "Vogue", spark_cost: 2, preview_image_url: "/hero/4.webp" }
     ];
   }
 

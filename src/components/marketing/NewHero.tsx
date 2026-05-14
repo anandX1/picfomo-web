@@ -5,10 +5,10 @@ import Image from "next/image";
 import PublicFunnelModal from "./PublicFunnelModal"; // 🌟 IMPORT THE NEW MODAL
 
 const HERO_IMAGES = [
-  { id: 1, style: "Ghibli", url: "/hero/1.png" },
-  { id: 2, style: "DSLR", url: "/hero/2.png" },
-  { id: 3, style: "Cyberpunk", url: "/hero/3.png" },
-  { id: 4, style: "Vogue", url: "/hero/4.png" },
+  { id: 1, style: "Ghibli", url: "/hero/1.webp" },
+  { id: 2, style: "DSLR", url: "/hero/2.webp" },
+  { id: 3, style: "Cyberpunk", url: "/hero/3.webp" },
+  { id: 4, style: "Vogue", url: "/hero/4.webp" },
 ];
 
 const MARQUEE_IMAGES = [...HERO_IMAGES, ...HERO_IMAGES];
@@ -117,24 +117,39 @@ export default function NewHero({ dynamicStyles = [] }: { dynamicStyles?: any[] 
           {/* Left Flank */}
           <div className="hidden shrink-0 flex-col gap-4 lg:flex w-[180px] xl:w-[220px]">
             <div className="flank-card relative aspect-[4/5] translate-x-4 translate-y-4 rotate-[-8deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300 will-change-transform">
-              <Image src={HERO_IMAGES[0].url} alt={`${HERO_IMAGES[0].style} style AI portrait generator example - PicFOMO`} fill className="object-cover" priority sizes="(max-width: 1200px) 180px, 220px" />
+              <Image 
+                src={HERO_IMAGES[0].url} 
+                alt={`${HERO_IMAGES[0].style} style AI portrait generator example - PicFOMO`} 
+                fill 
+                className="object-cover" 
+                priority 
+                fetchPriority="high"
+                sizes="(max-width: 1200px) 180px, 220px" 
+              />
               <div className="absolute bottom-3 left-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[0].style}</div>
             </div>
             <div className="flank-card relative aspect-[4/5] -translate-x-4 rotate-[-3deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300 will-change-transform">
-              <Image src={HERO_IMAGES[1].url} alt={`${HERO_IMAGES[1].style} photorealistic AI headshot generator - PicFOMO Identity-Lock™`} fill className="object-cover" priority sizes="(max-width: 1200px) 180px, 220px" />
+              <Image 
+                src={HERO_IMAGES[1].url} 
+                alt={`${HERO_IMAGES[1].style} photorealistic AI headshot generator - PicFOMO Identity-Lock™`} 
+                fill 
+                className="object-cover" 
+                loading="lazy"
+                sizes="(max-width: 1200px) 180px, 220px" 
+              />
               <div className="absolute bottom-3 left-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[1].style}</div>
             </div>
           </div>
 
           {/* 🌟 HIGH-CONTRAST UPLOAD BOX */}
-          <div className="group relative w-full max-w-[95%] sm:max-w-xl shrink-0 lg:max-w-[460px] will-change-transform">
+          <div className="group relative w-full max-w-[95%] sm:max-w-xl shrink-0 lg:max-w-[460px] min-h-[300px] will-change-transform">
             <div className="pointer-events-none absolute -inset-8 rounded-full bg-[var(--color-gold)]/10 blur-[80px] opacity-0 transition-opacity duration-1000 group-hover:opacity-100 hidden md:block"></div>
             
             <div id="dropzone-container" 
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
-              className={`relative flex min-h-[240px] lg:min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 bg-[#080808]/90 p-6 lg:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] transition-all duration-700 cursor-pointer group-active:scale-[0.98] will-change-transform ${dragState === "dragging" ? 'bg-[rgba(212,175,55,0.05)] border-[var(--color-gold)] scale-105' : 'border-white/30 hover:border-[var(--color-gold)]/80'}`}
+              className={`relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 bg-[#080808]/90 p-6 lg:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] transition-all duration-700 cursor-pointer group-active:scale-[0.98] will-change-transform ${dragState === "dragging" ? 'bg-[rgba(212,175,55,0.05)] border-[var(--color-gold)] scale-105' : 'border-white/30 hover:border-[var(--color-gold)]/80'}`}
             >
               {/* 🌟 INVISIBLE FILE INPUT FOR CLICKS */}
               <input 
@@ -176,11 +191,25 @@ export default function NewHero({ dynamicStyles = [] }: { dynamicStyles?: any[] 
           {/* Right Flank */}
           <div className="hidden shrink-0 flex-col gap-4 lg:flex w-[180px] xl:w-[220px]">
             <div className="flank-card relative aspect-[4/5] -translate-x-4 translate-y-4 rotate-[8deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300">
-              <Image src={HERO_IMAGES[2].url} alt={`${HERO_IMAGES[2].style} aesthetic AI portrait - PicFOMO Cinematic Synthesis`} fill className="object-cover" priority sizes="220px" />
+              <Image 
+                src={HERO_IMAGES[2].url} 
+                alt={`${HERO_IMAGES[2].style} aesthetic AI portrait - PicFOMO Cinematic Synthesis`} 
+                fill 
+                className="object-cover" 
+                loading="lazy"
+                sizes="220px" 
+              />
               <div className="absolute bottom-3 right-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[2].style}</div>
             </div>
             <div className="flank-card relative aspect-[4/5] translate-x-4 rotate-[3deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300">
-              <Image src={HERO_IMAGES[3].url} alt={`${HERO_IMAGES[3].style} high-fashion AI portrait generator example - PicFOMO Vogue Style`} fill className="object-cover" priority sizes="220px" />
+              <Image 
+                src={HERO_IMAGES[3].url} 
+                alt={`${HERO_IMAGES[3].style} high-fashion AI portrait generator example - PicFOMO Vogue Style`} 
+                fill 
+                className="object-cover" 
+                loading="lazy"
+                sizes="220px" 
+              />
               <div className="absolute bottom-3 right-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[3].style}</div>
             </div>
           </div>
@@ -200,7 +229,7 @@ export default function NewHero({ dynamicStyles = [] }: { dynamicStyles?: any[] 
                   fill 
                   className="object-cover" 
                   sizes="110px"
-                  {...(idx < 4 ? { priority: true } : { loading: "lazy" })}
+                  loading="lazy"
                 />
                 <div className="absolute bottom-1.5 left-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[8px] font-bold text-white backdrop-blur-md border border-white/10">{post.style}</div>
               </div>

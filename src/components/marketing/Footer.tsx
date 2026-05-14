@@ -34,6 +34,7 @@ export default function Footer() {
               <li><Link href="#how-it-works" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">How it works</Link></li>
               <li><Link href="#pricing" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Pricing</Link></li>
               <li><Link href="/explore" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Creator Feed</Link></li>
+              <li><Link href="/glossary" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">AI Glossary</Link></li>
             </ul>
           </div>
 

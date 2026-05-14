@@ -20,7 +20,20 @@ const SEO_KEYWORD_MAP: Record<string, string> = {
   "dating profile": "/use-case/dating-profile-photos",
   "linkedin": "/use-case/linkedin-profile-pictures",
   "headshots": "/use-case/acting-headshots",
+  "lawyer": "/use-case/lawyer-headshots",
+  "twitch": "/use-case/twitch-streamer-avatars",
+  "medical": "/use-case/doctor-medical-portraits",
+  "founder": "/use-case/tech-founder-headshots",
   
+  // Glossary / Technical (TOPICAL AUTHORITY)
+  "pulid": "/glossary/pulid",
+  "lora": "/glossary/lora",
+  "sdxl": "/glossary/sdxl",
+  "identity-lock": "/glossary/identity-lock",
+  "inference": "/glossary/inference-steps",
+  "latent space": "/glossary/latent-space",
+  "upscaling": "/glossary/upscaling",
+
   // Comparisons
   "aragon": "/compare/picfomo-vs-aragon-ai",
   "photo ai": "/compare/picfomo-vs-photo-ai",

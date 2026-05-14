@@ -9,6 +9,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
 
+import { InterlinkContent } from "@/utils/seo";
+
 interface PostData {
   id: string;
   image_url: string;
@@ -235,20 +237,20 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
 
               {/* 🌟 GROQ TITLE & DESCRIPTION */}
               <h1 className="text-3xl md:text-4xl font-[family-name:var(--display)] tracking-tight text-[var(--color-page-text)] mb-3 leading-tight">
-                {post.title || post.style_name || "Aesthetic Generation"}
+                <InterlinkContent text={post.title || post.style_name || "Aesthetic Generation"} />
               </h1>
 
               {post.description && (
-                <p className="text-[var(--color-ink2)] text-[15px] mb-4 leading-relaxed font-light">
-                  {post.description}
-                </p>
+                <div className="text-[var(--color-ink2)] text-[15px] mb-4 leading-relaxed font-light">
+                  <InterlinkContent text={post.description} />
+                </div>
               )}
 
               {/* ORIGINAL PROMPT (shown as context) */}
               {post.prompt_used && (
-                <p className="text-[var(--color-ink3)] text-[13px] mb-6 leading-relaxed italic">
-                  "{post.prompt_used}"
-                </p>
+                <div className="text-[var(--color-ink3)] text-[13px] mb-6 leading-relaxed italic border-l-2 border-[var(--color-gold-pale)] pl-4">
+                  "<InterlinkContent text={post.prompt_used} />"
+                </div>
               )}
 
               {/* 🌟 GROQ TAGS */}
