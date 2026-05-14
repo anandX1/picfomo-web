@@ -1,0 +1,11 @@
+/* TEAM */
+Chef: PicFOMO Team
+Twitter: @picfomo
+Location: India 🇮🇳
+
+/* SITE */
+Last update: 2026/05/15
+Language: English
+Software: Next.js, Cloudflare, D1, TailwindCSS
+Aesthetic: Luxury AI
+Tech: Identity-Lock™

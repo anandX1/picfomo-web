@@ -37,8 +37,11 @@ export default function Navbar() {
 
       {/* 🌟 OPTIMIZED CENTER LINKS */}
       <div className="hidden gap-8 md:flex">
-        <Link href="/sign-up" className="text-sm font-semibold tracking-wide text-white/50 transition-colors hover:text-white">
+        <Link href="/styles" className="text-sm font-semibold tracking-wide text-white/50 transition-colors hover:text-[var(--color-gold-light)] hover:text-white">
           Styles
+        </Link>
+        <Link href="/blog" className="text-sm font-semibold tracking-wide text-white/50 transition-colors hover:text-white">
+          Blog
         </Link>
         <Link href="#how-it-works" className="text-sm font-semibold tracking-wide text-white/50 transition-colors hover:text-white">
           How it works

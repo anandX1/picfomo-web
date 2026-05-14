@@ -34,9 +34,8 @@ export const metadata: Metadata = {
   creator: "PicFOMO",
   publisher: "PicFOMO",
 
-  // 4. CANONICAL LINKS: Forces Google to combine ranking power into one URL
+  // 4. ALTERNATES: Auto-generates correct canonical URLs for each page based on metadataBase
   alternates: {
-    canonical: '/',
     languages: {
       'en-IN': '/en-IN',
       'en-US': '/en-US',

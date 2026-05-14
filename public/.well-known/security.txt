@@ -1,0 +1,7 @@
+Contact: mailto:security@picfomo.com
+Expires: 2027-01-01T00:00:00.000Z
+Acknowledgements: https://www.picfomo.com/acknowledgements
+Preferred-Languages: en
+Canonical: https://www.picfomo.com/.well-known/security.txt
+Policy: https://www.picfomo.com/security-policy
+Hiring: https://www.picfomo.com/careers

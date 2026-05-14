@@ -24,7 +24,13 @@ export default function NewFeed() {
       <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
         {FEED_ITEMS.map((item) => (
           <div key={item.id} className="relative group rounded-2xl overflow-hidden cursor-pointer break-inside-avoid shadow-lg bg-[#111] border border-white/5">
-            <Image src={item.image} alt={item.user} width={500} height={700} className="w-full h-auto object-cover transform group-hover:scale-105 transition duration-500" />
+            <Image 
+              src={item.image} 
+              alt={`AI Portrait by ${item.user} - Generated with PicFOMO`} 
+              width={500} 
+              height={700} 
+              className="w-full h-auto object-cover transform group-hover:scale-105 transition duration-500" 
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold text-white bg-white/20 backdrop-blur px-2 py-1 rounded">{item.user}</span>

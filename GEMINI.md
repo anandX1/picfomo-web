@@ -47,3 +47,26 @@ Rules:
 - IF graphify-out/wiki/index.md EXISTS, navigate it instead of reading raw files
 - For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+---
+
+# "Luxury AI" SEO Overhaul & Blog Strategy (2026 Mandate)
+
+This section outlines the persistent strategy for PicFOMO's search engine dominance. All future development must align with these directives.
+
+## 1. Core Principles: Depth Over Breadth
+- **Technical Perfection:** Prioritize deep technical execution (JSON-LD, Schema.org Article/WebApplication schemas, semantic HTML5, server-side rendering) over volume.
+- **Structural Integrity:** Every public route must have dynamic meta tags (`title`, `description`, `canonical`, `og:image`) and be auto-indexed in `src/app/sitemap.ts`.
+- **Keyword Philosophy:** Target low-competition, high-intent long-tail keywords (e.g., "realistic eyes in AI headshots", "AI headshots for real estate agents") rather than high-competition generic terms.
+
+## 2. Blog & Guide Architecture
+- **Programmatic Scale:** Use dynamic routes (`/blog/[slug]`, `/guides/[slug]`, `/use-case/[slug]`) to generate targeted landing pages at scale while maintaining a unique, premium design.
+- **Authority Signals (E-E-A-T):** 
+  - Every article must be plagiarism-free and original.
+  - Include 4-5 strategic outbound links to high Domain Authority (DA > 80) sites (academic journals, industry authorities, reputable tech news).
+- **Internal Linking:** Every guide or blog post must naturally funnel the user back to the primary generation tools via high-contrast CTA sections.
+
+## 3. SEO-Driven UX (2026 Authenticity Shift)
+- Search trends for 2026 prioritize "authenticity" and "skin texture" over "plastic-looking AI".
+- SEO content must reflect this shift, positioning PicFOMO's Identity-Lock™ technology as the solution for *realism*, not just generation.
+

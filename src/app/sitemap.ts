@@ -1,26 +1,55 @@
 import { MetadataRoute } from 'next';
 
-// 🌟 CRITICAL SEO FIX: Cache this sitemap for 24 hours (86400 seconds)!
-// If you don't do this, querying rows dynamically will time out 
-// your Cloudflare worker when Googlebot tries to fetch it.
+/**
+ * 🌟 PROFESSIONAL SITEMAP ENGINE (2026 Standard)
+ * This file dynamically generates a comprehensive index of PicFOMO's pages.
+ * Revalidated every 24 hours to balance freshness with Cloudflare edge performance.
+ */
 export const revalidate = 86400; 
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Canonical host (matches `metadataBase` + all canonicals)
   const baseUrl = "https://www.picfomo.com";
 
   // ==========================================
-  // 1. STATIC CORE PAGES
+  // 1. CORE MARKETING & HUB PAGES
   // ==========================================
   const staticPages: MetadataRoute.Sitemap = [
     '',
     '/explore',
+    '/styles',
+    '/blog',
     '/join',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: route === "" ? "daily" : "weekly",
-    priority: route === "" ? 1.0 : 0.7,
+    priority: route === "" ? 1.0 : 0.8,
+  }));
+
+  // ==========================================
+  // 2. PROGRAMMATIC SEO LANDING PAGES
+  // ==========================================
+  const programmaticPages: MetadataRoute.Sitemap = [
+    // Use-Cases
+    '/use-case/real-estate-headshots',
+    '/use-case/dating-profile-photos',
+    '/use-case/linkedin-profile-pictures',
+    '/use-case/acting-headshots',
+    // Competitor Comparisons
+    '/compare/picfomo-vs-aragon-ai',
+    '/compare/picfomo-vs-photo-ai',
+    // Guides & Educational
+    '/guides/perfect-selfie-for-ai-headshots',
+    '/guides/how-it-works',
+    // Blog Posts
+    '/blog/realistic-eyes-in-ai-headshots-2026',
+    '/blog/ai-headshots-for-real-estate-agents-authenticity',
+    '/blog/retro-film-style-ai-portraits-90s-aesthetic',
+  ].map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.9, // High priority as these are entry-point landing pages
   }));
 
   let dynamicStyles: MetadataRoute.Sitemap = [];
@@ -32,45 +61,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const db = (ctx.env.DB as any);
 
     // ==========================================
-    // 2. PROGRAMMATIC SEO TRAP PAGES (STYLES)
-    // 🌟 NOW FULLY AUTOMATED! Every new style in your DB is auto-indexed.
+    // 3. DYNAMIC STYLE PAGES
     // ==========================================
     let stylesResult: any = { results: [] };
     try {
       stylesResult = await db.prepare(`
-        SELECT slug, created_at 
-        FROM styles 
+        SELECT slug, created_at FROM styles 
         WHERE is_active = 1 AND slug IS NOT NULL
       `).all();
-    } catch {
-      stylesResult = { results: [] };
-    }
+    } catch { stylesResult = { results: [] }; }
 
     dynamicStyles = (stylesResult?.results ?? []).map((style: any) => ({
       url: `${baseUrl}/style/${encodeURIComponent(style.slug)}`,
       lastModified: style.created_at ? new Date(style.created_at) : new Date(),
       changeFrequency: 'weekly',
-      priority: 0.9, // Very high priority for your landing pages!
+      priority: 0.9,
     }));
 
     // ==========================================
-    // 3. DYNAMIC PAGES (PUBLIC POSTS)
+    // 4. PUBLIC COMMUNITY POSTS
     // ==========================================
-    // 🌟 Fetch last 1,000 public posts
-    // Kept limit at 1000 to guarantee Cloudflare never times out. 
-    // Googlebot prefers fast, bite-sized sitemaps over massive slow ones!
     let postsResult: any = { results: [] };
     try {
       postsResult = await db.prepare(`
-        SELECT id, created_at
-        FROM posts 
-        WHERE is_public = 1 
-        ORDER BY created_at DESC 
-        LIMIT 1000
+        SELECT id, created_at FROM posts 
+        WHERE is_public = 1 ORDER BY created_at DESC LIMIT 1000
       `).all();
-    } catch {
-      postsResult = { results: [] };
-    }
+    } catch { postsResult = { results: [] }; }
 
     dynamicPosts = (postsResult?.results ?? []).map((post: any) => ({
       url: `${baseUrl}/post/${encodeURIComponent(post.id)}`,
@@ -80,19 +97,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     // ==========================================
-    // 4. CREATOR PROFILES
+    // 5. CREATOR PROFILES
     // ==========================================
     let usersResult: any = { results: [] };
     try {
       usersResult = await db.prepare(`
-        SELECT username
-        FROM users 
-        WHERE username IS NOT NULL 
-        LIMIT 500
+        SELECT username FROM users WHERE username IS NOT NULL LIMIT 500
       `).all();
-    } catch {
-      usersResult = { results: [] };
-    }
+    } catch { usersResult = { results: [] }; }
 
     dynamicProfiles = (usersResult?.results ?? []).map((user: any) => ({
       url: `${baseUrl}/u/${encodeURIComponent(user.username)}`,
@@ -102,8 +114,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
   } catch (error) {
-    // Sitemap should still be valid even if DB is unavailable (preview/build).
+    console.error("Sitemap generation error:", error);
   }
 
-  return [...staticPages, ...dynamicStyles, ...dynamicPosts, ...dynamicProfiles];
+  return [
+    ...staticPages, 
+    ...programmaticPages, 
+    ...dynamicStyles, 
+    ...dynamicPosts, 
+    ...dynamicProfiles
+  ];
 }

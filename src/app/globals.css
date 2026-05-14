@@ -3,6 +3,9 @@
 @layer base {
   :root {
     /* ☀️ LIGHT MODE (SYSTEM DEFAULT) */
+    --display: 'Plus Jakarta Sans', sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
     --color-page-bg: #FAFAF8;
     --color-cream: #F5F1EA;
     --color-cream2: #EDE8DE;

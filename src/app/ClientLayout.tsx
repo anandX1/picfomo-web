@@ -9,6 +9,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   
   // 🌟 Check if we are on a public marketing or auth page
   const isPublicPage = pathname === "/" || 
+                       pathname === "/styles" ||
+                       pathname.startsWith("/style/") ||
+                       pathname.startsWith("/use-case/") ||
+                       pathname.startsWith("/compare/") ||
+                       pathname.startsWith("/guides/") ||
+                       pathname === "/blog" ||
+                       pathname.startsWith("/blog/") ||
                        pathname === "/join" || 
                        pathname.startsWith("/sign-in") || 
                        pathname.startsWith("/sign-up");

@@ -108,6 +108,12 @@ export default async function StyleSeoPage({ params }: { params: Promise<{ slug:
             <Link href="/sign-up" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-page-text)] px-8 py-4 font-[family-name:var(--display)] text-[16px] tracking-[1.5px] text-[var(--color-gold-light)] shadow-xl transition-all hover:-translate-y-1 hover:bg-[var(--color-gold)] hover:text-[var(--color-page-text)] w-full sm:w-auto">
               <Wand2 size={18} /> GENERATE YOURS FREE <ChevronRight size={18} />
             </Link>
+
+            <div className="mt-8 flex items-center gap-4">
+              <Link href="/styles" className="text-[12px] font-[family-name:var(--mono)] uppercase tracking-[2px] text-[var(--color-ink3)] hover:text-[var(--color-gold)] transition-colors flex items-center gap-2">
+                ← Browse All Styles
+              </Link>
+            </div>
           </div>
 
           {/* 🌟 Dynamic Featured Image */}

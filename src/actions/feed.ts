@@ -36,6 +36,7 @@ export async function fetchFeedChunk(
         const personalizedQuery = `
           SELECT 
             p.id, p.image_url, p.user_id, p.created_at, p.tags, p.prompt_used, p.style_id,
+            p.title, p.description,
             s.name as style_name, u.username, u.profile_image_url,
             COALESCE(l.likes_count, 0) as likes_count,
             COALESCE(v.views_count, 0) as views_count,
@@ -60,7 +61,7 @@ export async function fetchFeedChunk(
           LIMIT 12 OFFSET ?
         `;
         
-        const binds = [currentUserId, ...topStyles, currentUserId, currentUserId, offset];
+        const binds = [currentUserId, ...topStyles, currentUserId, currentUserId, currentUserId, offset];
         const { results: personalizedPosts } = await db.prepare(personalizedQuery).bind(...binds).all();
 
         const existingIds = personalizedPosts.map((p: any) => p.id);
@@ -70,6 +71,7 @@ export async function fetchFeedChunk(
         const wildcardQuery = `
           SELECT 
             p.id, p.image_url, p.user_id, p.created_at, p.tags, p.prompt_used, p.style_id,
+            p.title, p.description,
             s.name as style_name, u.username, u.profile_image_url,
             COALESCE(l.likes_count, 0) as likes_count,
             COALESCE(v.views_count, 0) as views_count,
@@ -125,6 +127,7 @@ export async function fetchFeedChunk(
   let baseQuery = `
     SELECT 
       p.id, p.image_url, p.user_id, p.created_at, p.tags, p.prompt_used, p.style_id,
+      p.title, p.description,
       s.name as style_name, u.username, u.profile_image_url,
       COALESCE(l.likes_count, 0) as likes_count,
       COALESCE(v.views_count, 0) as views_count,
@@ -144,9 +147,9 @@ export async function fetchFeedChunk(
   const binds: any[] = [currentUserId === 'guest' ? 'none' : currentUserId];
 
   if (searchQuery && searchQuery.trim() !== "") {
-    baseQuery += ` AND (LOWER(p.tags) LIKE LOWER(?) OR LOWER(p.prompt_used) LIKE LOWER(?) OR LOWER(u.username) LIKE LOWER(?))`;
+    baseQuery += ` AND (LOWER(p.tags) LIKE LOWER(?) OR LOWER(p.prompt_used) LIKE LOWER(?) OR LOWER(p.title) LIKE LOWER(?) OR LOWER(u.username) LIKE LOWER(?))`;
     const searchWildcard = `%${searchQuery.trim()}%`;
-    binds.push(searchWildcard, searchWildcard, searchWildcard);
+    binds.push(searchWildcard, searchWildcard, searchWildcard, searchWildcard);
   }
 
   baseQuery += ` ORDER BY ${orderBy} LIMIT ? OFFSET ?`;

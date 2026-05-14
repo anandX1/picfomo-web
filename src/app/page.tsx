@@ -1,5 +1,6 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import MarketingClient from "./MarketingClient";
+import SoftwareSchema from "@/components/marketing/SoftwareSchema";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -72,6 +73,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <SoftwareSchema />
 
       <MarketingClient dynamicStyles={dynamicStyles} />
     </>
