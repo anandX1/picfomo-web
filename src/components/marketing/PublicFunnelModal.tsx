@@ -51,6 +51,7 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
 
   // --- FUNNEL STATE ---
   const [selectedStyleId, setSelectedStyleId] = useState<string>(dynamicStyles[0]?.id || '');
+  const [prompt, setPrompt] = useState(''); // 🌟 ADDED PROMPT STATE
   const [isGenerating, setIsGenerating] = useState(false);
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +106,7 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt: '',
+          prompt: prompt, // 🌟 NOW SENDING THE CUSTOM PROMPT
           styleId: selectedStyleId,
           sourceImage: base64
         })
@@ -150,7 +151,7 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
           {view === 'generating' && <SocialBarAd />}
 
           {/* Header */}
-          <div className="w-full max-w-4xl flex justify-between items-center mb-8 shrink-0">
+          <div className="w-full max-w-4xl flex justify-between items-center mb-8 shrink-0 mt-4">
             {view === 'generating' ? <div /> : (
               <button 
                 onClick={onClose}
@@ -178,40 +179,52 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
                 <p className="text-white/60 mb-8 text-center text-sm md:text-base">One free generation. Make it count.</p>
 
                 {error && (
-                  <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm font-bold flex items-center gap-2">
+                  <div className="mb-6 p-4 w-full max-w-3xl bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm font-bold flex items-center gap-2">
                     <X size={16} /> {error}
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 w-full mb-10">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-3xl mt-2 mb-6">
                   {dynamicStyles.map((style) => (
-                    <div 
+                    <button 
                       key={style.id}
                       onClick={() => setSelectedStyleId(style.id)}
-                      className={`relative aspect-[4/5] rounded-2xl overflow-hidden cursor-pointer border-2 transition-all duration-300 group ${selectedStyleId === style.id ? 'border-[var(--color-gold)] scale-[1.02] shadow-[0_0_30px_rgba(212,175,55,0.3)]' : 'border-white/10 hover:border-white/30'}`}
+                      className={`relative aspect-[4/5] rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 group ${selectedStyleId === style.id ? 'border-4 border-[var(--color-gold)] scale-105 shadow-2xl z-10' : 'border-4 border-transparent hover:border-white/30'}`}
                     >
-                      <Image 
+                      <img 
                         src={style.preview_image_url} 
                         alt={style.name} 
-                        fill 
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                      <div className="absolute bottom-3 left-3 right-3">
-                        <p className="font-bold text-sm md:text-base truncate">{style.name}</p>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3 text-left">
+                        <p className="font-black text-xs md:text-sm uppercase tracking-wider text-white drop-shadow-md">{style.name}</p>
                       </div>
                       {selectedStyleId === style.id && (
-                        <div className="absolute top-2 right-2 bg-[var(--color-gold)] text-black p-1 rounded-full">
-                          <CheckCircle2 size={14} />
+                        <div className="absolute top-2 right-2 bg-[var(--color-gold)] text-black p-1 rounded-full shadow-lg">
+                          <CheckCircle2 size={16} />
                         </div>
                       )}
-                    </div>
+                    </button>
                   ))}
+                </div>
+
+                {/* 🌟 NEW PROMPT INPUT FOR CUSTOMIZATION */}
+                <div className="w-full max-w-3xl mb-8">
+                  <label className="block font-mono text-[10px] font-bold uppercase tracking-[2px] text-white/60 mb-3">
+                    Additional Details (Optional)
+                  </label>
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="e.g., make it dark and cinematic..."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:border-[var(--color-gold)] transition-colors resize-none h-24 shadow-inner"
+                  />
                 </div>
 
                 <button 
                   onClick={handleGenerate}
-                  className="w-full max-w-md py-5 bg-[var(--color-gold)] text-black font-black text-lg rounded-2xl shadow-[0_10px_40px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest"
+                  className="w-full max-w-md py-5 bg-[var(--color-gold)] text-black font-black text-lg rounded-2xl shadow-[0_10px_40px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest mb-10"
                 >
                   <Sparkles size={22} /> Generate For Free
                 </button>
@@ -222,28 +235,53 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
             {view === 'generating' && (
               <div className="w-full flex flex-col items-center py-10">
                 <div className="relative mb-10">
-                  <div className="absolute inset-0 bg-[var(--color-gold)] opacity-20 blur-3xl rounded-full animate-pulse" />
+                  <div className="absolute inset-0 bg-[var(--color-gold)] opacity-20 blur-[100px] rounded-full animate-pulse" />
+                  
                   <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="relative w-24 h-24 md:w-32 md:h-32 bg-white/5 border border-white/10 rounded-[2rem] flex items-center justify-center backdrop-blur-xl"
+                    animate={{ 
+                      rotate: 360,
+                      boxShadow: ["0 0 20px rgba(212,175,55,0.2)", "0 0 60px rgba(212,175,55,0.5)", "0 0 20px rgba(212,175,55,0.2)"]
+                    }}
+                    transition={{ 
+                      rotate: { duration: 4, repeat: Infinity, ease: "linear" },
+                      boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                    }}
+                    className="relative w-24 h-24 md:w-32 md:h-32 bg-white/5 border border-white/10 rounded-[2.5rem] flex items-center justify-center backdrop-blur-2xl"
                   >
                     <Zap size={48} className="text-[var(--color-gold)] fill-[var(--color-gold)] animate-pulse" />
+                    
+                    <div className="absolute inset-0 overflow-hidden rounded-[2.5rem]">
+                       {[...Array(6)].map((_, i) => (
+                         <motion.div
+                           key={i}
+                           initial={{ y: -20, opacity: 0 }}
+                           animate={{ y: 120, opacity: [0, 1, 0] }}
+                           transition={{ duration: 1 + Math.random(), repeat: Infinity, delay: Math.random() }}
+                           className="absolute w-px h-8 bg-[var(--color-gold)]/30"
+                           style={{ left: `${(i + 1) * 15}%` }}
+                         />
+                       ))}
+                    </div>
                   </motion.div>
                 </div>
                 
-                <h2 className="text-3xl font-black mb-4">Synthesizing...</h2>
-                <div className="w-full max-w-md h-1.5 bg-white/10 rounded-full overflow-hidden mb-4">
+                <h2 className="text-3xl md:text-4xl font-black mb-4 bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">Synthesizing...</h2>
+                
+                <div className="w-full max-w-md h-1.5 bg-white/10 rounded-full overflow-hidden mb-4 border border-white/5">
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
-                    className="h-full bg-[var(--color-gold)]"
+                    className="h-full bg-gradient-to-r from-[var(--color-gold)] to-white shadow-[0_0_15px_rgba(212,175,55,0.5)]"
                   />
                 </div>
-                <p className="text-white/40 font-mono text-xs uppercase tracking-[0.3em] mb-12">{progress}% Matrix Integration</p>
+                
+                <p className="text-white/40 font-mono text-[10px] uppercase tracking-[0.4em] mb-12">
+                  <span className="text-[var(--color-gold)] animate-pulse">●</span> {progress}% Neural Link Established
+                </p>
 
-                <div className="w-full max-w-2xl bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8">
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-6 text-center">Sponsor Message</p>
+                <div className="w-full max-w-2xl bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 backdrop-blur-md relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-6 text-center">Secure Synthesis Sponsored By</p>
                   <NativeAd />
                 </div>
               </div>
@@ -251,7 +289,7 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
 
             {/* VIEW: RESULT */}
             {view === 'result' && outputImage && (
-              <div className="w-full flex flex-col items-center relative">
+              <div className="w-full flex flex-col items-center relative mb-10">
                 <div className="w-full max-w-lg aspect-[4/5] relative rounded-3xl overflow-hidden shadow-2xl border border-white/10">
                   <Image 
                     src={outputImage} 
@@ -265,7 +303,6 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
                   </div>
                 </div>
 
-                {/* PAYWALL OVERLAY */}
                 <AnimatePresence>
                   {showPaywall && (
                     <motion.div 

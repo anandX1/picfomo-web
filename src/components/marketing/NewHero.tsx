@@ -13,7 +13,7 @@ const HERO_IMAGES = [
 
 const MARQUEE_IMAGES = [...HERO_IMAGES, ...HERO_IMAGES];
 
-export default function NewHero({ dynamicStyles }: { dynamicStyles: any[] }) {
+export default function NewHero({ dynamicStyles = [] }: { dynamicStyles?: any[] }) {
   const [mounted, setMounted] = useState(false);
   const [dragState, setDragState] = useState<"idle" | "dragging">("idle");
   

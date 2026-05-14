@@ -37,3 +37,13 @@ These are the core architectural and stylistic mandates for building the PicFOMO
 ## 6. CSS Specificity & Layering
 - **Isolation:** Always use `isolation: isolate` and explicit `z-index` (e.g., `z-[50]`) on foreground text and interactive cards to ensure they are never covered by background glows or pseudo-elements.
 - **Utility Override:** When standard tailwind utilities fail against custom CSS, use hardcoded styles or the `!important` flag sparingly (e.g., `!bg-white`) to enforce critical visibility.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- ALWAYS read graphify-out/GRAPH_REPORT.md before reading any source files, running grep/glob searches, or answering codebase questions. The graph is your primary map of the codebase.
+- IF graphify-out/wiki/index.md EXISTS, navigate it instead of reading raw files
+- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

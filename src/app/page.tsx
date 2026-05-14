@@ -5,24 +5,26 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function Home() {
-  const envCtx = (await getCloudflareContext()).env as any;
-  const db = envCtx.DB;
-
   let dynamicStyles: any[] = [];
   try {
-    const { results } = await db.prepare(`
-      SELECT id, name, description, spark_cost, preview_image_url, preview_urls, badge 
-      FROM styles 
-      WHERE is_active = 1 AND id != 'schnell' 
-      ORDER BY sort_order ASC, created_at DESC
-    `).all();
-
-    dynamicStyles = results.map((style: any) => ({
-      ...style,
-      preview_urls: typeof style.preview_urls === 'string' ? JSON.parse(style.preview_urls) : (style.preview_urls || [])
-    }));
+    const envCtx = await getCloudflareContext({ async: true });
+    const db = envCtx.env.DB as any;
+    if (db) {
+      const { results } = await db.prepare("SELECT id, name, description, spark_cost, preview_image_url, preview_urls, badge FROM styles WHERE is_active = 1 AND id != 'schnell' ORDER BY sort_order ASC, created_at DESC").all();
+      dynamicStyles = results.map((style: any) => {
+        let images: string[] = [];
+        try { images = JSON.parse(style.preview_urls || '[]'); } catch(e) {}
+        return { ...style, preview_image_url: images[0] || style.preview_image_url };
+      });
+    }
   } catch (error) {
-    console.error("Failed to fetch styles:", error);
+    console.error("D1 DB Error (Serving Fallback Styles):", error);
+    dynamicStyles = [
+      { id: "ghibli_fallback", name: "Ghibli", spark_cost: 2, preview_image_url: "/hero/1.png" },
+      { id: "dslr_fallback", name: "DSLR", spark_cost: 2, preview_image_url: "/hero/2.png" },
+      { id: "cyberpunk_fallback", name: "Cyberpunk", spark_cost: 2, preview_image_url: "/hero/3.png" },
+      { id: "vogue_fallback", name: "Vogue", spark_cost: 2, preview_image_url: "/hero/4.png" }
+    ];
   }
 
   // 🌟 SEO BOOST: JSON-LD Structured Data for the Homepage
