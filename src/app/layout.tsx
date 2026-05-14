@@ -1,8 +1,22 @@
+import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from '@clerk/nextjs';
 import "./globals.css";
 import { Toaster } from "sonner";
 import ClientLayout from "./ClientLayout";
+
+// 🌟 OPTIMIZED FONTS
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-jakarta',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
 // 🌟 ADDED: Premium Viewport Settings
 export const viewport: Viewport = {
@@ -97,7 +111,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" className={`${jakarta.variable} ${inter.variable}`}>
         <body className="antialiased bg-[var(--color-page-bg)] text-[var(--color-page-text)] selection:bg-[var(--color-gold)] selection:text-black">
           
           <ClientLayout>

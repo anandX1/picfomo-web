@@ -80,6 +80,7 @@ export default function ResultsGrid() {
             filter: blur(40px);
             opacity: 0.92;
             animation: liquidDrift 16s ease-in-out infinite alternate;
+            will-change: transform;
         }
       `}} />
       <div className="brand-gold-glow-section"></div>

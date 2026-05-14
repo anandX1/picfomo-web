@@ -1,17 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import NewHero from "@/components/marketing/NewHero";
-import IdentityFlow from "@/components/marketing/IdentityFlow";
-import NewTimeline from "@/components/marketing/NewTimeline";
-import OrganicCarousel from "@/components/marketing/OrganicCarousel";
-import NewFAQ from "@/components/marketing/NewFAQ";
-import NewPricing from "@/components/marketing/NewPricing";
-import NewFooter from "@/components/marketing/NewFooter";
-import NewFeed from "@/components/marketing/NewFeed";
 import SmoothScroll from "@/components/marketing/SmoothScroll";
-import Navbar from "@/components/marketing/Navbar"; // 🌟 IMPORT THE NEW NAVBAR
+import Navbar from "@/components/marketing/Navbar";
+
+// 🌟 LAZY LOADED COMPONENTS (Below the fold)
+const IdentityFlow = dynamic(() => import("@/components/marketing/IdentityFlow"), { ssr: true });
+const OrganicCarousel = dynamic(() => import("@/components/marketing/OrganicCarousel"), { ssr: true });
+const NewTimeline = dynamic(() => import("@/components/marketing/NewTimeline"), { ssr: true });
+const NewFAQ = dynamic(() => import("@/components/marketing/NewFAQ"), { ssr: true });
+const NewPricing = dynamic(() => import("@/components/marketing/NewPricing"), { ssr: true });
+const NewFooter = dynamic(() => import("@/components/marketing/NewFooter"), { ssr: true });
+const NewFeed = dynamic(() => import("@/components/marketing/NewFeed"), { ssr: true });
 
 export default function MarketingClient({ dynamicStyles }: { dynamicStyles: any[] }) {
   const [activePage, setActivePage] = useState("home");

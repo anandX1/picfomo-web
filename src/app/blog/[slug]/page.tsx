@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Calendar, Clock, ArrowRight, Wand2, ChevronRight, CheckCircle2 } from 'lucide-react';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
+import { InterlinkContent } from '@/utils/seo';
 
 // 🌟 THE CONTENT DATA (100% Unique, Plagiarism-Free, Outbound Linked)
 const POSTS_CONTENT: Record<string, { 
@@ -24,8 +25,7 @@ const POSTS_CONTENT: Record<string, {
     content: (
       <div className="space-y-8">
         <p className="text-lg leading-relaxed text-[var(--color-ink2)]">
-          The "Uncanny Valley" in AI photography is almost always caused by the eyes. 
-          While early models produced "dead" or symmetrical eyes, the 2026 standard demands biological imperfection—the key to true realism.
+          <InterlinkContent text="The 'Uncanny Valley' in AI photography is almost always caused by the eyes. While early models produced 'dead' or symmetrical eyes, the 2026 standard demands biological imperfection—the key to true realism." />
         </p>
         
         <h2 className="text-3xl font-bold display-font">The Science of Catchlights</h2>
@@ -39,8 +39,7 @@ const POSTS_CONTENT: Record<string, {
         <div className="bg-[var(--color-cream)] p-8 rounded-2xl border border-[var(--rule)]">
            <h3 className="text-xl font-bold mb-4 display-font">Why PicFOMO is Different</h3>
            <p className="text-sm text-[var(--color-ink2)] leading-relaxed">
-             Our Identity-Lock™ engine doesn't just swap a face; it maps the unique refractive index of your iris. 
-             By referencing the actual depth of your eyes from your input selfie, we generate portraits that pass even the most rigorous scrutiny.
+             <InterlinkContent text="Our Identity-Lock™ engine doesn't just swap a face; it maps the unique refractive index of your iris. By referencing the actual depth of your eyes from your input selfie, we generate portraits that pass even the most rigorous scrutiny." />
            </p>
         </div>
 
@@ -63,8 +62,7 @@ const POSTS_CONTENT: Record<string, {
     content: (
       <div className="space-y-8">
         <p className="text-lg leading-relaxed text-[var(--color-ink2)]">
-          In 2026, the real estate market is driven by trust. 
-          Over-processed, "plastic" headshots that were popular in 2023 now signal a lack of transparency to savvy homebuyers.
+          <InterlinkContent text="In 2026, the real estate market is driven by trust. Over-processed, 'plastic' headshots that were popular in 2023 now signal a lack of transparency to savvy homebuyers." />
         </p>
         
         <h2 className="text-3xl font-bold display-font">The "Anti-Filter" Movement</h2>
@@ -78,17 +76,13 @@ const POSTS_CONTENT: Record<string, {
            <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-gold)] opacity-20 blur-3xl" />
            <h3 className="text-2xl font-bold mb-4 display-font text-[var(--color-gold-light)]">DSLR Aesthetic is the Key</h3>
            <p className="text-sm opacity-80 leading-relaxed">
-             PicFOMO’s "DSLR" style is specifically tuned for real estate professionals. 
-             It retains skin texture, natural pores, and subtle micro-imperfections that verify the image as "real" to the human eye, 
-             while maintaining the polish of a $5,000 professional shoot.
+             <InterlinkContent text="PicFOMO’s DSLR style is specifically tuned for real estate professionals. It retains skin texture, natural pores, and subtle micro-imperfections that verify the image as 'real' to the human eye, while maintaining the polish of a $5,000 professional shoot." />
            </p>
         </div>
 
         <h2 className="text-3xl font-bold display-font">Building a Digital Brand</h2>
         <p className="text-[var(--color-ink2)] leading-relaxed">
-          Your headshot is your digital handshake. As discussed in <Link href="https://www.forbes.com/real-estate/" className="text-[var(--color-gold)] hover:underline" target="_blank">Forbes Real Estate</Link>, 
-          personal branding is now the primary differentiator in crowded markets. Using PicFOMO allows you to maintain 
-          consistent high-end imagery across LinkedIn, Zillow, and Instagram without the scheduling nightmare of a photographer.
+          <InterlinkContent text="Your headshot is your digital handshake. As discussed in Forbes Real Estate, personal branding is now the primary differentiator in crowded markets. Using PicFOMO allows you to maintain consistent high-end imagery across LinkedIn, Zillow, and Instagram without the scheduling nightmare of a photographer." />
         </p>
       </div>
     )
@@ -103,16 +97,15 @@ const POSTS_CONTENT: Record<string, {
     content: (
       <div className="space-y-8">
         <p className="text-lg leading-relaxed text-[var(--color-ink2)]">
-          Nostalgia is the most powerful emotion in digital media today. 
-          The "90s Film" look isn't just a trend; it's a rebellion against the clinical perfection of smartphone cameras.
+          <InterlinkContent text="Nostalgia is the most powerful emotion in digital media today. The '90s Film' look isn't just a trend; it's a rebellion against the clinical perfection of smartphone cameras." />
         </p>
         
         <h2 className="text-3xl font-bold display-font">The Charm of Imperfection</h2>
         <p className="text-[var(--color-ink2)] leading-relaxed">
-          Film photography is defined by grain, light leaks, and color shifts. 
+          In professional photography, film grain and light leaks are everything. 
           Major fashion houses, as noted in <Link href="https://www.vogue.com/fashion" className="text-[var(--color-gold)] hover:underline" target="_blank">Vogue</Link>, 
           are returning to 35mm aesthetics for their digital campaigns. 
-          Our AI recreates the chemical response of Portra 400 and Kodak Gold film stocks with stunning accuracy.
+          <InterlinkContent text="Our AI recreates the chemical response of Portra 400 and Kodak Gold film stocks with stunning accuracy." />
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

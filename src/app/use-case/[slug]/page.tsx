@@ -1,38 +1,12 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Sparkles, ArrowRight, CheckCircle2, Wand2, ChevronRight } from 'lucide-react';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-// 🌟 USE-CASE CONFIGURATION MAP
-// This maps niche slugs to human-readable titles and recommended style IDs
-const USE_CASES: Record<string, { title: string; subtitle: string; styles: string[]; description: string }> = {
-  'real-estate-headshots': {
-    title: 'AI Headshots for Real Estate',
-    subtitle: 'Close more deals with professional property-ready portraits.',
-    styles: ['dslr', 'corporate', 'studio'],
-    description: 'First impressions are everything in real estate. Our AI generates high-end, trustworthy headshots that help you stand out on Zillow, LinkedIn, and business cards.'
-  },
-  'dating-profile-photos': {
-    title: 'AI Photos for Dating Apps',
-    subtitle: 'Get 10x more matches with high-quality lifestyle portraits.',
-    styles: ['dslr', 'vogue', 'lifestyle', 'cinematic'],
-    description: 'Stop using blurry selfies. PicFOMO creates natural, high-quality photos that look like they were taken by a professional photographer on a casual day out.'
-  },
-  'linkedin-profile-pictures': {
-    title: 'Professional AI LinkedIn Photos',
-    subtitle: 'Upgrade your professional identity in 20 seconds.',
-    styles: ['corporate', 'studio', 'dslr'],
-    description: 'Command respect and authority with a polished LinkedIn profile. Our AI ensures you look your best while maintaining 100% facial accuracy.'
-  },
-  'acting-headshots': {
-    title: 'AI Headshots for Actors',
-    subtitle: 'Stunning theatrical and commercial looks without the studio fee.',
-    styles: ['cinematic', 'studio', 'dslr', 'drama'],
-    description: 'Need a new look for your portfolio? Generate industry-standard acting headshots that capture your range and personality perfectly.'
-  }
-};
+import { USE_CASES } from '@/data/use-cases';
 
 export async function generateStaticParams() {
   return Object.keys(USE_CASES).map((slug) => ({ slug }));
@@ -80,8 +54,30 @@ export default async function UseCasePage({ params }: { params: Promise<{ slug: 
     console.error("Use Case DB Error:", error);
   }
 
+  // 🌟 Schema.org for Use-Case Page
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": `${useCase.title} Generator`,
+    "description": useCase.description,
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "All",
+    "url": `https://www.picfomo.com/use-case/${slug}`,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "850"
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[var(--color-page-bg)] text-[var(--color-page-text)]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
       
       {/* Hero Section */}
@@ -117,10 +113,12 @@ export default async function UseCasePage({ params }: { params: Promise<{ slug: 
 
           <div className="relative aspect-square md:aspect-[4/5] bg-[var(--color-cream)] rounded-3xl overflow-hidden border border-[var(--rule)] shadow-2xl">
             {recommendedStyles.length > 0 && (
-               // eslint-disable-next-line @next/next/no-img-element
-               <img 
+               <Image 
                  src={recommendedStyles[0].preview_image_url} 
-                 alt={useCase.title} 
+                 alt={`${useCase.title} example generated with PicFOMO AI`} 
+                 fill
+                 priority
+                 sizes="(max-width: 768px) 100vw, 440px"
                  className="w-full h-full object-cover"
                />
             )}
@@ -144,10 +142,11 @@ export default async function UseCasePage({ params }: { params: Promise<{ slug: 
               className="group flex flex-col bg-[var(--color-cream)] rounded-3xl overflow-hidden border border-[var(--rule)] hover:shadow-xl transition-all duration-300"
             >
               <div className="relative aspect-[4/5] overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
+                <Image 
                   src={style.preview_image_url} 
-                  alt={style.name} 
+                  alt={`${style.name} AI portrait style - PicFOMO recommendation`} 
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 350px"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />

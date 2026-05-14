@@ -6,6 +6,7 @@ import { Heart, Share2, Zap, Users, X, Image as ImageIcon, Eye, Clock, Sparkles,
 import { likePost, mockRemixPost } from "@/actions/economy";
 import { toggleFollow, recordView } from "@/actions/social";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "sonner";
 
 interface PostData {
@@ -203,8 +204,14 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
           
           {/* LEFT: The Big Image */}
           <div className="w-full lg:w-[55%] bg-[var(--color-cream2)] flex items-center justify-center relative min-h-[400px] border-r border-[var(--rule)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={post.image_url} alt={post.title || "Aesthetic"} className="w-full h-auto max-h-[85vh] object-contain" />
+            <Image 
+              src={post.image_url} 
+              alt={`${post.title || post.style_name || 'Aesthetic AI Portrait'} generated with PicFOMO Identity-Lock™`} 
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 55vw"
+              className="object-contain" 
+            />
           </div>
 
           {/* RIGHT: The Details & Actions */}
@@ -269,8 +276,12 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
                 <Link href={`/u/${displayUsername}`} className="flex items-center gap-3 group">
                   <div className="h-12 w-12 rounded-full overflow-hidden bg-[var(--color-cream2)] border border-[var(--rule)] shrink-0 flex items-center justify-center relative">
                     {post.profile_image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={post.profile_image_url} alt={displayUsername} className="w-full h-full object-cover" />
+                      <Image 
+                        src={post.profile_image_url} 
+                        alt={`${displayUsername} - PicFOMO Creator Profile`} 
+                        fill
+                        className="object-cover" 
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-[var(--color-page-text)] text-[var(--color-page-bg)] font-[family-name:var(--display)] text-xl">
                         {displayUsername.charAt(0).toUpperCase()}

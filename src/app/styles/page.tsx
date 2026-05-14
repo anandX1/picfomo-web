@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import { Sparkles, ArrowRight } from 'lucide-react';
@@ -36,7 +37,7 @@ export default async function StylesHubPage() {
     }
   } catch (error) {
     console.error("Styles Hub DB Error:", error);
-    // Fallback styles for local dev / DB outages
+    // Fallback styles
     styles = [
       { id: "ghibli", name: "Ghibli", slug: "ghibli", description: "Soft, whimsical anime aesthetic.", preview_image_url: "/hero/1.png" },
       { id: "dslr", name: "DSLR", slug: "dslr", description: "Professional photorealistic portrait.", preview_image_url: "/hero/2.png" },
@@ -45,8 +46,29 @@ export default async function StylesHubPage() {
     ];
   }
 
+  // 🌟 Schema.org for the Styles Hub
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "PicFOMO AI Portrait Styles",
+    "description": "A comprehensive directory of AI-powered portrait aesthetics.",
+    "numberOfItems": styles.length,
+    "itemListElement": styles.map((style, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "SoftwareApplication",
+        "name": style.name,
+        "url": `https://www.picfomo.com/style/${style.slug || style.id}`,
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "All"
+      }
+    }))
+  };
+
   return (
     <main className="min-h-screen bg-[var(--color-page-bg)] text-[var(--color-page-text)]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
       
       {/* Hero Header */}
@@ -70,28 +92,30 @@ export default async function StylesHubPage() {
       {/* Styles Grid */}
       <section className="max-w-[1280px] mx-auto px-6 pb-32">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-          {styles.map((style) => (
+          {styles.map((style, index) => (
             <Link 
               key={style.id} 
               href={`/style/${style.slug || style.id}`}
               className="group flex flex-col bg-[var(--color-cream)] rounded-[2.5rem] overflow-hidden border border-[var(--rule)] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
             >
               <div className="relative aspect-[4/5] overflow-hidden bg-[var(--color-cream2)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
+                <Image 
                   src={style.preview_image_url} 
-                  alt={`${style.name} AI Style`} 
+                  alt={`${style.name} AI Style aesthetic portrait generated with PicFOMO`} 
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
+                  priority={index < 4}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 
                 {style.badge && (
-                  <div className="absolute top-4 right-4 bg-[var(--color-gold)] text-black text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg">
+                  <div className="absolute top-4 right-4 bg-[var(--color-gold)] text-black text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg z-10">
                     {style.badge}
                   </div>
                 )}
                 
-                <div className="absolute bottom-6 left-6 right-6">
+                <div className="absolute bottom-6 left-6 right-6 z-10">
                   <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-[var(--color-gold-light)] transition-colors display-font">
                     {style.name}
                   </h3>
@@ -121,3 +145,4 @@ export default async function StylesHubPage() {
     </main>
   );
 }
+

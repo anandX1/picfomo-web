@@ -1,4 +1,6 @@
 import { MetadataRoute } from 'next';
+import { USE_CASES } from '@/data/use-cases';
+import { COMPARISONS } from '@/data/comparisons';
 
 /**
  * 🌟 PROFESSIONAL SITEMAP ENGINE (2026 Standard)
@@ -19,25 +21,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/styles',
     '/blog',
     '/join',
+    '/grader',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: route === "" ? "daily" : "weekly",
-    priority: route === "" ? 1.0 : 0.8,
+    changeFrequency: route === "" || route === "/grader" ? "daily" : "weekly",
+    priority: route === "" || route === "/grader" ? 1.0 : 0.8,
   }));
 
   // ==========================================
   // 2. PROGRAMMATIC SEO LANDING PAGES
   // ==========================================
   const programmaticPages: MetadataRoute.Sitemap = [
-    // Use-Cases
-    '/use-case/real-estate-headshots',
-    '/use-case/dating-profile-photos',
-    '/use-case/linkedin-profile-pictures',
-    '/use-case/acting-headshots',
-    // Competitor Comparisons
-    '/compare/picfomo-vs-aragon-ai',
-    '/compare/picfomo-vs-photo-ai',
+    // Use-Cases (Dynamically generated from data/use-cases.ts)
+    ...Object.keys(USE_CASES).map((slug) => `/use-case/${slug}`),
+    
+    // Competitor Comparisons (Dynamically generated from data/comparisons.ts)
+    ...Object.keys(COMPARISONS).map((slug) => `/compare/${slug}`),
+
     // Guides & Educational
     '/guides/perfect-selfie-for-ai-headshots',
     '/guides/how-it-works',
@@ -48,7 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: 'monthly',
+    changeFrequency: 'monthly' as const,
     priority: 0.9, // High priority as these are entry-point landing pages
   }));
 
@@ -57,64 +58,66 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let dynamicProfiles: MetadataRoute.Sitemap = [];
 
   try {
-    const ctx = await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true });
-    const db = (ctx.env.DB as any);
+    // 🌟 USE TRY-CATCH WRAPPER TO ENSURE SITEMAP NEVER FAILS
+    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+    const ctx = await getCloudflareContext({ async: true });
+    const db = (ctx.env as any).DB as D1Database;
 
-    // ==========================================
-    // 3. DYNAMIC STYLE PAGES
-    // ==========================================
-    let stylesResult: any = { results: [] };
-    try {
-      stylesResult = await db.prepare(`
-        SELECT slug, created_at FROM styles 
-        WHERE is_active = 1 AND slug IS NOT NULL
-      `).all();
-    } catch { stylesResult = { results: [] }; }
+    if (db) {
+        // ==========================================
+        // 3. DYNAMIC STYLE PAGES
+        // ==========================================
+        const stylesResult = await db.prepare(`
+            SELECT slug, created_at, preview_urls, preview_image_url FROM styles 
+            WHERE is_active = 1 AND slug IS NOT NULL
+        `).all();
 
-    dynamicStyles = (stylesResult?.results ?? []).map((style: any) => ({
-      url: `${baseUrl}/style/${encodeURIComponent(style.slug)}`,
-      lastModified: style.created_at ? new Date(style.created_at) : new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    }));
+        dynamicStyles = (stylesResult?.results ?? []).map((style: any) => {
+            let images: string[] = [];
+            try { images = JSON.parse(style.preview_urls || '[]'); } catch(e) {}
+            const featuredImage = images[0] || style.preview_image_url;
 
-    // ==========================================
-    // 4. PUBLIC COMMUNITY POSTS
-    // ==========================================
-    let postsResult: any = { results: [] };
-    try {
-      postsResult = await db.prepare(`
-        SELECT id, created_at FROM posts 
-        WHERE is_public = 1 ORDER BY created_at DESC LIMIT 1000
-      `).all();
-    } catch { postsResult = { results: [] }; }
+            return {
+                url: `${baseUrl}/style/${encodeURIComponent(style.slug)}`,
+                lastModified: style.created_at ? new Date(style.created_at) : new Date(),
+                changeFrequency: 'weekly' as const,
+                priority: 0.9,
+            };
+        });
 
-    dynamicPosts = (postsResult?.results ?? []).map((post: any) => ({
-      url: `${baseUrl}/post/${encodeURIComponent(post.id)}`,
-      lastModified: post.created_at ? new Date(post.created_at) : new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    }));
+        // ==========================================
+        // 4. PUBLIC COMMUNITY POSTS
+        // ==========================================
+        const postsResult = await db.prepare(`
+            SELECT id, created_at FROM posts 
+            WHERE is_public = 1 ORDER BY created_at DESC LIMIT 1000
+        `).all();
 
-    // ==========================================
-    // 5. CREATOR PROFILES
-    // ==========================================
-    let usersResult: any = { results: [] };
-    try {
-      usersResult = await db.prepare(`
-        SELECT username FROM users WHERE username IS NOT NULL LIMIT 500
-      `).all();
-    } catch { usersResult = { results: [] }; }
+        dynamicPosts = (postsResult?.results ?? []).map((post: any) => ({
+            url: `${baseUrl}/post/${encodeURIComponent(post.id)}`,
+            lastModified: post.created_at ? new Date(post.created_at) : new Date(),
+            changeFrequency: 'monthly' as const,
+            priority: 0.6,
+        }));
 
-    dynamicProfiles = (usersResult?.results ?? []).map((user: any) => ({
-      url: `${baseUrl}/u/${encodeURIComponent(user.username)}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    }));
+        // ==========================================
+        // 5. CREATOR PROFILES
+        // ==========================================
+        const usersResult = await db.prepare(`
+            SELECT username FROM users WHERE username IS NOT NULL LIMIT 500
+        `).all();
+
+        dynamicProfiles = (usersResult?.results ?? []).map((user: any) => ({
+            url: `${baseUrl}/u/${encodeURIComponent(user.username)}`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.7,
+        }));
+    }
 
   } catch (error) {
     console.error("Sitemap generation error:", error);
+    // Return at least static and programmatic pages on error
   }
 
   return [

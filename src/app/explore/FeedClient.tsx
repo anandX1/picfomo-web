@@ -93,7 +93,7 @@ function PostCard({
         <Link href={`/post/${post.id}`} className="block absolute top-0 left-0 w-full h-full z-10">
           <Image
             src={post.image_url}
-            alt={`${displayTitle} by ${displayUsername}`}
+            alt={`${displayTitle} style AI portrait by @${displayUsername} on PicFOMO`}
             width={512} height={768}
             priority={index < 4}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
@@ -136,7 +136,7 @@ function PostCard({
         <Link href={`/u/${displayUsername}`} className="flex items-center gap-2 hover:opacity-70 transition-opacity">
           <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[var(--color-cream2)] border border-[var(--rule)] flex items-center justify-center relative">
             {post.profile_image_url
-              ? <Image src={post.profile_image_url} alt={displayUsername} fill className="object-cover" unoptimized />
+              ? <Image src={post.profile_image_url} alt={`${displayUsername} - PicFOMO creator`} fill className="object-cover" unoptimized />
               : <User size={14} className="text-[var(--color-ink3)]" />}
           </div>
           <span className="truncate font-[family-name:var(--mono)] text-[12px] font-bold text-[var(--color-page-text)]">{displayUsername}</span>

@@ -102,8 +102,8 @@ export default function NewHero({ dynamicStyles = [] }: { dynamicStyles?: any[] 
         `}</style>
 
         {/* 🌟 PREMIUM TYPOGRAPHY */}
-        <div className="relative z-30 mb-6 lg:mb-10 w-full max-w-5xl px-4 text-center shrink-0">
-          <h1 className="display-font mb-3 lg:mb-5 text-[2.2rem] sm:text-5xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-2xl text-balance will-change-transform">
+        <div className="relative z-30 mb-6 lg:mb-10 w-full max-w-5xl px-4 text-center shrink-0 will-change-transform">
+          <h1 className="display-font mb-3 lg:mb-5 text-[2.2rem] sm:text-5xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-2xl text-balance">
               Turn One Selfie<br className="hidden sm:block"/> Into Any Trend.
           </h1>
           <p className="mx-auto max-w-lg text-[13px] sm:text-base lg:text-lg font-medium leading-relaxed text-white/80 text-balance">
@@ -116,18 +116,18 @@ export default function NewHero({ dynamicStyles = [] }: { dynamicStyles?: any[] 
           
           {/* Left Flank */}
           <div className="hidden shrink-0 flex-col gap-4 lg:flex w-[180px] xl:w-[220px]">
-            <div className="flank-card relative aspect-[4/5] translate-x-4 translate-y-4 rotate-[-8deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300">
-              <Image src={HERO_IMAGES[0].url} alt={HERO_IMAGES[0].style} fill className="object-cover" priority sizes="220px" />
+            <div className="flank-card relative aspect-[4/5] translate-x-4 translate-y-4 rotate-[-8deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300 will-change-transform">
+              <Image src={HERO_IMAGES[0].url} alt={`${HERO_IMAGES[0].style} style AI portrait generator example - PicFOMO`} fill className="object-cover" priority sizes="(max-width: 1200px) 180px, 220px" />
               <div className="absolute bottom-3 left-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[0].style}</div>
             </div>
-            <div className="flank-card relative aspect-[4/5] -translate-x-4 rotate-[-3deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300">
-              <Image src={HERO_IMAGES[1].url} alt={HERO_IMAGES[1].style} fill className="object-cover" priority sizes="220px" />
+            <div className="flank-card relative aspect-[4/5] -translate-x-4 rotate-[-3deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300 will-change-transform">
+              <Image src={HERO_IMAGES[1].url} alt={`${HERO_IMAGES[1].style} photorealistic AI headshot generator - PicFOMO Identity-Lock™`} fill className="object-cover" priority sizes="(max-width: 1200px) 180px, 220px" />
               <div className="absolute bottom-3 left-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[1].style}</div>
             </div>
           </div>
 
           {/* 🌟 HIGH-CONTRAST UPLOAD BOX */}
-          <div className="group relative w-full max-w-[95%] sm:max-w-xl shrink-0 lg:max-w-[460px]">
+          <div className="group relative w-full max-w-[95%] sm:max-w-xl shrink-0 lg:max-w-[460px] will-change-transform">
             <div className="pointer-events-none absolute -inset-8 rounded-full bg-[var(--color-gold)]/10 blur-[80px] opacity-0 transition-opacity duration-1000 group-hover:opacity-100 hidden md:block"></div>
             
             <div id="dropzone-container" 
@@ -176,11 +176,11 @@ export default function NewHero({ dynamicStyles = [] }: { dynamicStyles?: any[] 
           {/* Right Flank */}
           <div className="hidden shrink-0 flex-col gap-4 lg:flex w-[180px] xl:w-[220px]">
             <div className="flank-card relative aspect-[4/5] -translate-x-4 translate-y-4 rotate-[8deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300">
-              <Image src={HERO_IMAGES[2].url} alt={HERO_IMAGES[2].style} fill className="object-cover" priority sizes="220px" />
+              <Image src={HERO_IMAGES[2].url} alt={`${HERO_IMAGES[2].style} aesthetic AI portrait - PicFOMO Cinematic Synthesis`} fill className="object-cover" priority sizes="220px" />
               <div className="absolute bottom-3 right-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[2].style}</div>
             </div>
             <div className="flank-card relative aspect-[4/5] translate-x-4 rotate-[3deg] overflow-hidden rounded-[1.5rem] border border-white/20 bg-[#111] shadow-2xl transition-all duration-300">
-              <Image src={HERO_IMAGES[3].url} alt={HERO_IMAGES[3].style} fill className="object-cover" priority sizes="220px" />
+              <Image src={HERO_IMAGES[3].url} alt={`${HERO_IMAGES[3].style} high-fashion AI portrait generator example - PicFOMO Vogue Style`} fill className="object-cover" priority sizes="220px" />
               <div className="absolute bottom-3 right-3 rounded-lg border border-white/20 bg-black/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-lg">{HERO_IMAGES[3].style}</div>
             </div>
           </div>
@@ -196,7 +196,7 @@ export default function NewHero({ dynamicStyles = [] }: { dynamicStyles?: any[] 
               <div key={idx} className="relative aspect-[4/5] w-[110px] shrink-0 overflow-hidden rounded-[1rem] border border-white/20 bg-[#111] shadow-lg">
                 <Image 
                   src={post.url} 
-                  alt={post.style} 
+                  alt={`${post.style} style AI portrait - Trending PicFOMO aesthetic`} 
                   fill 
                   className="object-cover" 
                   sizes="110px"

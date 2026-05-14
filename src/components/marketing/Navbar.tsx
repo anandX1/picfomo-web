@@ -37,6 +37,13 @@ export default function Navbar() {
 
       {/* 🌟 OPTIMIZED CENTER LINKS */}
       <div className="hidden gap-8 md:flex">
+        <Link href="/grader" className="text-sm font-semibold tracking-wide text-[var(--color-gold-light)] transition-colors hover:text-white flex items-center gap-1.5">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-gold)] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-gold)]"></span>
+          </span>
+          Selfie Grader
+        </Link>
         <Link href="/styles" className="text-sm font-semibold tracking-wide text-white/50 transition-colors hover:text-[var(--color-gold-light)] hover:text-white">
           Styles
         </Link>

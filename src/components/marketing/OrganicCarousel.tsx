@@ -139,7 +139,12 @@ export default function OrganicCarousel() {
         <div ref={trackRef} className="carousel-track">
           {CAROUSEL_ITEMS.map((item) => (
             <div key={item.id} className="organic-card group">
-              <Image src={item.image} alt={item.name} fill className="object-cover pointer-events-none" />
+              <Image 
+                src={item.image} 
+                alt={`${item.name} style AI generated portrait - PicFOMO aesthetic showcase`} 
+                fill 
+                className="object-cover pointer-events-none" 
+              />
               <div className="organic-card-info absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                 <div className="flex justify-between items-end w-full">
                   <span className="font-bold text-lg text-white">{item.name}</span>

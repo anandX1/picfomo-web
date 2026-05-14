@@ -38,6 +38,43 @@ These are the core architectural and stylistic mandates for building the PicFOMO
 - **Isolation:** Always use `isolation: isolate` and explicit `z-index` (e.g., `z-[50]`) on foreground text and interactive cards to ensure they are never covered by background glows or pseudo-elements.
 - **Utility Override:** When standard tailwind utilities fail against custom CSS, use hardcoded styles or the `!important` flag sparingly (e.g., `!bg-white`) to enforce critical visibility.
 
+---
+
+# 🚀 Technical Memory & Project Achievements
+*This section is a persistent ledger of PicFOMO's technical evolution. Update this section after every major feature implementation.*
+
+## Current Phase: Content Velocity & Viral Growth (May 2026)
+
+### 1. Data-Driven Use-Case Engine
+- **Achievement:** Implemented a scalable pSEO architecture for targeting specific user niches.
+- **Implementation:** Centralized repository at `src/data/use-cases.ts` supporting 14 niches (Lawyers, Twitch Streamers, Real Estate, etc.).
+- **Impact:** Dynamic route `/use-case/[slug]` renders hyper-targeted landing pages with custom SEO metadata and recommended styles.
+
+### 2. Viral Backlink Magnet: AI Selfie Grader
+- **Achievement:** Built a free utility to drive viral traffic and attract high-quality backlinks.
+- **Implementation:** `/grader` route featuring a cinematic scanning UI and client-side canvas heuristics for lighting/composition analysis.
+- **Impact:** High-visibility Navbar link with pulsing notification; provides a "Professionalism Score" that funnels directly into the AI generation flow.
+
+### 3. Competitor Comparison Engine (pSEO)
+- **Achievement:** Architected a system to poach high-intent traffic from established competitors.
+- **Implementation:** `src/data/comparisons.ts` mapping PicFOMO vs 10 major competitors (Aragon, HeadshotPro, etc.).
+- **Impact:** Dynamic route `/compare/[slug]` displays side-by-side technical wins (Speed, Accuracy, Price), auto-indexed in the sitemap.
+
+### 4. Technical SEO Foundation
+- **Achievement:** Established a world-class indexing and metadata system.
+- **Implementation:** Dynamic `sitemap.ts` that auto-discovers use-cases, comparisons, styles, and community posts. Comprehensive JSON-LD integration across all landing pages.
+
+### 5. Performance & Bundle Optimization
+- **Achievement:** Optimized initial load time and font rendering for "Luxury AI" speed.
+- **Implementation:**
+  - **LazyMotion:** Integrated `framer-motion`'s `LazyMotion` with `domMax` in `ClientLayout.tsx` to reduce the initial JS bundle size.
+  - **Next.js Fonts:** Switched to `next/font/google` for `Plus_Jakarta_Sans` and `Inter`, implementing `display: swap` and CSS variables to eliminate layout shifts (CLS).
+  - **Aggressive Code-Splitting:** Implemented `next/dynamic` in `MarketingClient.tsx` to lazy-load all below-the-fold components (FAQ, Pricing, Timeline, etc.).
+  - **Hardware Acceleration:** Added `will-change` properties to all high-frequency animation elements (Hero cards, SVG paths, liquid backgrounds) to ensure 60fps smoothness.
+  - **Responsive Image Assets:** Refined `sizes` attributes across the landing page to prevent downloading desktop-sized assets on mobile devices.
+
+---
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.

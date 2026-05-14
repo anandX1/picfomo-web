@@ -4,31 +4,7 @@ import { Sparkles, Check, X, Wand2, ChevronRight, Zap, Shield, Trophy } from 'lu
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 
-const COMPARISONS: Record<string, { competitor: string; title: string; subtitle: string; features: any[] }> = {
-  'picfomo-vs-aragon-ai': {
-    competitor: 'Aragon AI',
-    title: 'PicFOMO vs Aragon AI',
-    subtitle: 'Why PicFOMO is the faster, more flexible choice for professional portraits.',
-    features: [
-      { name: 'Generation Speed', picfomo: '20 Seconds', competitor: '30-90 Minutes', win: 'picfomo' },
-      { name: 'Identity Match', picfomo: 'Identity-Lock™ (99%)', competitor: 'Standard Lora (85%)', win: 'picfomo' },
-      { name: 'Creative Freedom', picfomo: 'Infinite Styles', competitor: 'Corporate Only', win: 'picfomo' },
-      { name: 'Pricing', picfomo: 'Free to Try', competitor: '$29+ Entry Fee', win: 'picfomo' },
-      { name: 'Ease of Use', picfomo: '1 Selfie, 0 Prompts', competitor: '12+ Photos Required', win: 'picfomo' },
-    ]
-  },
-  'picfomo-vs-photo-ai': {
-    competitor: 'Photo AI',
-    title: 'PicFOMO vs Photo AI',
-    subtitle: 'Luxury aesthetics vs complex technical prompts.',
-    features: [
-      { name: 'User Experience', picfomo: 'Zero-Prompt Magic', competitor: 'Complex Prompting', win: 'picfomo' },
-      { name: 'Speed', picfomo: '20 Seconds', competitor: '2-5 Minutes', win: 'picfomo' },
-      { name: 'Facial Accuracy', picfomo: 'Locked Facial Map', competitor: 'Variable Consistency', win: 'picfomo' },
-      { name: 'Luxury Aesthetics', picfomo: 'Curated Hub', competitor: 'User Generated', win: 'picfomo' },
-    ]
-  }
-};
+import { COMPARISONS } from '@/data/comparisons';
 
 export async function generateStaticParams() {
   return Object.keys(COMPARISONS).map((slug) => ({ slug }));
