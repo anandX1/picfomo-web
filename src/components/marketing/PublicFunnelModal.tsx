@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFunnelStore } from '@/store/useFunnelStore';
 import { 
-  X, Zap, Sparkles, Loader2, CheckCircle2, ChevronLeft 
+  X, Zap, Sparkles, Loader2, CheckCircle2 
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -51,7 +51,7 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
 
   // --- FUNNEL STATE ---
   const [selectedStyleId, setSelectedStyleId] = useState<string>(dynamicStyles[0]?.id || '');
-  const [prompt, setPrompt] = useState(''); // 🌟 ADDED PROMPT STATE
+  const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,11 +75,10 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
     return () => clearInterval(interval);
   }, [view]);
 
-  // 🌟 PAYWALL AUTO-TRIGGER
+  // 🌟 PAYWALL AUTO-TRIGGER (INSTANT)
   useEffect(() => {
     if (view === 'result' && outputImage) {
-      const timer = setTimeout(() => setShowPaywall(true), 3000);
-      return () => clearTimeout(timer);
+      setShowPaywall(true);
     }
   }, [view, outputImage]);
 
@@ -106,7 +105,7 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt: prompt, // 🌟 NOW SENDING THE CUSTOM PROMPT
+          prompt: prompt,
           styleId: selectedStyleId,
           sourceImage: base64
         })
@@ -145,13 +144,13 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-start overflow-y-auto p-4 md:p-8 text-white"
+          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl h-[100dvh] w-full overflow-hidden flex flex-col items-center justify-start text-white"
         >
           {/* Ad Injection */}
           {view === 'generating' && <SocialBarAd />}
 
           {/* Header */}
-          <div className="w-full max-w-4xl flex justify-between items-center mb-8 shrink-0 mt-4">
+          <div className="w-full max-w-4xl flex justify-between items-center px-4 py-4 md:px-8 md:py-8 shrink-0 relative z-[60]">
             {view === 'generating' ? <div /> : (
               <button 
                 onClick={onClose}
@@ -166,14 +165,14 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
             </div>
           </div>
 
-          <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
+          <div className="flex-1 w-full max-w-4xl mx-auto flex flex-col items-center overflow-hidden">
             
             {/* VIEW: STYLES */}
             {view === 'styles' && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="w-full flex flex-col items-center"
+                className="flex-1 overflow-y-auto w-full flex flex-col items-center px-4 pb-32"
               >
                 <h2 className="text-3xl md:text-5xl font-black mb-2 text-center">Pick Your Vibe</h2>
                 <p className="text-white/60 mb-8 text-center text-sm md:text-base">One free generation. Make it count.</p>
@@ -222,74 +221,65 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
                   />
                 </div>
 
-                <button 
-                  onClick={handleGenerate}
-                  className="w-full max-w-md py-5 bg-[var(--color-gold)] text-black font-black text-lg rounded-2xl shadow-[0_10px_40px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest mb-10"
-                >
-                  <Sparkles size={22} /> Generate For Free
-                </button>
+                {/* Sticky Button Container */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-black via-black/80 to-transparent flex justify-center z-50">
+                  <button 
+                    onClick={handleGenerate}
+                    className="w-full max-w-md py-5 bg-[var(--color-gold)] text-black font-black text-lg rounded-2xl shadow-[0_10px_40px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest"
+                  >
+                    <Sparkles size={22} /> Generate For Free
+                  </button>
+                </div>
               </motion.div>
             )}
 
             {/* VIEW: GENERATING */}
             {view === 'generating' && (
-              <div className="w-full flex flex-col items-center py-10">
-                <div className="relative mb-10">
-                  <div className="absolute inset-0 bg-[var(--color-gold)] opacity-20 blur-[100px] rounded-full animate-pulse" />
+              <div className="flex-1 w-full flex flex-col items-center justify-center p-4">
+                <div className="max-w-md w-full bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl relative overflow-hidden flex flex-col items-center">
+                  <div className="absolute -top-24 -right-24 w-48 h-48 bg-[var(--color-gold)] opacity-10 blur-3xl rounded-full" />
                   
-                  <motion.div 
-                    animate={{ 
-                      rotate: 360,
-                      boxShadow: ["0 0 20px rgba(212,175,55,0.2)", "0 0 60px rgba(212,175,55,0.5)", "0 0 20px rgba(212,175,55,0.2)"]
-                    }}
-                    transition={{ 
-                      rotate: { duration: 4, repeat: Infinity, ease: "linear" },
-                      boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
-                    }}
-                    className="relative w-24 h-24 md:w-32 md:h-32 bg-white/5 border border-white/10 rounded-[2.5rem] flex items-center justify-center backdrop-blur-2xl"
-                  >
-                    <Zap size={48} className="text-[var(--color-gold)] fill-[var(--color-gold)] animate-pulse" />
-                    
-                    <div className="absolute inset-0 overflow-hidden rounded-[2.5rem]">
-                       {[...Array(6)].map((_, i) => (
-                         <motion.div
-                           key={i}
-                           initial={{ y: -20, opacity: 0 }}
-                           animate={{ y: 120, opacity: [0, 1, 0] }}
-                           transition={{ duration: 1 + Math.random(), repeat: Infinity, delay: Math.random() }}
-                           className="absolute w-px h-8 bg-[var(--color-gold)]/30"
-                           style={{ left: `${(i + 1) * 15}%` }}
-                         />
-                       ))}
-                    </div>
-                  </motion.div>
-                </div>
-                
-                <h2 className="text-3xl md:text-4xl font-black mb-4 bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">Synthesizing...</h2>
-                
-                <div className="w-full max-w-md h-1.5 bg-white/10 rounded-full overflow-hidden mb-4 border border-white/5">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    className="h-full bg-gradient-to-r from-[var(--color-gold)] to-white shadow-[0_0_15px_rgba(212,175,55,0.5)]"
-                  />
-                </div>
-                
-                <p className="text-white/40 font-mono text-[10px] uppercase tracking-[0.4em] mb-12">
-                  <span className="text-[var(--color-gold)] animate-pulse">●</span> {progress}% Neural Link Established
-                </p>
+                  <div className="relative mb-8">
+                    <motion.div 
+                      animate={{ 
+                        rotate: 360,
+                        boxShadow: ["0 0 20px rgba(212,175,55,0.1)", "0 0 40px rgba(212,175,55,0.3)", "0 0 20px rgba(212,175,55,0.1)"]
+                      }}
+                      transition={{ 
+                        rotate: { duration: 4, repeat: Infinity, ease: "linear" },
+                        boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                      }}
+                      className="relative w-20 h-20 md:w-24 md:h-24 bg-white/5 border border-white/10 rounded-[2rem] flex items-center justify-center backdrop-blur-2xl"
+                    >
+                      <Zap size={40} className="text-[var(--color-gold)] fill-[var(--color-gold)] animate-pulse" />
+                    </motion.div>
+                  </div>
 
-                <div className="w-full max-w-2xl bg-white/5 border border-white/10 rounded-[2rem] p-6 md:p-8 backdrop-blur-md relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-6 text-center">Secure Synthesis Sponsored By</p>
-                  <NativeAd />
+                  <h2 className="text-2xl md:text-3xl font-black mb-4 bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">Synthesizing...</h2>
+                  
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-4 border border-white/5">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress}%` }}
+                      className="h-full bg-gradient-to-r from-[var(--color-gold)] to-white"
+                    />
+                  </div>
+                  
+                  <p className="text-white/40 font-mono text-[10px] uppercase tracking-[0.4em] mb-8">
+                    {progress}% Neural Link
+                  </p>
+
+                  <div className="w-full pt-6 border-t border-white/10">
+                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4 text-center">Secure Synthesis Sponsored By</p>
+                    <NativeAd />
+                  </div>
                 </div>
               </div>
             )}
 
             {/* VIEW: RESULT */}
             {view === 'result' && outputImage && (
-              <div className="w-full flex flex-col items-center relative mb-10">
+              <div className="flex-1 w-full flex flex-col items-center justify-center relative p-4">
                 <div className="w-full max-w-lg aspect-[4/5] relative rounded-3xl overflow-hidden shadow-2xl border border-white/10">
                   <Image 
                     src={outputImage} 
@@ -338,7 +328,6 @@ const PublicFunnelModal: React.FC<PublicFunnelModalProps> = ({ isOpen, initialFi
                 </AnimatePresence>
               </div>
             )}
-
           </div>
         </motion.div>
       )}

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import NavigationBar from "@/components/dashboard/NavigationBar";
+import VaultHandoff from "@/components/dashboard/VaultHandoff";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,6 +21,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   // If in the App (Studio, Vault, Explore), render the Dashboard layout with the Sidebar
   return (
     <div className="flex h-screen w-full overflow-hidden">
+      <VaultHandoff />
       <NavigationBar />
       <main className="flex-1 h-full overflow-y-auto pb-20 md:pb-0">
         {children}
