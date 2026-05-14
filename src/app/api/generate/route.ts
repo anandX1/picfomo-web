@@ -112,6 +112,7 @@ async function pollPixazoStatus(pollingUrl: string, apiKey: string) {
 // === 4. THE MAIN API ROUTE (PLAN A - SINGLE IMAGE) ===
 export async function POST(req: Request) {
   try {
+    const clientIp = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for') || 'unknown';
     const { userId } = await auth();
     const isGuest = !userId;
 
@@ -155,7 +156,13 @@ export async function POST(req: Request) {
     }
 
     // --- B. SECURE BILLING ---
-    if (!isGuest) {
+    if (isGuest) {
+      // Check if IP already used a pass
+      const existingIp = await db.prepare("SELECT ip FROM guest_ips WHERE ip = ?").bind(clientIp).first();
+      if (existingIp && clientIp !== 'unknown') {
+        return NextResponse.json({ error: "Free pass already used on this network." }, { status: 429 });
+      }
+    } else {
       const userWallet = await db.prepare("SELECT sparks_balance FROM users WHERE id = ?").bind(userId).first();
       const currentBalance = (userWallet?.sparks_balance as number) || 0;
 
@@ -226,6 +233,10 @@ export async function POST(req: Request) {
       `).bind(
         postId, isGuest ? 'guest_user' : userId, outputImageUrl, finalPrompt, styleId || "schnell", seoData.title, seoData.description, seoData.tags
       ).run();
+
+      if (isGuest && clientIp !== 'unknown') {
+        await db.prepare("INSERT INTO guest_ips (ip) VALUES (?)").bind(clientIp).run();
+      }
 
       const response = NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
       if (isGuest) response.cookies.set('picfomo_guest_pass', 'used', { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 60 * 60 * 24 * 30 });
