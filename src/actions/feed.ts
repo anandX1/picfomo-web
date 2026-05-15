@@ -6,7 +6,8 @@ export async function fetchFeedChunk(
   offset: number,
   limit: number = 15,
   searchQuery: string = "",
-  tab?: "trending" | "latest" | "portraits" | "art"
+  tab?: "trending" | "latest" | "portraits" | "art",
+  interests: string[] = []
 ) {
   const { userId } = await auth();
   const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
@@ -29,8 +30,10 @@ export async function fetchFeedChunk(
 
       const topStyles = interests.map((r: any) => r.style_id);
 
-      if (topStyles.length > 0) {
-        const stylePlaceholders = topStyles.map(() => '?').join(',');
+      if (topStyles.length > 0 || interests.length > 0) {
+        // 🌟 MERGE INTERESTS: Session interests take priority for "The Hook"
+        const mergedStyles = Array.from(new Set([...interests, ...topStyles])).slice(0, 10);
+        const stylePlaceholders = mergedStyles.map(() => '?').join(',');
         
         // 🌟 MASSIVE FIX: Using grouped LEFT JOINs stops D1 from reading 500k rows!
         const personalizedQuery = `
@@ -43,10 +46,10 @@ export async function fetchFeedChunk(
             0 as remix_count,
             CASE WHEN my_l.post_id IS NOT NULL THEN 1 ELSE 0 END as is_liked_by_me,
             (
-              CASE WHEN p.style_id IN (${stylePlaceholders}) THEN 30 ELSE 0 END
+              CASE WHEN p.style_id IN (${stylePlaceholders}) THEN 50 ELSE 0 END
               + (COALESCE(l.likes_count, 0) * 2)
               + CASE WHEN f.id IS NOT NULL THEN 20 ELSE 0 END
-              - (CAST((julianday('now') - julianday(p.created_at)) AS INTEGER) * 2)
+              - (CAST((julianday('now') - julianday(p.created_at)) AS INTEGER) * 1)
             ) as relevance_score,
             0 as is_wildcard
           FROM posts p
@@ -61,7 +64,7 @@ export async function fetchFeedChunk(
           LIMIT 12 OFFSET ?
         `;
         
-        const binds = [currentUserId, ...topStyles, currentUserId, currentUserId, currentUserId, offset];
+        const binds = [currentUserId, ...mergedStyles, currentUserId, currentUserId, currentUserId, offset];
         const { results: personalizedPosts } = await db.prepare(personalizedQuery).bind(...binds).all();
 
         const existingIds = personalizedPosts.map((p: any) => p.id);

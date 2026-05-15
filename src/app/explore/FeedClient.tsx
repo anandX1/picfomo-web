@@ -211,6 +211,17 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
+  // 🌟 SESSION INTEREST TRACKING
+  const [sessionInterests, setSessionInterests] = useState<string[]>([]);
+  
+  const trackStyleInterest = (styleId: string | null) => {
+    if (!styleId) return;
+    setSessionInterests(prev => {
+      const newInterests = [styleId, ...prev.filter(id => id !== styleId)].slice(0, 5);
+      return newInterests;
+    });
+  };
+
   const handleTabChange = async (tab: FeedTab) => {
     if (tab === activeTab) return;
     setActiveTab(tab);
@@ -244,7 +255,7 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
 
   const loadMorePosts = async () => {
     setIsLoadingMore(true);
-    const newPosts = await fetchFeedChunk(offset, 15, searchQuery, activeTab);
+    const newPosts = await fetchFeedChunk(offset, 15, searchQuery, activeTab, sessionInterests);
     if (newPosts.length === 0) {
       setHasMore(false);
     } else {
@@ -395,6 +406,7 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
               isPending={isPending}
               animatedPostId={animatedPostId}
               onLike={handleLike} onRemix={handleRemix} onDoubleTap={handleDoubleTap}
+              onInterest={trackStyleInterest}
               refProp={index === posts.length - 3 ? lastPostElementRef : undefined}
             />
           ))}
