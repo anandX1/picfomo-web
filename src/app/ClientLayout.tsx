@@ -10,8 +10,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   
   // 🌟 Check if we are on a public marketing or auth page
   const isPublicPage = pathname === "/" || 
+                       pathname === "/explore" ||
+                       pathname.startsWith("/post/") ||
                        pathname === "/styles" ||
                        pathname.startsWith("/style/") ||
+                       pathname.startsWith("/u/") ||
                        pathname.startsWith("/use-case/") ||
                        pathname.startsWith("/compare/") ||
                        pathname.startsWith("/guides/") ||
@@ -27,13 +30,24 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   const content = isPublicPage ? (
     <div className="relative min-h-screen">
-      {children}
+      {/* For pages that need the dashboard sidebar but want root scroll (like Explore/Profile) */}
+      {(pathname === "/explore" || pathname.startsWith("/post/") || pathname.startsWith("/u/")) ? (
+        <div className="flex w-full">
+          <VaultHandoff />
+          <NavigationBar />
+          <main className="flex-1 w-full pb-24 md:pb-0">
+            {children}
+          </main>
+        </div>
+      ) : (
+        <>{children}</>
+      )}
     </div>
   ) : (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex w-full min-h-screen">
       <VaultHandoff />
       <NavigationBar />
-      <main className="flex-1 h-full overflow-y-auto pb-20 md:pb-0 hide-scroll">
+      <main className="flex-1 w-full pb-24 md:pb-0">
         {children}
       </main>
     </div>
