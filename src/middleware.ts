@@ -18,6 +18,15 @@ const isFacetedSeoRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req) => {
   const url = new URL(req.url);
+  const userAgent = req.headers.get('user-agent') || '';
+
+  // 🌟 SEARCH TELEMETRY: Edge Logging for Crawler Frequency
+  // Tracks Googlebot vs. LLM agents (ChatGPT, Perplexity, etc.)
+  if (userAgent.includes('Googlebot')) {
+    console.log(`[TELEMETRY] Googlebot Crawl: ${url.pathname}`);
+  } else if (userAgent.includes('GPTBot') || userAgent.includes('PerplexityBot') || userAgent.includes('anthropic-ai')) {
+    console.log(`[TELEMETRY] LLM Crawler: ${url.pathname} (${userAgent})`);
+  }
 
   // 🌟 SEO FACETED CRAWL PROTECTION
   // If the route is an SEO hub and has query parameters (e.g., ?sort=new, ?remix=123),

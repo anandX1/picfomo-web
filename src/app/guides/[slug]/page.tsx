@@ -3,8 +3,57 @@ import Link from 'next/link';
 import { BookOpen, Clock, ArrowRight, Wand2, ChevronRight, CheckCircle2 } from 'lucide-react';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
+import { SmartLinker } from '@/components/seo/SmartLinker';
 
-const GUIDES: Record<string, { title: string; readTime: string; description: string; content: React.ReactNode }> = {
+const GUIDES: Record<string, { title: string; readTime: string; description: string; content: any }> = {
+  'psychology-of-digital-identity': {
+    title: 'The Psychology of Professional Digital Identity in 2026',
+    readTime: '12 min read',
+    description: 'A deep dive into how first impressions are formed in the digital age and why your AI portrait is your most valuable career asset.',
+    content: (
+      <div className="space-y-8">
+        <p className="text-lg leading-relaxed text-[var(--color-ink2)]">
+          In 2026, your physical presence is often secondary to your digital silhouette. 
+          Whether it's a LinkedIn headshot, a Twitter avatar, or a Zoom profile picture, 
+          human psychology processes these pixels in less than 40 milliseconds to form 
+          judgments on authority, trustworthiness, and competence.
+        </p>
+
+        <h2 className="text-3xl font-bold display-font mt-12">1. The "Halo Effect" in Virtual Networking</h2>
+        <p className="text-[17px] leading-[1.8] text-[var(--color-ink2)]">
+          The Halo Effect is a cognitive bias where our overall impression of a person influences how we feel and think about their character. 
+          When a recruiter sees a high-quality AI headshot, they subconsciously attribute professional success, attention to detail, 
+          and tech-savviness to the individual. This is why tools like <SmartLinker text="Identity-Lock" /> are critical; 
+          they maintain the authenticity required to bridge the gap between "Digital" and "Real."
+        </p>
+
+        <div className="bg-[var(--color-cream)] p-8 rounded-2xl border border-[var(--rule)] my-12">
+           <h3 className="text-xl font-bold mb-4 display-font">The Authenticity Gap</h3>
+           <p className="text-sm text-[var(--color-ink2)] leading-relaxed italic">
+             "The moment a profile picture looks 'over-edited' or 'yassified,' the trust score drops. 
+             The brain flags it as a fabrication. True digital authority comes from realism."
+           </p>
+        </div>
+
+        <h2 className="text-3xl font-bold display-font mt-12">2. Niche-Specific Visual Language</h2>
+        <p className="text-[17px] leading-[1.8] text-[var(--color-ink2)]">
+          A lawyer needs to project stability and resolve, often leaning into <SmartLinker text="Corporate" /> styles with neutral palettes. 
+          Conversely, a creative director might use <SmartLinker text="Cinematic Noir" /> to signal vision and depth. 
+          PicFOMO allows professionals to pivot their visual identity based on the platform, whether it's <SmartLinker text="LinkedIn Profile Pictures" /> 
+          or <SmartLinker text="AI Photos for Tinder" />.
+        </p>
+
+        <h2 className="text-3xl font-bold display-font mt-12">3. The Future of Facial Accuracy</h2>
+        <p className="text-[17px] leading-[1.8] text-[var(--color-ink2)]">
+          Technologies like <SmartLinker text="PuLID" /> and <SmartLinker text="SDXL" /> have fundamentally changed 
+          how we generate <SmartLinker text="AI Portraits" />. We are moving away from generic prompt-based art 
+          and towards "Zero-Prompt" identity synthesis, where the AI understands the nuances of your unique 
+          facial geometry. This isn't just about making you look "good"; it's about making you look like the most 
+          professional version of yourself.
+        </p>
+      </div>
+    )
+  },
   'perfect-selfie-for-ai-headshots': {
     title: 'How to Take the Perfect Selfie for AI Headshots',
     readTime: '4 min read',

@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import PostClient from "./PostClient";
 import { Metadata } from "next";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { getSinglePost } from "@/lib/db-queries";
+import { getSinglePost, getRelatedPostsByStyle } from "@/lib/db-queries";
 import { REVALIDATE_TIMERS } from "@/lib/cache";
 import { SchemaFactory } from "@/lib/seo/schemaFactory";
 
@@ -52,8 +52,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title,
       description,
       images: [{
-        url: post.image_url,
-        alt: title, // 🌟 ADDED: Required for strict SEO compliance
+        url: `https://www.picfomo.com/api/og?id=${postId}`,
+        width: 1200,
+        height: 630,
+        alt: title,
       }],
       siteName: "PicFOMO",
       type: "article",
@@ -79,10 +81,13 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
 
   const { userId } = await auth(); 
   
-  // Uses the cached function! Zero extra database cost.
+  // 🌟 PERFORMANCE: Parallel fetching for lateral pathing
   const post = await getSinglePost(postId);
 
   if (!post) return notFound();
+
+  // Fetch lateral internal links (Orphan Prevention)
+  const relatedPosts = await getRelatedPostsByStyle(post.style_name || "", postId, 8);
 
   let isFollowing = false;
   if (userId) {
@@ -116,6 +121,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
         post={post} 
         currentUserId={userId} 
         initialIsFollowing={isFollowing}
+        relatedPosts={relatedPosts}
       />
     </>
   );

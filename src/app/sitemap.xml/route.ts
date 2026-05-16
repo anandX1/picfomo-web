@@ -29,16 +29,18 @@ export async function GET() {
   
   // Programmatic Hubs
   xml += `  <sitemap><loc>${baseUrl}/sitemap-usecases.xml</loc></sitemap>\n`;
+  xml += `  <sitemap><loc>${baseUrl}/sitemap-platforms.xml</loc></sitemap>\n`;
+  xml += `  <sitemap><loc>${baseUrl}/sitemap-problems.xml</loc></sitemap>\n`;
   xml += `  <sitemap><loc>${baseUrl}/sitemap-styles.xml</loc></sitemap>\n`;
 
   // Dynamic Post Shards (Paginated by ID/Offset)
   for (let i = 0; i < postShards; i++) {
-    xml += `  <sitemap><loc>${baseUrl}/sitemap-posts-${i}.xml</loc></sitemap>\n`;
+    xml += `  <sitemap><loc>${baseUrl}/shards/posts/${i}</loc></sitemap>\n`;
   }
 
   // Dedicated Image Sitemaps (Separate Crawl Queue)
   for (let i = 0; i < imageShards; i++) {
-    xml += `  <sitemap><loc>${baseUrl}/image-sitemap-${i}.xml</loc></sitemap>\n`;
+    xml += `  <sitemap><loc>${baseUrl}/shards/images/${i}</loc></sitemap>\n`;
   }
 
   xml += '</sitemapindex>';

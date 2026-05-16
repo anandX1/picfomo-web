@@ -92,7 +92,7 @@ export async function addStyle(formData: FormData) {
 
     revalidatePath("/admin");
     revalidatePath("/dashboard/studio"); // Instantly updates the Studio for users
-    await enqueueIndexing(db, "style", `/style/${slug}`);
+    await enqueueIndexing(`https://www.picfomo.com/style/${slug}`);
     await pingSitemaps();
     return { success: true };
   } catch (error: any) {
@@ -153,7 +153,7 @@ export async function updateStyle(id: string, formData: FormData) {
 
     revalidatePath("/admin");
     revalidatePath("/dashboard/studio"); 
-    await enqueueIndexing(db, "style", `/style/${slug}`);
+    await enqueueIndexing(`https://www.picfomo.com/style/${slug}`);
     await pingSitemaps();
     return { success: true };
   } catch (error: any) {

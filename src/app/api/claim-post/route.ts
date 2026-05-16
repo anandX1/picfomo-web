@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     // 2. Parse request body
-    const body = await req.json();
+    const body = (await req.json()) as { postId?: string };
     const { postId } = body;
 
     if (!postId) {

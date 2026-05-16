@@ -32,9 +32,10 @@ interface Props {
   post: PostData;
   currentUserId: string | null;
   initialIsFollowing: boolean;
+  relatedPosts?: any[];
 }
 
-export default function PostClient({ post, currentUserId, initialIsFollowing }: Props) {
+export default function PostClient({ post, currentUserId, initialIsFollowing, relatedPosts = [] }: Props) {
   const [isPending, startTransition] = useTransition();
   const [showAuthModal, setShowAuthModal] = useState(false);
   
@@ -251,6 +252,38 @@ export default function PostClient({ post, currentUserId, initialIsFollowing }: 
             </div>
           </figcaption>
         </figure>
+
+        {/* 🌟 LATERAL INTERNAL LINKING (Orphan Prevention) */}
+        {relatedPosts.length > 0 && (
+          <section className="mt-20">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-[family-name:var(--display)] tracking-tight">Trending in <span className="text-[var(--color-gold)]">{post.style_name || 'this Style'}</span></h2>
+              <Link href={`/style/${post.style_name?.toLowerCase().replace(/\s+/g, '-')}`} className="text-[10px] font-bold font-[family-name:var(--mono)] uppercase tracking-widest text-[var(--color-gold)] hover:underline">
+                View Style Hub →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {relatedPosts.map((p) => (
+                <Link 
+                  key={p.id} 
+                  href={`/post/${p.id}`} 
+                  className="group relative aspect-[4/5] rounded-2xl overflow-hidden border border-[var(--rule)] bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  <Image 
+                    src={p.image_url} 
+                    alt={p.title || "Related AI Portrait"} 
+                    fill 
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                    <p className="text-white text-[10px] font-bold font-[family-name:var(--mono)] uppercase tracking-widest truncate">@{p.username || 'creator'}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

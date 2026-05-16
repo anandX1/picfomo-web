@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import { getGlobalSemanticLinks } from "@/lib/db-queries";
 
@@ -18,8 +19,12 @@ export async function SmartLinker({ text, links = [], useGlobal = true }: SmartL
   // 🌟 DYNAMIC RESOLUTION: Combine manual overrides with D1 Global Dictionary
   let masterDictionary = [...links];
   if (useGlobal) {
-    const globalLinks = await getGlobalSemanticLinks();
-    masterDictionary = [...masterDictionary, ...globalLinks];
+    try {
+      const globalLinks = await getGlobalSemanticLinks();
+      masterDictionary = [...masterDictionary, ...globalLinks];
+    } catch (e) {
+      console.warn("SmartLinker: Failed to fetch global links", e);
+    }
   }
 
   // 1. Sort by length descending to prevent partial match hijacking
@@ -34,10 +39,10 @@ export async function SmartLinker({ text, links = [], useGlobal = true }: SmartL
     return true;
   });
 
-  let processedText: (string | JSX.Element)[] = [text];
+  let processedText: (string | React.ReactNode)[] = [text];
 
   uniqueLinks.forEach(({ keyword, url }) => {
-    const newProcessedText: (string | JSX.Element)[] = [];
+    const newProcessedText: (string | React.ReactNode)[] = [];
 
     processedText.forEach((part) => {
       if (typeof part !== 'string') {
@@ -69,5 +74,5 @@ export async function SmartLinker({ text, links = [], useGlobal = true }: SmartL
     processedText = newProcessedText;
   });
 
-  return <>{processedText}</>;
+  return React.createElement(React.Fragment, null, ...processedText);
 }

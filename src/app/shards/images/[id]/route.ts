@@ -1,17 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 /**
  * 🌟 PICFOMO SHARDED IMAGE SITEMAP
  * Implementation: Dedicated Image Indexing Queue.
- * Rationale: Prevents bloat in standard sitemaps while maximizing visual search dominance.
  */
 
 export const runtime = 'edge';
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
-  const chunkId = parseInt(resolvedParams.id || '0', 10);
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const chunkId = parseInt(id || '0', 10);
   const limit = 5000; // Lower limit for image shards due to XML verbosity
   const offset = chunkId * limit;
 

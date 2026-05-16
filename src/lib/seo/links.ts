@@ -1,5 +1,7 @@
 import { USE_CASES } from "@/data/use-cases";
 import { GLOSSARY_TERMS } from "@/data/glossary";
+import { PLATFORMS } from "@/data/platforms";
+import { PROBLEMS } from "@/data/problems";
 
 /**
  * 🔗 PICFOMO LINK DICTIONARY
@@ -18,6 +20,18 @@ export const SEMANTIC_LINKS = [
   ...Object.entries(USE_CASES).map(([slug, uc]) => ({
     keyword: uc.title,
     url: `/use-case/${slug}`
+  })),
+
+  // Dynamic Platforms
+  ...Object.entries(PLATFORMS).map(([slug, p]) => ({
+    keyword: p.title,
+    url: `/platform/${slug}`
+  })),
+
+  // Dynamic Problems
+  ...Object.entries(PROBLEMS).map(([slug, pr]) => ({
+    keyword: pr.title,
+    url: `/problems/${slug}`
   })),
 
   // Dynamic Glossary Terms

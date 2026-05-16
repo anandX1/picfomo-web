@@ -22,20 +22,26 @@ export const metadata: Metadata = {
 };
 
 export default async function CreatorsHubPage() {
-  const db = ((await getCloudflareContext({ async: true })).env.DB as any as D1Database);
-
-  // 🌟 FETCH TOP CREATORS (Highest follower count / activity)
-  const { results: topCreators } = await db.prepare(`
-    SELECT 
-      users.id, users.username, users.display_name, users.profile_image_url, users.bio,
-      (SELECT COUNT(*) FROM follows WHERE following_id = users.id) as followers_count,
-      (SELECT COUNT(*) FROM posts WHERE user_id = users.id AND is_public = 1) as posts_count,
-      (SELECT COUNT(*) FROM likes INNER JOIN posts ON likes.post_id = posts.id WHERE posts.user_id = users.id) as total_likes
-    FROM users 
-    WHERE username IS NOT NULL
-    ORDER BY followers_count DESC, posts_count DESC
-    LIMIT 24
-  `).all();
+  let topCreators: any[] = [];
+  
+  try {
+    const db = ((await getCloudflareContext({ async: true })).env.DB as any as D1Database);
+    const { results } = await db.prepare(`
+      SELECT 
+        users.id, users.username, users.display_name, users.profile_image_url, users.bio,
+        (SELECT COUNT(*) FROM follows WHERE following_id = users.id) as followers_count,
+        (SELECT COUNT(*) FROM posts WHERE user_id = users.id AND is_public = 1) as posts_count,
+        (SELECT COUNT(*) FROM likes INNER JOIN posts ON likes.post_id = posts.id WHERE posts.user_id = users.id) as total_likes
+      FROM users 
+      WHERE username IS NOT NULL
+      ORDER BY followers_count DESC, posts_count DESC
+      LIMIT 24
+    `).all();
+    topCreators = results || [];
+  } catch (error) {
+    console.error("Database fetch failed in CreatorsHubPage (likely during build):", error);
+    // topCreators stays an empty array, page renders skeleton/empty state
+  }
 
   // 🌟 JSON-LD (CollectionPage / Person List)
   const jsonLd = {

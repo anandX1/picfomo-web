@@ -2,6 +2,8 @@ import MarketingClient from "./MarketingClient";
 import SoftwareSchema from "@/components/marketing/SoftwareSchema";
 import { getActiveStyles } from "@/lib/db-queries";
 import { REVALIDATE_TIMERS } from "@/lib/cache";
+import { SchemaFactory } from "@/lib/seo/schemaFactory";
+import { Suspense } from "react";
 
 /**
  * 🚀 NEXT-GEN PERFORMANCE ARCHITECTURE
@@ -10,7 +12,12 @@ import { REVALIDATE_TIMERS } from "@/lib/cache";
 export const revalidate = 60;
 
 export default async function Home() {
-  const dynamicStyles = await getActiveStyles();
+  let dynamicStyles: any[] = [];
+  try {
+    dynamicStyles = (await getActiveStyles()) || [];
+  } catch (error) {
+    console.error("Home: Failed to fetch active styles during build.", error);
+  }
 
   // 🌟 SEO BOOST: JSON-LD Structured Data for the Homepage
   const jsonLd = {
@@ -33,7 +40,9 @@ export default async function Home() {
       />
       <SoftwareSchema />
 
-      <MarketingClient dynamicStyles={dynamicStyles} />
+      <Suspense fallback={<div className="h-screen w-full bg-black animate-pulse" />}>
+        <MarketingClient dynamicStyles={dynamicStyles} />
+      </Suspense>
     </>
   );
 }

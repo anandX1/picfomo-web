@@ -55,13 +55,14 @@ function PostSkeleton() {
 
 function PostCard({
   post, index, currentUserId, isPending, animatedPostId,
-  onLike, onRemix, onDoubleTap, refProp,
+  onLike, onRemix, onDoubleTap, onInterest, refProp,
 }: {
   post: Post; index: number; currentUserId: string | null; isPending: boolean;
   animatedPostId: string | null;
   onLike: (id: string, e: React.MouseEvent) => void;
   onRemix: (id: string, e?: React.MouseEvent) => void;
   onDoubleTap: (id: string, e: React.MouseEvent) => void;
+  onInterest?: (styleId: string | null) => void;
   refProp?: (node: HTMLDivElement) => void;
 }) {
   const isMine = post.user_id === currentUserId;

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       if (!locked) return NextResponse.json({ message: 'Revalidation already in progress' }, { status: 429 });
 
       try {
-        revalidateTag(tag);
+        (revalidateTag as any)(tag);
       } finally {
         await releaseRevalidationLock(tag);
       }
@@ -41,8 +41,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Default: Purge global hubs
-    revalidateTag(CACHE_TAGS.styles);
-    revalidateTag(CACHE_TAGS.posts);
+    (revalidateTag as any)(CACHE_TAGS.styles);
+    (revalidateTag as any)(CACHE_TAGS.posts);
     revalidatePath('/');
     revalidatePath('/explore');
 

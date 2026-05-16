@@ -96,7 +96,7 @@ export async function POST(req: Request) {
       `).bind(txId, id, 35, 'Welcome Bonus').run();
 
       console.log(`✅ SAVED ${finalUsername} WITH 35 SPARKS!`);
-      await enqueueIndexing(db, "user", `/u/${finalUsername}`);
+      await enqueueIndexing(`https://www.picfomo.com/u/${finalUsername}`);
       await pingSitemaps();
 
     } catch (dbError) {
@@ -122,7 +122,7 @@ export async function POST(req: Request) {
       `).bind(finalUsername, finalUsername, image_url || '', id).run();
 
       console.log(`✅ UPDATED ${finalUsername} IN DATABASE!`);
-      await enqueueIndexing(db, "user", `/u/${finalUsername}`);
+      await enqueueIndexing(`https://www.picfomo.com/u/${finalUsername}`);
       await pingSitemaps();
     } catch (dbError) {
       console.error("❌ Database Update Error:", dbError);

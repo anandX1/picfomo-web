@@ -14,10 +14,10 @@ export function InterlinkContent({ text }: { text: string }) {
   // Sort keywords by length descending to prevent partial matches
   const sortedLinks = [...SEMANTIC_LINKS].sort((a, b) => b.keyword.length - a.keyword.length);
   
-  let processedText: (string | JSX.Element)[] = [text];
+  let processedText: (string | React.ReactNode)[] = [text];
 
   sortedLinks.forEach(({ keyword, url }) => {
-    const newProcessedText: (string | JSX.Element)[] = [];
+    const newProcessedText: (string | React.ReactNode)[] = [];
 
     processedText.forEach((part) => {
       if (typeof part !== 'string') {
@@ -49,5 +49,5 @@ export function InterlinkContent({ text }: { text: string }) {
     processedText = newProcessedText;
   });
 
-  return <>{processedText}</>;
+  return React.createElement(React.Fragment, null, ...processedText);
 }

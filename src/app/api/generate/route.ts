@@ -2,6 +2,8 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+
+// @ts-ignore
 import piexif from "piexifjs";
 
 // 🌟 BULLETPROOF URL CONSTANTS
@@ -96,7 +98,7 @@ async function processAndUploadGeneratedImage(imageUrl: string, styleName: strin
       const newBase64 = piexif.insert(exifBytes, base64Img);
       
       const pureBase64 = newBase64.replace(/^data:image\/jpeg;base64,/, "");
-      finalBytes = base64ToUint8Array(pureBase64);
+      finalBytes = base64ToUint8Array(pureBase64) as any;
     } catch (exifErr) {
       console.warn("EXIF injection failed, skipping:", exifErr);
     }

@@ -34,20 +34,28 @@ export async function enqueueIndexing(url: string) {
  * Processes the indexing queue (drain).
  * This should be called by a background worker or API route.
  */
-export async function drainIndexingQueue() {
+export async function drainIndexingQueue(dbOverride?: any, limit: number = 50, key?: string) {
   try {
-    const envCtx = await getCloudflareContext({ async: true });
-    const db = envCtx.env.DB as any;
-    if (!db) return;
+    let db = dbOverride;
+    if (!db) {
+       const envCtx = await getCloudflareContext({ async: true });
+       db = envCtx.env.DB as any;
+    }
+    if (!db) return { ok: false, error: "No DB" };
 
-    const { results } = await db.prepare("SELECT url FROM indexing_queue LIMIT 50").all();
+    const { results } = await db.prepare("SELECT url FROM indexing_queue LIMIT ?").bind(limit).all();
     
+    let processed = 0;
     for (const row of results) {
       await notifyGoogleOfUpdate(row.url);
       await db.prepare("DELETE FROM indexing_queue WHERE url = ?").bind(row.url).run();
+      processed++;
     }
-  } catch (err) {
+
+    return { ok: true, processed };
+  } catch (err: any) {
     console.error("Failed to drain indexing queue:", err);
+    return { ok: false, error: err.message };
   }
 }
 

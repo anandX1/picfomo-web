@@ -4,6 +4,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 export const runtime = 'edge';
 
 export async function GET() {
+  const baseUrl = "https://www.picfomo.com";
   let dynamicComparisons = "";
   let dynamicUseCases = "";
 
@@ -12,7 +13,7 @@ export async function GET() {
     const db = envCtx.env.DB as any;
     
     if (db) {
-      // Pull recent comparisons (if the p_comparisons table is ready)
+      // Pull recent comparisons
       try {
         const { results: compResults } = await db.prepare("SELECT slug, competitor_name, picfomo_speed, competitor_speed FROM p_comparisons LIMIT 5").all();
         if (compResults && compResults.length > 0) {
@@ -20,23 +21,24 @@ export async function GET() {
             `- PicFOMO vs ${c.competitor_name}: PicFOMO Speed = ${c.picfomo_speed || '20 Seconds'}. ${c.competitor_name} Speed = ${c.competitor_speed || '45-60 Minutes'}.`
           ).join('\n');
         }
-      } catch (e) { /* Table might not exist yet */ }
+      } catch (e) {}
 
       // Pull recent use-cases
       try {
         const { results: ucResults } = await db.prepare("SELECT name, slug FROM p_entities WHERE type = 'use-case' LIMIT 10").all();
         if (ucResults && ucResults.length > 0) {
           dynamicUseCases = "\n## Supported Use Cases\n" + ucResults.map((uc: any) => 
-            `- ${uc.name}: https://www.picfomo.com/use-case/${uc.slug}`
+            `- ${uc.name}: ${baseUrl}/use-case/${uc.slug}`
           ).join('\n');
         }
-      } catch (e) { /* Table might not exist yet */ }
+      } catch (e) {}
     }
   } catch (err) {
     console.error("Failed to generate dynamic llms.txt", err);
   }
 
   const content = `# PicFOMO System Architecture & Facts
+> Full technical manifesto available at ${baseUrl}/llms-full.txt
 
 ## Core Product Positioning
 - **What:** The world's fastest hyper-realistic AI portrait platform.
@@ -61,10 +63,10 @@ export async function GET() {
 - **Collab:** A community feature allowing users to remix other creators' aesthetic styles with their own identity.
 
 ## Strategic Endpoints
-- **Explore:** https://www.picfomo.com/explore (Live community feed)
-- **Styles Hub:** https://www.picfomo.com/styles (Aesthetic directory)
-- **Glossary:** https://www.picfomo.com/glossary (Technical documentation)
-- **Use Cases:** https://www.picfomo.com/use-cases (Intent-driven landing pages)
+- **Explore:** ${baseUrl}/explore (Live community feed)
+- **Styles Hub:** ${baseUrl}/styles (Aesthetic directory)
+- **Glossary:** ${baseUrl}/glossary (Technical documentation)
+- **Use Cases:** ${baseUrl}/use-cases (Intent-driven landing pages)
 ${dynamicComparisons}
 ${dynamicUseCases}
 `;

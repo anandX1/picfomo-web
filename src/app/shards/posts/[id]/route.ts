@@ -1,17 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 /**
  * 🌟 PICFOMO SHARDED POST SITEMAP
- * Implementation: Streaming XML Generation for Edge Runtime.
- * Capacity: 10,000 URLs per shard to prevent heap overflow.
  */
 
 export const runtime = 'edge';
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
-  const chunkId = parseInt(resolvedParams.id || '0', 10);
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const chunkId = parseInt(id || '0', 10);
+
   const limit = 10000;
   const offset = chunkId * limit;
 

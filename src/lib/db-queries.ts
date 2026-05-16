@@ -223,6 +223,33 @@ export const getStyleSpecificPosts = unstable_cache(
   }
 );
 
+export const getRelatedPostsByStyle = unstable_cache(
+  async (styleName: string, excludeId: string, limit: number = 8) => {
+    try {
+      const envCtx = await getCloudflareContext({ async: true });
+      const db = envCtx.env.DB as any;
+      if (!db) return [];
+
+      const { results } = await db.prepare(`
+        SELECT p.id, p.image_url, p.title, u.username, u.display_name
+        FROM posts p
+        JOIN users u ON p.user_id = u.id
+        WHERE (p.style_name = ? OR p.style_id = (SELECT id FROM styles WHERE name = ?))
+        AND p.id != ? AND p.is_public = 1
+        ORDER BY p.created_at DESC
+        LIMIT ?
+      `).bind(styleName, styleName, excludeId, limit).all();
+
+      return results;
+    } catch (e) {
+      console.error('getRelatedPostsByStyle cache error:', e);
+      return [];
+    }
+  },
+  ['related-posts-style'],
+  { revalidate: 3600, tags: ['posts'] }
+);
+
 export const getSinglePost = unstable_cache(
   async (postId: string) => {
     try {
@@ -243,7 +270,7 @@ export const getSinglePost = unstable_cache(
         JOIN users ON posts.user_id = users.id
         LEFT JOIN styles ON posts.style_id = styles.id
         WHERE posts.id = ? AND posts.is_public = 1
-      `).bind(postId).first<any>();
+      `).bind(postId).first();
     } catch (e) {
       console.error('getSinglePost cache error:', e);
       return null;
@@ -333,6 +360,46 @@ export const getPublicPostCount = unstable_cache(
   }
 );
 
+export const getSitemapEntities = unstable_cache(
+  async () => {
+    try {
+      const envCtx = await getCloudflareContext({ async: true });
+      const db = envCtx.env.DB as any;
+      if (!db) return [];
+
+      const { results } = await db.prepare(
+        "SELECT slug, type, updated_at FROM p_entities WHERE is_active = 1"
+      ).all();
+      return results;
+    } catch (e) {
+      console.error('getSitemapEntities cache error:', e);
+      return [];
+    }
+  },
+  ['sitemap-entities'],
+  { revalidate: 86400, tags: ['programmatic'] }
+);
+
+export const getSitemapComparisons = unstable_cache(
+  async () => {
+    try {
+      const envCtx = await getCloudflareContext({ async: true });
+      const db = envCtx.env.DB as any;
+      if (!db) return [];
+
+      const { results } = await db.prepare(
+        "SELECT slug FROM p_comparisons"
+      ).all();
+      return results;
+    } catch (e) {
+      console.error('getSitemapComparisons cache error:', e);
+      return [];
+    }
+  },
+  ['sitemap-comparisons'],
+  { revalidate: 86400, tags: ['programmatic'] }
+);
+
 export const getGlobalSemanticLinks = unstable_cache(
   async () => {
     try {
@@ -355,7 +422,7 @@ export const getGlobalSemanticLinks = unstable_cache(
       return results.map((r: any) => ({
         keyword: r.keyword,
         url: r.type === 'glossary' ? `/glossary/${r.slug}` : `/${r.type}/${r.slug}`
-      })).sort((a, b) => b.keyword.length - a.keyword.length); // Prevents partial match hijacking
+      })).sort((a: any, b: any) => b.keyword.length - a.keyword.length); // Prevents partial match hijacking
     } catch (e) {
       console.error('getGlobalSemanticLinks error:', e);
       return [];

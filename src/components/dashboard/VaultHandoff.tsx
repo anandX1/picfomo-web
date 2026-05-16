@@ -38,7 +38,7 @@ export default function VaultHandoff() {
           router.push("/dashboard/vault");
         } else {
           // If the post isn't found or already claimed, we should still clear to stop loops
-          const data = await res.json();
+          const data = (await res.json()) as { error?: string };
           console.warn("Claim post failed:", data.error);
           clearGuestSession();
         }

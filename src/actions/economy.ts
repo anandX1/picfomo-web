@@ -338,7 +338,8 @@ export async function publishPostToFeed(postId: string) {
   revalidatePath("/dashboard/vault");
 
   // Indexing priority: posts last (after styles/users)
-  await enqueueIndexing(db, "post", `/post/${postId}`);
+  await enqueueIndexing(`https://www.picfomo.com/post/${postId}`);
+
   await pingSitemaps();
   return { success: true };
 }
