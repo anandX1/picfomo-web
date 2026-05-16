@@ -142,8 +142,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
            </div>
            <div className="grid md:grid-cols-2 gap-8">
               {Object.entries(BLOG_POSTS).filter(([s]) => s !== slug).map(([s, p]) => (
-                <Link key={s} href={`/blog/${s}`} className="group p-10 bg-white rounded-[2.5rem] border border-[var(--rule)] hover:shadow-2xl transition-all flex flex-col">
-                   <h4 className="text-xl font-bold mb-6 group-hover:text-[var(--color-gold)] transition-colors display-font leading-tight">{p.title}</h4>
+                <Link key={s} href={`/blog/${s}`} className="group p-10 bg-white rounded-[2.5rem] border border-black/5 hover:shadow-2xl transition-all flex flex-col">
+                   <h4 className="text-xl font-bold mb-6 text-zinc-900 group-hover:text-[var(--color-gold)] transition-colors display-font leading-tight">{p.title}</h4>
                    <div className="mt-auto flex items-center gap-2 text-[var(--color-gold)] font-mono text-[10px] uppercase tracking-widest font-bold">
                       Read Research <ArrowRight size={14} />
                    </div>

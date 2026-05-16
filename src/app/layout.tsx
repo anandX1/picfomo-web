@@ -71,9 +71,14 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: "/favicon.png", 
-    apple: "/apple-touch-icon.png", // Helps icon look perfect when saved to iOS homescreen
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    apple: "/logo.png", // Using the 512x512 logo for Apple touch icon
   },
+
+  manifest: "/manifest.json",
 
   openGraph: {
     title: "PicFOMO — Your Best DP is 20 Seconds Away",
@@ -82,7 +87,7 @@ export const metadata: Metadata = {
     siteName: "PicFOMO",
     images: [
       {
-        url: "/hero/8.webp", // Using a high-impact cinematic generation instead of just a logo
+        url: "https://www.picfomo.com/hero/8.webp", 
         width: 1200,
         height: 630,
         alt: "PicFOMO Cinematic AI Portraits",
@@ -96,7 +101,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PicFOMO — Your Best DP is 20 Seconds Away",
     description: "Drop your photo. Pick a style. Get your masterpiece. The #1 AI Portrait Generator.",
-    images: ["/hero/8.webp"], // Same high-impact image for Twitter cards
+    images: ["https://www.picfomo.com/hero/8.webp"], 
     creator: "@picfomo",
   },
 

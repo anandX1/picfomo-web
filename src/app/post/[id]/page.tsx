@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       card: "summary_large_image",
       title,
       description,
-      images: [post.image_url],
+      images: [post.image_url.startsWith('http') ? post.image_url : `https://www.picfomo.com${post.image_url}`],
     }
   };
 }

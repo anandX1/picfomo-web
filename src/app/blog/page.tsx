@@ -50,29 +50,29 @@ export default function BlogHubPage() {
             <Link 
               key={post.slug} 
               href={`/blog/${post.slug}`}
-              className="group flex flex-col bg-white rounded-[2.5rem] overflow-hidden border border-[var(--rule)] hover:shadow-2xl transition-all duration-500"
+              className="group flex flex-col bg-white rounded-[2.5rem] overflow-hidden border border-black/5 hover:shadow-2xl transition-all duration-500"
             >
-              <div className="p-10 flex flex-col h-full">
-                <div className="flex items-center gap-4 mb-6 text-[10px] font-mono uppercase tracking-widest text-[var(--color-ink3)]">
+              <div className="p-10 flex flex-col h-full text-zinc-900">
+                <div className="flex items-center gap-4 mb-6 text-[10px] font-mono uppercase tracking-widest text-zinc-400">
                    <span className="flex items-center gap-1.5"><Calendar size={12} /> {post.date}</span>
                    <span className="flex items-center gap-1.5"><Clock size={12} /> {post.readTime}</span>
                 </div>
                 
-                <h3 className="text-2xl md:text-3xl font-bold mb-6 leading-[1.1] group-hover:text-[var(--color-gold)] transition-colors display-font">
+                <h3 className="text-2xl md:text-3xl font-bold mb-6 leading-[1.1] text-zinc-900 group-hover:text-[var(--color-gold)] transition-colors display-font">
                   {post.title}
                 </h3>
                 
-                <p className="text-sm text-[var(--color-ink2)] leading-relaxed mb-8 line-clamp-3 font-light">
+                <p className="text-sm text-zinc-600 leading-relaxed mb-8 line-clamp-3 font-light">
                   {post.excerpt}
                 </p>
                 
-                <div className="mt-auto pt-6 border-t border-[var(--rule2)] flex items-center justify-between">
+                <div className="mt-auto pt-6 border-t border-zinc-100 flex items-center justify-between">
                    <div className="flex items-center gap-2 text-[var(--color-gold)] font-mono text-[10px] uppercase tracking-widest font-bold">
                       Read Expert Guide <ArrowRight size={14} />
                    </div>
                    <div className="flex gap-2">
                       {post.tags.slice(0, 2).map(tag => (
-                        <span key={tag} className="bg-[var(--color-cream)] px-2 py-1 rounded text-[8px] font-bold uppercase tracking-tighter text-gray-400">
+                        <span key={tag} className="bg-zinc-50 px-2 py-1 rounded text-[8px] font-bold uppercase tracking-tighter text-zinc-400">
                           {tag}
                         </span>
                       ))}
