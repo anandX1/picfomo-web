@@ -4,6 +4,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import "./globals.css";
 import { Toaster } from "sonner";
 import ClientLayout from "./ClientLayout";
+import { SchemaFactory } from "@/lib/seo/schemaFactory";
 
 // 🌟 OPTIMIZED FONTS
 const jakarta = Plus_Jakarta_Sans({
@@ -110,9 +111,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const globalSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      SchemaFactory.organization(),
+      SchemaFactory.website()
+    ]
+  };
+
   return (
     <ClerkProvider>
       <html lang="en" className={`${jakarta.variable} ${inter.variable}`}>
+        <head>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(globalSchema) }}
+          />
+        </head>
         <body className="antialiased bg-[var(--color-page-bg)] text-[var(--color-page-text)] selection:bg-[var(--color-gold)] selection:text-black">
           
           <ClientLayout>

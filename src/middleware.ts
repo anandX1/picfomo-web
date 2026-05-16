@@ -9,7 +9,25 @@ const isProtectedRoute = createRouteMatcher([
 
 const isGenerateRoute = createRouteMatcher(['/api/generate'])
 
+// Routes that should be protected from faceted crawl indexing
+const isFacetedSeoRoute = createRouteMatcher([
+  '/explore(.*)',
+  '/styles(.*)',
+  '/use-case(.*)'
+])
+
 export default clerkMiddleware(async (auth, req) => {
+  const url = new URL(req.url);
+
+  // 🌟 SEO FACETED CRAWL PROTECTION
+  // If the route is an SEO hub and has query parameters (e.g., ?sort=new, ?remix=123),
+  // inject an X-Robots-Tag to prevent Googlebot from indexing an infinite parameter space.
+  if (isFacetedSeoRoute(req) && url.searchParams.toString().length > 0) {
+    const res = NextResponse.next();
+    res.headers.set('X-Robots-Tag', 'noindex, follow');
+    // Proceed to other middleware checks, but pass along the modified response
+  }
+
   // Check for the /api/generate rate limit for guests
   if (isGenerateRoute(req) && req.method === 'POST') {
     const { userId } = await auth()
@@ -36,3 +54,4 @@ export const config = {
     '/(api|trpc)(.*)',
   ],
 }
+

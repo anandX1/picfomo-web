@@ -1,12 +1,19 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Sparkles, Wand2, ChevronRight, CheckCircle2, Heart } from 'lucide-react';
+import { Sparkles, Wand2, ChevronRight, CheckCircle2, ArrowLeft } from 'lucide-react';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { CommunityGrid } from '@/components/seo/CommunityGrid';
+import { getStyleSpecificPosts } from "@/lib/db-queries";
+import { REVALIDATE_TIMERS } from "@/lib/cache";
+import { SchemaFactory } from "@/lib/seo/schemaFactory";
 
-export const revalidate = 60; // 🌟 Cache this page for 60 seconds to keep DB costs low while staying fresh
+/**
+ * 🚀 NEXT-GEN PERFORMANCE ARCHITECTURE
+ * Eliminates force-dynamic to secure sub-100ms TTFB at the Edge.
+ */
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
@@ -53,50 +60,21 @@ export default async function StyleSeoPage({ params }: { params: Promise<{ slug:
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
-      {
-        "@type": "SoftwareApplication",
-        "name": `${cleanName} AI Portrait Generator`,
-        "description": `Generate ultra-realistic ${cleanName}s using your own face. No photographer needed. Try PicFOMO's Identity-Lock AI today.`,
-        "applicationCategory": "DesignApplication",
-        "operatingSystem": "All",
-        "url": `https://www.picfomo.com/style/${slug}`,
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.9",
-          "ratingCount": "1240"
-        }
-      },
-      {
-        "@type": "ImageObject",
-        "contentUrl": `https://www.picfomo.com/style/${slug}`,
-        "name": `${cleanName} AI Style Example`,
-        "description": `Professional ${cleanName} portrait generated with PicFOMO AI.`,
-        "author": {
-          "@type": "Organization",
-          "name": "PicFOMO"
-        }
-      }
+      SchemaFactory.softwareApplication(
+        `${cleanName} AI Portrait Generator`,
+        `Generate ultra-realistic ${cleanName}s using your own face. No photographer needed. Try PicFOMO's Identity-Lock AI today.`,
+        `https://www.picfomo.com/style/${slug}`
+      ),
+      SchemaFactory.breadcrumbList([
+        { name: "Home", url: "https://www.picfomo.com/" },
+        { name: "Styles", url: "https://www.picfomo.com/styles" },
+        { name: cleanName, url: `https://www.picfomo.com/style/${slug}` }
+      ])
     ]
   };
 
   // 🌟 PROGRAMMATIC SEO: Fetch actual posts matching this style slug
-  const db = ((await getCloudflareContext({ async: true })).env.DB as any as D1Database);
-  
-  const { results: recentPosts } = await db.prepare(`
-    SELECT posts.id, posts.image_url, posts.title, users.username, users.display_name,
-    (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) as likes_count
-    FROM posts 
-    JOIN users ON posts.user_id = users.id
-    LEFT JOIN styles ON posts.style_id = styles.id
-    WHERE posts.is_public = 1 AND (LOWER(styles.name) LIKE ? OR LOWER(posts.tags) LIKE ?)
-    ORDER BY posts.created_at DESC
-    LIMIT 16
-  `).bind(`%${cleanName.toLowerCase()}%`, `%${cleanName.toLowerCase()}%`).all();
+  const recentPosts = await getStyleSpecificPosts(cleanName) as any[];
 
   return (
     <main className="min-h-screen bg-[var(--color-page-bg)] flex flex-col">
@@ -132,12 +110,11 @@ export default async function StyleSeoPage({ params }: { params: Promise<{ slug:
 
             <div className="mt-8 flex items-center gap-4">
               <Link href="/styles" className="text-[12px] font-[family-name:var(--mono)] uppercase tracking-[2px] text-[var(--color-ink3)] hover:text-[var(--color-gold)] transition-colors flex items-center gap-2">
-                ← Browse All Styles
+                <ArrowLeft size={14} /> Browse All Styles
               </Link>
             </div>
           </div>
 
-          {/* 🌟 Dynamic Featured Image (Optimized with Next.js Image) */}
           <div className="relative aspect-[4/5] w-full max-w-[440px] mx-auto rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-[var(--color-cream)]">
             {recentPosts && recentPosts.length > 0 ? (
               <Image 
@@ -161,41 +138,11 @@ export default async function StyleSeoPage({ params }: { params: Promise<{ slug:
       </section>
 
       {/* 🌟 THE INTERNAL LINKING FLYWHEEL */}
-      {recentPosts && recentPosts.length > 0 && (
-        <section className="bg-[var(--color-cream)] py-20 px-6 md:px-10 border-t border-[var(--rule)]">
-          <div className="max-w-[1120px] mx-auto">
-            <h2 className="font-[family-name:var(--display)] text-3xl md:text-4xl text-[var(--color-page-text)] mb-10 text-center">
-              Made by the PicFOMO Community
-            </h2>
-            
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-              {recentPosts.map((post: any) => (
-                <Link href={`/post/${post.id}`} key={post.id} className="block group relative rounded-xl overflow-hidden break-inside-avoid shadow-sm hover:shadow-xl transition-all duration-300">
-                  <div className="relative aspect-auto">
-                    <Image 
-                      src={post.image_url} 
-                      alt={post.title || `${cleanName} AI generated portrait by @${post.username}`} 
-                      width={400}
-                      height={500}
-                      className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500" 
-                    />
-                  </div>
-                  
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                    <p className="text-white text-sm font-semibold truncate">{post.title || `${cleanName} Edit`}</p>
-                    <div className="flex items-center justify-between mt-1">
-                      <p className="text-gray-300 text-xs truncate">by @{post.username}</p>
-                      <div className="flex items-center gap-1 text-white text-xs">
-                        <Heart size={12} className="fill-white" /> {post.likes_count}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <CommunityGrid 
+        posts={recentPosts} 
+        nicheName={cleanName} 
+        title="Made by the PicFOMO Community" 
+      />
 
       <Footer />
     </main>

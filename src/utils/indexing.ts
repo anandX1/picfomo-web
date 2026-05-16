@@ -1,109 +1,86 @@
-export type IndexingType = "style" | "user" | "post" | "glossary" | "comparison";
+import { google } from 'googleapis';
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-const SITE_URL = "https://www.picfomo.com";
+/**
+ * 🌟 PICFOMO INDEXING NOTIFIER
+ * Implementation: Atomic Queueing + Google Indexing API
+ */
 
-function toAbsoluteUrl(path: string) {
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  if (!path.startsWith("/")) path = `/${path}`;
-  return `${SITE_URL}${path}`;
+const auth = new google.auth.GoogleAuth({
+  credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || '{}'),
+  scopes: ['https://www.googleapis.com/auth/indexing'],
+});
+
+const indexing = google.indexing('v3');
+
+/**
+ * Enqueues a URL for Google Indexing.
+ * Uses Cloudflare D1 as a persistent queue to handle quota limits and retries.
+ */
+export async function enqueueIndexing(url: string) {
+  try {
+    const envCtx = await getCloudflareContext({ async: true });
+    const db = envCtx.env.DB as any;
+    if (!db) return;
+
+    await db.prepare("INSERT OR IGNORE INTO indexing_queue (url) VALUES (?)").bind(url).run();
+    console.log(`Enqueued for indexing: ${url}`);
+  } catch (err) {
+    console.error("Failed to enqueue indexing URL:", err);
+  }
 }
 
 /**
- * 🚀 GOOGLE INDEXING API (CLIENT FOUNDATION)
- * This function prepares the JWT auth and sends a URL notification to Google.
- * Requires GOOGLE_CLIENT_EMAIL and GOOGLE_PRIVATE_KEY in environment variables.
+ * Processes the indexing queue (drain).
+ * This should be called by a background worker or API route.
  */
-export async function notifyGoogleIndexing(url: string, type: "URL_UPDATED" | "URL_DELETED" = "URL_UPDATED") {
+export async function drainIndexingQueue() {
   try {
-    const { google } = await import('googleapis');
+    const envCtx = await getCloudflareContext({ async: true });
+    const db = envCtx.env.DB as any;
+    if (!db) return;
+
+    const { results } = await db.prepare("SELECT url FROM indexing_queue LIMIT 50").all();
     
-    // Check for credentials
-    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
-      console.warn("⚠️ Google Indexing API credentials missing. Skipping direct ping.");
-      return;
+    for (const row of results) {
+      await notifyGoogleOfUpdate(row.url);
+      await db.prepare("DELETE FROM indexing_queue WHERE url = ?").bind(row.url).run();
     }
+  } catch (err) {
+    console.error("Failed to drain indexing queue:", err);
+  }
+}
 
-    const auth = new google.auth.JWT(
-      process.env.GOOGLE_CLIENT_EMAIL,
-      undefined,
-      process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      ['https://www.googleapis.com/auth/indexing']
-    );
+export async function notifyGoogleOfUpdate(url: string) {
+  if (process.env.NODE_ENV !== 'production' && !process.env.FORCE_INDEXING) return;
 
-    const indexing = google.indexing({ version: 'v3', auth });
-    
-    await indexing.urlNotifications.publish({
+  try {
+    const res = await indexing.urlNotifications.publish({
+      auth,
       requestBody: {
-        url: toAbsoluteUrl(url),
-        type,
+        url,
+        type: 'URL_UPDATED',
       },
     });
-    
-    console.log(`✅ Google Indexing API: Success for ${url}`);
+    return res.data;
   } catch (error) {
-    console.error("❌ Google Indexing API Error:", error);
+    console.error(`Google Indexing API Error for ${url}:`, error);
   }
 }
 
 /**
- * ⚡ INDEXNOW PROTOCOL (BING/YANDEX)
- * Instantly notifies non-Google search engines of new content.
- */
-export async function submitToIndexNow(urls: string[]) {
-  const absoluteUrls = urls.map(toAbsoluteUrl);
-  const key = process.env.INDEXNOW_KEY;
-
-  if (!key) {
-    console.warn("⚠️ INDEXNOW_KEY missing. Skipping IndexNow submission.");
-    return { ok: false, submitted: 0 };
-  }
-
-  const payload = {
-    host: "www.picfomo.com",
-    key: key,
-    keyLocation: `https://www.picfomo.com/${key}.txt`,
-    urlList: absoluteUrls,
-  };
-
-  try {
-    const response = await fetch("https://api.indexnow.org/indexnow", {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify(payload),
-    });
-
-    return { ok: response.ok, submitted: absoluteUrls.length };
-  } catch (error) {
-    console.error("❌ IndexNow Error:", error);
-    return { ok: false, submitted: 0 };
-  }
-}
-
-/**
- * 📣 SITEMAP PING (LEGACY DISCOVERY)
- * Forces Google/Bing to re-read the sitemap.xml.
+ * Pings the sitemaps to Google Search Console
  */
 export async function pingSitemaps() {
-  const sitemapUrl = `${SITE_URL}/sitemap.xml`;
-  const endpoints = [
-    `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`,
-    `https://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`,
-  ];
-  await Promise.allSettled(endpoints.map((u) => fetch(u, { method: "GET" })));
-  console.log("📣 Sitemaps pinged successfully.");
+  const sitemapUrl = "https://www.picfomo.com/sitemap.xml";
+  try {
+    await fetch(`https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`);
+    console.log("Sitemap pinged successfully");
+  } catch (err) {
+    console.error("Sitemap ping failed", err);
+  }
 }
 
-/**
- * 🏗️ UNIFIED HIGH-VELOCITY INDEXING
- * The "Heavy Lifter" function to be called after content creation.
- */
-export async function triggerHighVelocityIndexing(url: string) {
-  // 1. Ping Google directly (Minutes)
-  await notifyGoogleIndexing(url);
-  
-  // 2. Submit to IndexNow (Seconds)
-  await submitToIndexNow([url]);
-  
-  // 3. Ping Sitemaps (Legacy fallback)
-  await pingSitemaps();
-}
+// For compatibility with single-ping naming convention
+export const pingSitemap = pingSitemaps;
+export const notifyGoogle = notifyGoogleOfUpdate;

@@ -2,32 +2,16 @@ import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import PostClient from "./PostClient";
 import { Metadata } from "next";
-import { cache } from "react";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getSinglePost } from "@/lib/db-queries";
+import { REVALIDATE_TIMERS } from "@/lib/cache";
+import { SchemaFactory } from "@/lib/seo/schemaFactory";
 
-export const revalidate = 0;
-
-// 🌟 SEO & PERFORMANCE BOOST: React Cache Memoization
-// This guarantees that Cloudflare D1 is only queried ONCE per page load,
-// even though both generateMetadata and the Page component need the data.
-// This halves your server response time, preventing Googlebot timeouts!
-const getPost = cache(async (postId: string) => {
-  const db = ((await (await import("@opennextjs/cloudflare")).getCloudflareContext({ async: true })).env.DB as any as D1Database);
-  
-  return await db.prepare(`
-    SELECT 
-      posts.id, posts.image_url, posts.created_at, posts.prompt_used, posts.user_id as creator_id,
-      posts.title, posts.description, posts.tags,
-      users.username, users.display_name, users.profile_image_url,
-      styles.name as style_name,
-      (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) as likes_count,
-      (SELECT COUNT(*) FROM post_views WHERE post_views.post_id = posts.id) as views_count,
-      (SELECT COUNT(*) FROM follows WHERE follows.following_id = posts.user_id) as followers_count
-    FROM posts
-    JOIN users ON posts.user_id = users.id
-    LEFT JOIN styles ON posts.style_id = styles.id
-    WHERE posts.id = ? AND posts.is_public = 1
-  `).bind(postId).first<any>();
-});
+/**
+ * 🚀 NEXT-GEN PERFORMANCE ARCHITECTURE
+ * Eliminates force-dynamic to secure sub-100ms TTFB at the Edge.
+ */
+export const revalidate = 86400;
 
 // 🌟 SEO BOOST 1: DYNAMIC METADATA & CANONICAL URL
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -36,8 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   
   if (postId.includes('.')) return { title: "PicFOMO" };
 
-  // Uses the cached function! Lightning fast.
-  const post = await getPost(postId);
+  const post = await getSinglePost(postId);
 
   if (!post) return { title: "Post Not Found | PicFOMO" };
 
@@ -97,7 +80,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
   const { userId } = await auth(); 
   
   // Uses the cached function! Zero extra database cost.
-  const post = await getPost(postId);
+  const post = await getSinglePost(postId);
 
   if (!post) return notFound();
 
@@ -109,25 +92,17 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
     isFollowing = !!followCheck;
   }
 
-  // 🌟 SEO: JSON-LD STRUCTURED DATA (ImageObject + keywords)
+  // 🌟 SEO: JSON-LD STRUCTURED DATA (ImageObject + Breadcrumbs)
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "ImageObject",
-    "name": post.title || `${post.style_name} Portrait`,
-    "description": post.description || `AI generated portrait by ${post.username}`,
-    "contentUrl": post.image_url,
-    "datePublished": new Date(post.created_at).toISOString(),
-    "author": {
-      "@type": "Person",
-      "name": post.display_name || post.username,
-      "url": `https://www.picfomo.com/u/${post.username}`
-    },
-    "keywords": post.tags || post.style_name,
-    "isPartOf": {
-      "@type": "WebSite",
-      "name": "PicFOMO",
-      "url": "https://www.picfomo.com/",
-    },
+    "@graph": [
+      SchemaFactory.imageObject(post),
+      SchemaFactory.breadcrumbList([
+        { name: "Home", url: "https://www.picfomo.com/" },
+        { name: "Explore", url: "https://www.picfomo.com/explore" },
+        { name: post.style_name || "Portrait", url: `https://www.picfomo.com/post/${postId}` }
+      ])
+    ]
   };
 
   return (

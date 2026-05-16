@@ -5,7 +5,9 @@ import { Calendar, Clock, ArrowRight, ArrowLeft, Wand2, ChevronRight, CheckCircl
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import { BLOG_POSTS } from '@/data/blog';
-import { InterlinkContent } from '@/utils/seo';
+import { SmartLinker } from '@/components/seo/SmartLinker';
+import { SEMANTIC_LINKS } from '@/lib/seo/links';
+import { SchemaFactory } from '@/lib/seo/schemaFactory';
 
 export async function generateStaticParams() {
   return Object.keys(BLOG_POSTS).map((slug) => ({ slug }));
@@ -43,24 +45,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   // 🌟 JSON-LD ARTICLE SCHEMA (PERFECT SEO)
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": post.title,
-    "image": "https://www.picfomo.com/hero/8.webp",
-    "datePublished": "2026-05-15T08:00:00+08:00",
-    "author": {
-      "@type": "Person",
-      "name": post.author,
-      "url": "https://www.picfomo.com/blog"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "PicFOMO",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://www.picfomo.com/logo2.png"
-      }
-    },
-    "description": post.excerpt
+    ...SchemaFactory.blogPosting({ ...post, slug })
   };
 
   return (
@@ -109,7 +94,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         {/* Main Content */}
         <div className="prose prose-lg max-w-none text-[var(--color-ink2)] leading-relaxed space-y-12">
-           <InterlinkContent text={post.content} />
+           <SmartLinker text={post.content} links={SEMANTIC_LINKS} />
         </div>
 
         {/* High-Contrast Conversion Box */}

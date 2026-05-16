@@ -30,22 +30,21 @@ export default function Footer() {
           <div>
             <div className="mb-4 font-[family-name:var(--mono)] text-[10px] uppercase tracking-[3px] text-[var(--color-ink3)]">Product</div>
             <ul className="flex flex-col gap-2.5">
-              <li><Link href="#styles" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">All Styles</Link></li>
-              <li><Link href="#how-it-works" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">How it works</Link></li>
-              <li><Link href="#pricing" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Pricing</Link></li>
+              <li><Link href="/styles" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">All Styles</Link></li>
               <li><Link href="/explore" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Creator Feed</Link></li>
               <li><Link href="/glossary" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">AI Glossary</Link></li>
+              <li><Link href="/use-cases" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Use Cases</Link></li>
             </ul>
           </div>
 
           {/* Company Links */}
           <div>
-            <div className="mb-4 font-[family-name:var(--mono)] text-[10px] uppercase tracking-[3px] text-[var(--color-ink3)]">Company</div>
+            <div className="mb-4 font-[family-name:var(--mono)] text-[10px] uppercase tracking-[3px] text-[var(--color-ink3)]">Solutions</div>
             <ul className="flex flex-col gap-2.5">
-              <li><Link href="/about" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">About</Link></li>
-              <li><Link href="/blog" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Blog</Link></li>
-              <li><Link href="/careers" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Careers</Link></li>
-              <li><Link href="/contact" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Contact</Link></li>
+              <li><Link href="/use-case/linkedin-profile-pictures" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">LinkedIn Headshots</Link></li>
+              <li><Link href="/use-case/real-estate-headshots" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">Real Estate Portraits</Link></li>
+              <li><Link href="/authenticity" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">The Real Look</Link></li>
+              <li><Link href="/compare" className="text-[12px] text-[var(--color-ink2)] transition-colors hover:text-[var(--color-gold)]">AI Alternatives</Link></li>
             </ul>
           </div>
 

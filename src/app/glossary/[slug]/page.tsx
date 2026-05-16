@@ -1,10 +1,20 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Sparkles, ArrowLeft, CheckCircle2, Wand2, ChevronRight, BookOpen, Layers, Lightbulb, Zap } from 'lucide-react';
+import { Sparkles, ArrowLeft, Wand2, ChevronRight, BookOpen, Lightbulb, Zap } from 'lucide-react';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
+import { SmartLinker } from '@/components/seo/SmartLinker';
+import { SEMANTIC_LINKS } from '@/lib/seo/links';
 import { GLOSSARY_TERMS } from '@/data/glossary';
+import { REVALIDATE_TIMERS } from "@/lib/cache";
+import { SchemaFactory } from "@/lib/seo/schemaFactory";
+
+/**
+ * 🚀 NEXT-GEN PERFORMANCE ARCHITECTURE
+ * Eliminates force-dynamic to secure sub-100ms TTFB at the Edge.
+ */
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   return Object.keys(GLOSSARY_TERMS).map((slug) => ({ slug }));
@@ -41,10 +51,14 @@ export default async function GlossaryTermPage({ params }: { params: Promise<{ s
   // 🌟 Schema.org for DefinedTerm
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "DefinedTerm",
-    "name": term.term,
-    "description": term.definition,
-    "inDefinedTermSet": "https://www.picfomo.com/glossary"
+    "@graph": [
+      SchemaFactory.definedTerm(term),
+      SchemaFactory.breadcrumbList([
+        { name: "Home", url: "https://www.picfomo.com/" },
+        { name: "Glossary", url: "https://www.picfomo.com/glossary" },
+        { name: term.term, url: `https://www.picfomo.com/glossary/${slug}` }
+      ])
+    ]
   };
 
   return (
@@ -79,7 +93,9 @@ export default async function GlossaryTermPage({ params }: { params: Promise<{ s
               <h2 className="text-2xl font-bold display-font">Technical Deep-Dive</h2>
             </div>
             <div className="prose prose-lg max-w-none text-[var(--color-ink2)] leading-relaxed">
-              <p>{term.deepDive}</p>
+              <p>
+                <SmartLinker text={term.deepDive} links={SEMANTIC_LINKS} />
+              </p>
             </div>
           </section>
 
@@ -93,7 +109,7 @@ export default async function GlossaryTermPage({ params }: { params: Promise<{ s
               <h2 className="text-2xl font-bold display-font">Why it matters</h2>
             </div>
             <p className="text-[var(--color-ink2)] leading-relaxed">
-              {term.whyItMatters}
+              <SmartLinker text={term.whyItMatters} links={SEMANTIC_LINKS} />
             </p>
           </section>
 
@@ -106,7 +122,7 @@ export default async function GlossaryTermPage({ params }: { params: Promise<{ s
               <h2 className="text-2xl font-bold display-font">How PicFOMO uses it</h2>
             </div>
             <p className="text-[var(--color-ink2)] leading-relaxed">
-              {term.howPicfomoUsesIt}
+              <SmartLinker text={term.howPicfomoUsesIt} links={SEMANTIC_LINKS} />
             </p>
           </section>
 

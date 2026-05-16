@@ -147,3 +147,11 @@ CREATE TABLE IF NOT EXISTS referrals (
     FOREIGN KEY (referrer_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (referred_user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- INDEXING QUEUE (For Google/IndexNow background processing)
+CREATE TABLE IF NOT EXISTS indexing_queue (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL,      -- 'style', 'user', 'post', etc.
+    path TEXT NOT NULL,      -- '/style/ghibli'
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

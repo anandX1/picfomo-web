@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import piexif from "piexifjs";
 
 // 🌟 BULLETPROOF URL CONSTANTS
 const PIXAZO_SCHNELL_URL = "https://gateway.pixazo.ai/flux-1-schnell/v1/getData";
@@ -46,6 +47,87 @@ async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
 
   await S3.send(new PutObjectCommand({ Bucket: bucketName, Key: key, ContentType: mimeType, Body: bytes }));
   return `${publicUrl}/${key}`;
+}
+
+// === 1B. SEMANTIC IMAGE PIPELINE (EXIF & CDN UPLOAD) ===
+function getSemanticFilename(styleName: string, id: string): string {
+  const cleanStyle = styleName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const isRealistic = cleanStyle.includes('dslr') || cleanStyle.includes('studio') || cleanStyle.includes('corporate');
+  const modifier = isRealistic ? 'authentic-unfiltered' : 'professional';
+  return `picfomo-${cleanStyle}-${modifier}-portrait-${id}.jpg`;
+}
+
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function processAndUploadGeneratedImage(imageUrl: string, styleName: string, prompt: string, env: any): Promise<string> {
+  try {
+    const res = await fetch(imageUrl);
+    const arrayBuffer = await res.arrayBuffer();
+    let finalBytes = new Uint8Array(arrayBuffer);
+    
+    // Inject EXIF Metadata for Google Image SEO
+    try {
+      const base64Str = uint8ArrayToBase64(finalBytes);
+      const base64Img = `data:image/jpeg;base64,${base64Str}`;
+      
+      const exifObj = {
+        "0th": {
+          [piexif.ImageIFD.Software]: "PicFOMO AI Engine",
+          [piexif.ImageIFD.Copyright]: "PicFOMO",
+          [piexif.ImageIFD.ImageDescription]: prompt || `PicFOMO ${styleName} AI Portrait`,
+        }
+      };
+      const exifBytes = piexif.dump(exifObj);
+      const newBase64 = piexif.insert(exifBytes, base64Img);
+      
+      const pureBase64 = newBase64.replace(/^data:image\/jpeg;base64,/, "");
+      finalBytes = base64ToUint8Array(pureBase64);
+    } catch (exifErr) {
+      console.warn("EXIF injection failed, skipping:", exifErr);
+    }
+
+    const accountId = env.R2_ACCOUNT_ID || process.env.R2_ACCOUNT_ID;
+    const accessKey = env.R2_ACCESS_KEY_ID || process.env.R2_ACCESS_KEY_ID;
+    const secretKey = env.R2_SECRET_ACCESS_KEY || process.env.R2_SECRET_ACCESS_KEY;
+    const bucketName = env.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME;
+    const publicUrl = env.NEXT_PUBLIC_R2_URL || process.env.NEXT_PUBLIC_R2_URL;
+
+    const S3 = new S3Client({
+      region: "auto",
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      credentials: { accessKeyId: accessKey!, secretAccessKey: secretKey! },
+    });
+
+    const uniqueId = Math.random().toString(36).substring(2, 9);
+    const key = `renders/${getSemanticFilename(styleName, uniqueId)}`;
+
+    await S3.send(new PutObjectCommand({ 
+      Bucket: bucketName, 
+      Key: key, 
+      ContentType: 'image/jpeg', 
+      Body: finalBytes 
+    }));
+
+    return `${publicUrl}/${key}`;
+  } catch (err) {
+    console.error("Semantic upload pipeline failed, returning original URL:", err);
+    return imageUrl;
+  }
 }
 
 // === 2. GROQ SEO HELPER ===
@@ -134,19 +216,22 @@ export async function POST(req: Request) {
     const TEXTURE_ANCHOR = "Ensure photorealistic DSLR quality, highly detailed skin texture, visible pores, and natural lighting. Do not airbrush or smooth the face.";
 
     // --- A. GET PRICING, LOGIC, & PROMPTS ---
+    let styleNameForSEO = "schnell";
     if (model !== "schnell") {
       if (!sourceImage) throw new Error("Source face image required.");
       secureSourceFace = await uploadBase64ToR2(sourceImage, envCtx);
 
       if (styleId === "custom") {
          sparkCost = 15; 
+         styleNameForSEO = "custom";
          finalPrompt = `Keep the facial identity, Skin tone, and micro skin texture of the person exactly the same. Change their clothing, background, and scene to: ${prompt}. ${TEXTURE_ANCHOR}`;
       } 
       else {
-         const styleRecord = await db.prepare("SELECT spark_cost, description FROM styles WHERE id = ?").bind(styleId).first();
+         const styleRecord = await db.prepare("SELECT spark_cost, description, name FROM styles WHERE id = ?").bind(styleId).first();
          if (!styleRecord) throw new Error("Style not found or inactive.");
          
          sparkCost = styleRecord.spark_cost as number;
+         styleNameForSEO = styleRecord.name as string;
          
          // 🌟 PLAN A: Single Image Instruction Prompt
          finalPrompt = `Keep the facial identity of the person exactly the same. Change their clothing, the background, and the overall aesthetic to match this style: ${styleRecord.description}. ${TEXTURE_ANCHOR}`;
@@ -182,7 +267,7 @@ export async function POST(req: Request) {
 
     try {
       // --- C. AI GENERATION & SEO ---
-      let outputImageUrl = "";
+      let rawOutputUrl = "";
       let seoData = { title: "", description: "", tags: "" };
 
       if (model === "schnell") {
@@ -198,7 +283,7 @@ export async function POST(req: Request) {
         const pixazoData = (await pixazoRes.json()) as any;
         if (!pixazoRes.ok) throw new Error(pixazoData.error || "Schnell API Failed");
         
-        outputImageUrl = pixazoData.output;
+        rawOutputUrl = pixazoData.output;
         seoData = groqRes;
 
       } else {
@@ -221,24 +306,28 @@ export async function POST(req: Request) {
         const startData = (await pixazoStartRes.json()) as any;
         if (!pixazoStartRes.ok || !startData.polling_url) throw new Error(startData.error || "FireRed queue failed");
 
-        outputImageUrl = await pollPixazoStatus(startData.polling_url, PIXAZO_KEY);
+        rawOutputUrl = await pollPixazoStatus(startData.polling_url, PIXAZO_KEY);
         seoData = groqRes;
       }
 
-      // --- D. SAVE TO DATABASE ---
+      // --- D. SEMANTIC IMAGE PIPELINE (EXIF & CDN) ---
+      const finalImageUrl = await processAndUploadGeneratedImage(rawOutputUrl, styleNameForSEO, seoData.description, envCtx);
+
+      // --- E. SAVE TO DATABASE ---
       const postId = `post_${Date.now()}`;
       await db.prepare(`
         INSERT INTO posts (id, user_id, image_url, prompt_used, style_id, title, description, tags, is_public)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0) 
       `).bind(
-        postId, isGuest ? 'guest_user' : userId, outputImageUrl, finalPrompt, styleId || "schnell", seoData.title, seoData.description, seoData.tags
+        postId, isGuest ? 'guest_user' : userId, finalImageUrl, finalPrompt, styleId || "schnell", seoData.title, seoData.description, seoData.tags
       ).run();
 
       if (isGuest && clientIp !== 'unknown') {
         await db.prepare("INSERT INTO guest_ips (ip) VALUES (?)").bind(clientIp).run();
       }
 
-      const response = NextResponse.json({ output: outputImageUrl, post_id: postId }, { status: 200 });
+      const response = NextResponse.json({ output: finalImageUrl, post_id: postId }, { status: 200 });
+
       if (isGuest) response.cookies.set('picfomo_guest_pass', 'used', { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 60 * 60 * 24 * 30 });
       return response;
 

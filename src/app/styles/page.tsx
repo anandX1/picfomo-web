@@ -1,12 +1,18 @@
 import { Metadata } from 'next';
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import { Sparkles, ArrowRight } from 'lucide-react';
+import { getActiveStyles } from "@/lib/db-queries";
+import { REVALIDATE_TIMERS } from "@/lib/cache";
+import { SchemaFactory } from "@/lib/seo/schemaFactory";
 
-export const revalidate = 3600; // Cache for 1 hour
+/**
+ * 🚀 NEXT-GEN PERFORMANCE ARCHITECTURE
+ * Eliminates force-dynamic to secure sub-100ms TTFB at the Edge.
+ */
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "AI Portrait Styles & Aesthetics | PicFOMO Hub",
@@ -23,47 +29,28 @@ export const metadata: Metadata = {
 };
 
 export default async function StylesHubPage() {
-  let styles: any[] = [];
-  try {
-    const envCtx = await getCloudflareContext({ async: true });
-    const db = envCtx.env.DB as any;
-    if (db) {
-      const { results } = await db.prepare("SELECT id, name, description, slug, preview_image_url, preview_urls, badge FROM styles WHERE is_active = 1 AND id != 'schnell' ORDER BY sort_order ASC, created_at DESC").all();
-      styles = results.map((style: any) => {
-        let images: string[] = [];
-        try { images = JSON.parse(style.preview_urls || '[]'); } catch(e) {}
-        return { ...style, preview_image_url: images[0] || style.preview_image_url };
-      });
-    }
-  } catch (error) {
-    console.error("Styles Hub DB Error:", error);
-    // Fallback styles
-    styles = [
-      { id: "ghibli", name: "Ghibli", slug: "ghibli", description: "Soft, whimsical anime aesthetic.", preview_image_url: "/hero/1.png" },
-      { id: "dslr", name: "DSLR", slug: "dslr", description: "Professional photorealistic portrait.", preview_image_url: "/hero/2.png" },
-      { id: "cyberpunk", name: "Cyberpunk", slug: "cyberpunk", description: "Neon-drenched futuristic vibe.", preview_image_url: "/hero/3.png" },
-      { id: "vogue", name: "Vogue", slug: "vogue", description: "High-fashion editorial aesthetic.", preview_image_url: "/hero/4.png" }
-    ];
-  }
+  const styles = await getActiveStyles() as any[];
 
   // 🌟 Schema.org for the Styles Hub
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "ItemList",
-    "name": "PicFOMO AI Portrait Styles",
-    "description": "A comprehensive directory of AI-powered portrait aesthetics.",
-    "numberOfItems": styles.length,
-    "itemListElement": styles.map((style, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "item": {
-        "@type": "SoftwareApplication",
-        "name": style.name,
-        "url": `https://www.picfomo.com/style/${style.slug || style.id}`,
-        "applicationCategory": "DesignApplication",
-        "operatingSystem": "All"
-      }
-    }))
+    "@graph": [
+      SchemaFactory.itemList(
+        "PicFOMO AI Portrait Styles",
+        "A comprehensive directory of AI-powered portrait aesthetics.",
+        styles.map((style) => ({
+          "@type": "SoftwareApplication",
+          "name": style.name,
+          "url": `https://www.picfomo.com/style/${style.slug || style.id}`,
+          "applicationCategory": "DesignApplication",
+          "operatingSystem": "All"
+        }))
+      ),
+      SchemaFactory.breadcrumbList([
+        { name: "Home", url: "https://www.picfomo.com/" },
+        { name: "Styles", url: "https://www.picfomo.com/styles" }
+      ])
+    ]
   };
 
   return (
@@ -145,4 +132,3 @@ export default async function StylesHubPage() {
     </main>
   );
 }
-

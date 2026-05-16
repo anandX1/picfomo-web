@@ -4,9 +4,20 @@ import Image from 'next/image';
 import { Sparkles, ArrowRight, CheckCircle2, Wand2, ChevronRight } from 'lucide-react';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { CommunityGrid } from '@/components/seo/CommunityGrid';
+import { SmartLinker } from '@/components/seo/SmartLinker';
+import { SEMANTIC_LINKS } from '@/lib/seo/links';
+import { getRecommendedStyles, getUseCasePosts, getProgrammaticEntity } from "@/lib/db-queries";
+import { calculateNodeQuality } from "@/lib/quality-scoring";
+import { SchemaFactory } from "@/lib/seo/schemaFactory";
 
 import { USE_CASES } from '@/data/use-cases';
+
+/**
+ * 🚀 NEXT-GEN PERFORMANCE ARCHITECTURE
+ * Eliminates force-dynamic to secure sub-100ms TTFB at the Edge.
+ */
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   return Object.keys(USE_CASES).map((slug) => ({ slug }));
@@ -15,21 +26,47 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
-  const useCase = USE_CASES[slug] || { title: 'AI Use Case', description: 'PicFOMO AI' };
+  
+  // 🌟 HYBRID RESOLUTION: D1 Primary, Static Fallback
+  const dbEntity = await getProgrammaticEntity('use-case', slug);
+  const useCase = dbEntity || USE_CASES[slug];
+
+  if (!useCase) return { title: 'Not Found | PicFOMO' };
+
+  const title = dbEntity ? dbEntity.name : useCase.title;
+  const description = dbEntity ? dbEntity.meta_description : useCase.description;
+
+  // 🌟 HCU QUALITY GATE: Dynamic Indexing Governance
+  const score = await calculateNodeQuality(slug, 'use-case');
+  let robots: any = { index: true, follow: true };
+  if (score < 30) {
+    robots = { index: false, follow: true }; // Thin Content Protection
+  }
 
   return {
-    title: `${useCase.title} | PicFOMO`,
-    description: useCase.description,
+    title: `${title} | PicFOMO`,
+    description: description,
     alternates: {
       canonical: `https://www.picfomo.com/use-case/${slug}`,
     },
+    robots
   };
 }
 
 export default async function UseCasePage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
-  const useCase = USE_CASES[slug];
+  
+  // 🌟 HYBRID RESOLUTION
+  const dbEntity = await getProgrammaticEntity('use-case', slug);
+
+  // 🌟 CANONICAL ALIAS REDIRECT
+  // If this entity is marked as an alias of another, issue a 301 to the canonical node.
+  if (dbEntity && (dbEntity as any).canonical_slug) {
+     redirect(`/use-case/${(dbEntity as any).canonical_slug}`);
+  }
+
+  const useCase = dbEntity || USE_CASES[slug];
 
   if (!useCase) {
     return (
@@ -40,40 +77,38 @@ export default async function UseCasePage({ params }: { params: Promise<{ slug: 
     );
   }
 
-  // 🌟 Fetch actual style data from DB for the recommended styles
-  let recommendedStyles: any[] = [];
-  try {
-    const envCtx = await getCloudflareContext({ async: true });
-    const db = envCtx.env.DB as any;
-    if (db) {
-      const placeholders = useCase.styles.map(() => '?').join(',');
-      const { results } = await db.prepare(`SELECT id, name, slug, description, preview_image_url FROM styles WHERE slug IN (${placeholders}) OR id IN (${placeholders})`).bind(...useCase.styles, ...useCase.styles).all();
-      recommendedStyles = results;
-    }
-  } catch (error) {
-    console.error("Use Case DB Error:", error);
-  }
+  const title = dbEntity ? dbEntity.name : useCase.title;
+  const description = dbEntity ? dbEntity.meta_description : useCase.description;
+  const h1 = dbEntity && dbEntity.h1_formula ? dbEntity.h1_formula : title;
+  const emotionalHook = dbEntity && dbEntity.emotional_hook ? dbEntity.emotional_hook : useCase.description;
+  const stylesList = dbEntity && dbEntity.mappedStyles && dbEntity.mappedStyles.length > 0 
+    ? dbEntity.mappedStyles 
+    : useCase.styles || [];
+
+  // 🌟 PERFORMANCE: Parallel fetching from Edge Cache
+  const [recommendedStyles, communityPosts] = await Promise.all([
+    getRecommendedStyles(stylesList),
+    getUseCasePosts(stylesList)
+  ]);
 
   // 🌟 Schema.org for Use-Case Page
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": `${useCase.title} Generator`,
-    "description": useCase.description,
-    "applicationCategory": "DesignApplication",
-    "operatingSystem": "All",
-    "url": `https://www.picfomo.com/use-case/${slug}`,
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "ratingCount": "850"
-    }
+    "@graph": [
+      SchemaFactory.softwareApplication(
+        `${title} Generator`,
+        description,
+        `https://www.picfomo.com/use-case/${slug}`
+      ),
+      SchemaFactory.breadcrumbList([
+        { name: "Home", url: "https://www.picfomo.com/" },
+        { name: "Use Cases", url: "https://www.picfomo.com/use-cases" },
+        { name: title, url: `https://www.picfomo.com/use-case/${slug}` }
+      ])
+    ]
   };
+
+  const cleanNiche = title.split(' ').pop() || 'Niche';
 
   return (
     <main className="min-h-screen bg-[var(--color-page-bg)] text-[var(--color-page-text)]">
@@ -90,14 +125,10 @@ export default async function UseCasePage({ params }: { params: Promise<{ slug: 
               <Sparkles size={12} /> Optimized Use Case
             </div>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 leading-[0.9] display-font">
-              {useCase.title.split(' ').map((word, i) => (
-                <span key={i} className={i === useCase.title.split(' ').length - 1 ? 'text-[var(--color-gold)]' : ''}>
-                  {word}{' '}
-                </span>
-              ))}
+              {h1}
             </h1>
             <p className="text-[18px] text-[var(--color-ink2)] font-light mb-8 leading-relaxed max-w-lg">
-              {useCase.description}
+              <SmartLinker text={emotionalHook} links={SEMANTIC_LINKS} />
             </p>
             
             <ul className="mb-10 space-y-3">
@@ -114,8 +145,8 @@ export default async function UseCasePage({ params }: { params: Promise<{ slug: 
           <div className="relative aspect-square md:aspect-[4/5] bg-[var(--color-cream)] rounded-3xl overflow-hidden border border-[var(--rule)] shadow-2xl">
             {recommendedStyles.length > 0 && (
                <Image 
-                 src={recommendedStyles[0].preview_image_url} 
-                 alt={`${useCase.title} example generated with PicFOMO AI`} 
+                 src={(recommendedStyles[0] as any).preview_image_url} 
+                 alt={`${title} example generated with PicFOMO AI`} 
                  fill
                  priority
                  sizes="(max-width: 768px) 100vw, 440px"
@@ -133,9 +164,9 @@ export default async function UseCasePage({ params }: { params: Promise<{ slug: 
 
       {/* Recommended Styles Grid */}
       <section className="max-w-[1120px] mx-auto px-6 py-20">
-        <h2 className="text-3xl font-bold mb-10 display-font">Best Styles for {useCase.title.split(' ').pop()}</h2>
+        <h2 className="text-3xl font-bold mb-10 display-font">Best Styles for {cleanNiche}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {recommendedStyles.map((style) => (
+          {recommendedStyles.map((style: any) => (
             <Link 
               key={style.id} 
               href={`/style/${style.slug || style.id}`}
@@ -162,6 +193,46 @@ export default async function UseCasePage({ params }: { params: Promise<{ slug: 
           ))}
         </div>
       </section>
+
+      {/* 🌟 THE COMMUNITY PROOF ENGINE */}
+      {dbEntity && dbEntity.faqs && dbEntity.faqs.length > 0 && (
+        <section className="max-w-4xl mx-auto px-6 py-20 border-t border-[var(--rule)]">
+          <h2 className="text-3xl font-bold mb-8 display-font">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            {dbEntity.faqs.map((faq: any, index: number) => (
+              <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--rule)]">
+                <h3 className="text-lg font-bold mb-2">{faq.q}</h3>
+                <p className="text-[var(--color-ink2)]"><SmartLinker text={faq.a} links={SEMANTIC_LINKS} /></p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <CommunityGrid 
+        posts={communityPosts as any[]} 
+        nicheName={title} 
+      />
+
+      {/* 🌟 LATERAL LINKING: Related Use-Cases for SEO Cluster Authority */}
+      {relatedEntities && relatedEntities.length > 0 && (
+        <section className="bg-[var(--color-page-bg)] py-12 px-6 border-t border-[var(--rule)]">
+          <div className="max-w-[1120px] mx-auto">
+            <h3 className="text-[10px] font-mono uppercase tracking-[3px] text-[var(--color-ink3)] mb-6 text-center">Related Professional Contexts</h3>
+            <div className="flex flex-wrap justify-center gap-3">
+              {relatedEntities.map((entity: any) => (
+                <Link 
+                  key={entity.slug} 
+                  href={`/${entity.type}/${entity.slug}`}
+                  className="px-5 py-2.5 bg-[var(--color-cream)] rounded-full border border-[var(--rule)] text-[12px] font-medium hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-all"
+                >
+                  {entity.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Internal Linking Footer */}
       <section className="bg-black text-white py-20 px-6">
