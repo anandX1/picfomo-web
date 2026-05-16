@@ -18,7 +18,14 @@ const isFacetedSeoRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req) => {
   const url = new URL(req.url);
+  const host = req.headers.get('host') || '';
   const userAgent = req.headers.get('user-agent') || '';
+
+  // 🌟 DOMAIN CONSOLIDATION: Enforce WWW
+  // Prevents "Split Authority" SEO penalty by redirecting non-www to www.
+  if (process.env.NODE_ENV === 'production' && host === 'picfomo.com') {
+    return NextResponse.redirect(`https://www.picfomo.com${url.pathname}${url.search}`, 301);
+  }
 
   // 🌟 SEARCH TELEMETRY: Edge Logging for Crawler Frequency
   // Tracks Googlebot vs. LLM agents (ChatGPT, Perplexity, etc.)

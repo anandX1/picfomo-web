@@ -20,17 +20,35 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   if (!post) return { title: 'Post Not Found' };
 
+  const fullUrl = `https://www.picfomo.com/blog/${slug}`;
+  const imageUrl = "https://www.picfomo.com/hero/8.webp"; // Using consistent high-authority hero
+
   return {
+    metadataBase: new URL('https://www.picfomo.com'),
     title: `${post.title} | PicFOMO Lab`,
     description: post.excerpt,
     alternates: {
-      canonical: `https://www.picfomo.com/blog/${slug}`,
+      canonical: `/blog/${slug}`,
     },
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      url: `https://www.picfomo.com/blog/${slug}`,
-      images: [{ url: "https://www.picfomo.com/hero/8.webp" }],
+      url: fullUrl,
+      siteName: "PicFOMO",
+      images: [{
+        url: imageUrl,
+        width: 1200,
+        height: 630,
+        alt: post.title,
+      }],
+      type: "article",
+      publishedTime: post.date ? new Date(post.date).toISOString() : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [imageUrl],
     }
   };
 }

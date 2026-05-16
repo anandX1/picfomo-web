@@ -106,9 +106,9 @@ export const metadata: Metadata = {
   },
 
   // OPTIONAL: Add this once you connect to Google Search Console
-  // verification: {
-  //   google: "YOUR_GOOGLE_SEARCH_CONSOLE_ID", 
-  // },
+  verification: {
+    google: "oLQCSIvnDBfa1qw0pkKgN_ZOW4FEm1AZAXXhk_nq-GY", 
+  },
 };
 
 export default function RootLayout({

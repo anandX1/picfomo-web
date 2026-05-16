@@ -6,16 +6,30 @@ import Footer from '@/components/marketing/Footer';
 import { BLOG_POSTS } from '@/data/blog';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.picfomo.com'),
   title: "PicFOMO Blog | Expert Insights on AI Photography 2026",
   description: "High-authority guides on AI realism, professional branding, and digital identity. Master your image with research-backed insights from the PicFOMO Lab.",
   alternates: {
-    canonical: "https://www.picfomo.com/blog",
+    canonical: "/blog",
   },
   openGraph: {
     title: "PicFOMO Blog: The Science of AI Identity",
     description: "Deep insights into AI realism, professional headshots, and creative portraiture.",
     url: "https://www.picfomo.com/blog",
-    images: [{ url: "https://www.picfomo.com/hero/8.webp" }],
+    siteName: "PicFOMO",
+    images: [{ 
+      url: "https://www.picfomo.com/hero/8.webp",
+      width: 1200,
+      height: 630,
+      alt: "PicFOMO Blog Insights"
+    }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PicFOMO Blog: The Science of AI Identity",
+    description: "Deep insights into AI realism, professional headshots, and creative portraiture.",
+    images: ["https://www.picfomo.com/hero/8.webp"],
   }
 };
 
