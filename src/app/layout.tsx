@@ -73,9 +73,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon.png", type: "image/png" },
+      { url: "/f-main.png", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
     ],
-    apple: "/logo.png", // Using the 512x512 logo for Apple touch icon
+    apple: "/f-main.png", 
   },
 
   manifest: "/manifest.json",
