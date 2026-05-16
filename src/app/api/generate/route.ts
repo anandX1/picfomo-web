@@ -3,9 +3,6 @@ import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-// @ts-ignore
-import piexif from "piexifjs";
-
 // 🌟 BULLETPROOF URL CONSTANTS
 const PIXAZO_SCHNELL_URL = "https://gateway.pixazo.ai/flux-1-schnell/v1/getData";
 const PIXAZO_FIRERED_URL = "https://gateway.pixazo.ai/firered-image-edit-v1-1/v1/firered-image-edit-v1-1-request";
@@ -51,7 +48,7 @@ async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
   return `${publicUrl}/${key}`;
 }
 
-// === 1B. SEMANTIC IMAGE PIPELINE (EXIF & CDN UPLOAD) ===
+// === 1B. SEMANTIC IMAGE PIPELINE (CDN UPLOAD) ===
 function getSemanticFilename(styleName: string, id: string): string {
   const cleanStyle = styleName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const isRealistic = cleanStyle.includes('dslr') || cleanStyle.includes('studio') || cleanStyle.includes('corporate');
@@ -59,50 +56,12 @@ function getSemanticFilename(styleName: string, id: string): string {
   return `picfomo-${cleanStyle}-${modifier}-portrait-${id}.jpg`;
 }
 
-function uint8ArrayToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-function base64ToUint8Array(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
 async function processAndUploadGeneratedImage(imageUrl: string, styleName: string, prompt: string, env: any): Promise<string> {
   try {
     const res = await fetch(imageUrl);
     const arrayBuffer = await res.arrayBuffer();
-    let finalBytes = new Uint8Array(arrayBuffer);
+    const finalBytes = new Uint8Array(arrayBuffer);
     
-    // Inject EXIF Metadata for Google Image SEO
-    try {
-      const base64Str = uint8ArrayToBase64(finalBytes);
-      const base64Img = `data:image/jpeg;base64,${base64Str}`;
-      
-      const exifObj = {
-        "0th": {
-          [piexif.ImageIFD.Software]: "PicFOMO AI Engine",
-          [piexif.ImageIFD.Copyright]: "PicFOMO",
-          [piexif.ImageIFD.ImageDescription]: prompt || `PicFOMO ${styleName} AI Portrait`,
-        }
-      };
-      const exifBytes = piexif.dump(exifObj);
-      const newBase64 = piexif.insert(exifBytes, base64Img);
-      
-      const pureBase64 = newBase64.replace(/^data:image\/jpeg;base64,/, "");
-      finalBytes = base64ToUint8Array(pureBase64) as any;
-    } catch (exifErr) {
-      console.warn("EXIF injection failed, skipping:", exifErr);
-    }
-
     const accountId = env.R2_ACCOUNT_ID || process.env.R2_ACCOUNT_ID;
     const accessKey = env.R2_ACCESS_KEY_ID || process.env.R2_ACCESS_KEY_ID;
     const secretKey = env.R2_SECRET_ACCESS_KEY || process.env.R2_SECRET_ACCESS_KEY;
