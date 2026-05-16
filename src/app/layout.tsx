@@ -72,11 +72,11 @@ export const metadata: Metadata = {
 
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/f-main.png", type: "image/png" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico?v=2", sizes: "any" },
+      { url: "/f-main.png?v=2", type: "image/png" },
+      { url: "/favicon.svg?v=2", type: "image/svg+xml" },
     ],
-    apple: "/f-main.png", 
+    apple: "/f-main.png?v=2", 
   },
 
   manifest: "/manifest.json",
