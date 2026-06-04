@@ -140,7 +140,7 @@ export default function PostClient({ post, currentUserId, initialIsFollowing, re
               <X size={16} />
             </button>
             <div className="relative z-10 flex flex-col items-center text-center">
-              <img src="/logo.png" alt="PicFOMO Logo" className="mb-6 w-40 h-auto rounded-2xl bg-black p-2 shadow-lg object-contain" />
+              <img src="/logo-main.png" alt="PicFOMO Logo" className="mb-6 w-40 h-auto rounded-2xl bg-black p-2 shadow-lg object-contain" />
               <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-page-text)] tracking-tight">Unlock Your Aesthetic</h2>
               <p className="mb-8 font-[family-name:var(--mono)] text-[12px] uppercase leading-relaxed tracking-[1px] text-[var(--color-ink3)]">Drop your photo. Pick a trending style.<br/> Get your portrait in ~20 seconds.</p>
               <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-[var(--color-page-text)] py-4 font-[family-name:var(--display)] tracking-[1.5px] text-[16px] text-[var(--color-page-bg)] transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-md hover:bg-[var(--color-gold)] hover:text-black">

@@ -15,7 +15,7 @@ export default function Footer() {
               <div className="flex h-[36px] items-center justify-center rounded-md bg-black px-3 shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
-                  src="/logo.png" 
+                  src="/logo-main.png" 
                   alt="PicFOMO" 
                   className="h-[18px] w-auto object-contain" 
                 />

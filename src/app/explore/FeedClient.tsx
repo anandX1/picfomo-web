@@ -349,7 +349,7 @@ export default function FeedClient({ initialPosts, currentUserId, initialRemixDa
             </button>
             <div className="relative z-10 flex flex-col items-center text-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="PicFOMO Logo" className="mb-6 w-40 sm:w-48 h-auto rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] object-contain bg-black p-2" />
+              <img src="/logo-main.png" alt="PicFOMO Logo" className="mb-6 w-40 sm:w-48 h-auto rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] object-contain bg-black p-2" />
               <h2 className="mb-2 font-[family-name:var(--display)] text-3xl text-[var(--color-page-text)] tracking-tight">Unlock Your Aesthetic</h2>
               <p className="mb-8 font-[family-name:var(--mono)] text-[12px] uppercase leading-relaxed tracking-[1px] text-[var(--color-ink3)]">Drop your photo. Pick a trending style.<br/> Get your portrait in ~20 seconds.</p>
               <Link href="/sign-up" className="group relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-[var(--color-page-text)] py-4 font-[family-name:var(--display)] text-lg tracking-[1.5px] text-[var(--color-page-bg)] transition-transform hover:scale-[1.02] shadow-md hover:bg-[var(--color-gold)] hover:text-black">
