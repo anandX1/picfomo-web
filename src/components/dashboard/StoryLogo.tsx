@@ -161,7 +161,7 @@ export default function StoryLogo() {
           ) : (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img 
-              src="/logo.png" 
+              src="/logo-main.png" 
               alt="PicFOMO" 
               className="h-6 md:h-8 w-auto object-contain brightness-125 contrast-125 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" 
             />
