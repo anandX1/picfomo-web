@@ -34,7 +34,7 @@ export class SchemaFactory {
       "url": "https://www.picfomo.com/",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://www.picfomo.com/logo2.png"
+        "url": "https://www.picfomo.com/logo-square.png"
       },
       "sameAs": [
         "https://twitter.com/picfomo",

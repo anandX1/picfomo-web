@@ -3,6 +3,10 @@
     "mtime": 1775603189.4372876,
     "hash": "3384426f117414ab917b5ae0a997ae81"
   },
+  "F:\\startup\\picfomo\\convert-hero.js": {
+    "mtime": 1778799401.7707615,
+    "hash": "0273fd53cb82434bedc6a0453388d433"
+  },
   "F:\\startup\\picfomo\\eslint.config.mjs": {
     "mtime": 1775547986.0,
     "hash": "8ae48d0e85b3931092c1b317d94e67ae"
@@ -12,8 +16,8 @@
     "hash": "3a47b73111a9d3d3955959f6e7c4a5d0"
   },
   "F:\\startup\\picfomo\\next-env.d.ts": {
-    "mtime": 1778626407.5525937,
-    "hash": "29f60a376e12bf72b67d4994fcc84214"
+    "mtime": 1778929377.3734744,
+    "hash": "b698cdd97fe8e3bd16dcd74899ad7cef"
   },
   "F:\\startup\\picfomo\\next.config.ts": {
     "mtime": 1778704959.3001244,
@@ -39,33 +43,49 @@
     "mtime": 1776418870.6432006,
     "hash": "6891c115109802c396216bbdbca70aba"
   },
+  "F:\\startup\\picfomo\\patch5.sql": {
+    "mtime": 1778804790.4193451,
+    "hash": "f1ac8e7a511ff9542ccd54bf29202867"
+  },
   "F:\\startup\\picfomo\\postcss.config.mjs": {
     "mtime": 1775547986.0,
     "hash": "50cdf299c0baa82eedb9cebe33c2ade0"
   },
   "F:\\startup\\picfomo\\schema.sql": {
-    "mtime": 1776029024.287783,
-    "hash": "ac24b4813d80e4825c40933f8f9eafee"
+    "mtime": 1778804791.1326666,
+    "hash": "816a55d9b2887ff27c464d86b7781a03"
   },
   "F:\\startup\\picfomo\\worker-configuration.d.ts": {
     "mtime": 1775602886.5671923,
     "hash": "1cc782991a4692e301d669c8ce0dea22"
   },
+  "F:\\startup\\picfomo\\migrations\\0001_programmatic_seo.sql": {
+    "mtime": 1778925381.364686,
+    "hash": "fff9f31467c945f4c17a946855dd5843"
+  },
+  "F:\\startup\\picfomo\\migrations\\0002_entity_canonical_aliasing.sql": {
+    "mtime": 1778933345.8549507,
+    "hash": "ad07fa33b285ffbf271da08f3873ca71"
+  },
+  "F:\\startup\\picfomo\\migrations\\0003_add_subtitle_to_entities.sql": {
+    "mtime": 1778945477.896825,
+    "hash": "08379137f27494e7fddb3b9daa5f8df2"
+  },
   "F:\\startup\\picfomo\\src\\middleware.ts": {
-    "mtime": 1778701597.6148393,
-    "hash": "c302fbeb165328d813b0c53a3627bdb5"
+    "mtime": 1778957517.0571475,
+    "hash": "43f44eb2dfb1d9e4004003d2c48db444"
   },
   "F:\\startup\\picfomo\\src\\actions\\admin.ts": {
-    "mtime": 1778178795.6149256,
-    "hash": "0688c1d4bade068e88ffc45cae2f01e5"
+    "mtime": 1778947963.9439676,
+    "hash": "68cae5aeca56228b576ed99c964a4a96"
   },
   "F:\\startup\\picfomo\\src\\actions\\economy.ts": {
-    "mtime": 1778178816.464543,
-    "hash": "18e1d395ddf24ac844219db43dab059a"
+    "mtime": 1778947976.6037195,
+    "hash": "c5ff9564d2eb0571fed2dc33e8febe9d"
   },
   "F:\\startup\\picfomo\\src\\actions\\feed.ts": {
-    "mtime": 1776682965.0476425,
-    "hash": "628ddb5b42b01d908ae35bae47679001"
+    "mtime": 1778803182.3700347,
+    "hash": "670529560b9a856bd6397b63e787f18d"
   },
   "F:\\startup\\picfomo\\src\\actions\\interactions.ts": {
     "mtime": 1776372703.6656852,
@@ -88,28 +108,24 @@
     "hash": "09076ff5d0c1a91ff10cd7ff15edee50"
   },
   "F:\\startup\\picfomo\\src\\app\\ClientLayout.tsx": {
-    "mtime": 1776501673.1553543,
-    "hash": "8c13ec0d6cffd08bc857ba86fccee4a2"
+    "mtime": 1778803447.9477782,
+    "hash": "7780fa3d080b9b5bb6b0d7bf19ce684b"
   },
   "F:\\startup\\picfomo\\src\\app\\layout.tsx": {
-    "mtime": 1778672655.539849,
-    "hash": "6dfba8167e2eafba248d458e28c62e38"
+    "mtime": 1778971524.8146155,
+    "hash": "971547297819af1f4c6d33e6c623a2cd"
   },
   "F:\\startup\\picfomo\\src\\app\\MarketingClient.tsx": {
-    "mtime": 1778703487.2902212,
-    "hash": "aee0773c119b7c4b8b87429066d15460"
+    "mtime": 1778798252.118487,
+    "hash": "a259622a4a3119e1456f6750166b43e5"
   },
   "F:\\startup\\picfomo\\src\\app\\page.tsx": {
-    "mtime": 1778703477.4478424,
-    "hash": "3a8a7ac3c5444472a30f9c67b7b12b71"
+    "mtime": 1778971609.7057962,
+    "hash": "e0b2cf4ebb6850a1c8a21eba37cae88f"
   },
   "F:\\startup\\picfomo\\src\\app\\robots.ts": {
-    "mtime": 1778174733.3483152,
-    "hash": "a7c9806f35844eb83d2c461881497ebb"
-  },
-  "F:\\startup\\picfomo\\src\\app\\sitemap.ts": {
-    "mtime": 1778174963.5629563,
-    "hash": "fbca141e855515fee9f51b56a6a3a773"
+    "mtime": 1778799997.0263653,
+    "hash": "4bbf778901f5d96b66be0daf82f8cc6d"
   },
   "F:\\startup\\picfomo\\src\\app\\(auth)\\layout.tsx": {
     "mtime": 1776511400.0369768,
@@ -183,37 +199,89 @@
     "mtime": 1778657239.533619,
     "hash": "175a8bcc910a4feb7ba2a39ba40543c9"
   },
+  "F:\\startup\\picfomo\\src\\app\\api\\claim-post\\route.ts": {
+    "mtime": 1778948072.6912591,
+    "hash": "d30bbfc0b832b18a033f9cdc9ddb81b0"
+  },
   "F:\\startup\\picfomo\\src\\app\\api\\generate\\route.ts": {
-    "mtime": 1778701773.8564036,
-    "hash": "7850111df7addad99e37f42bc38769eb"
+    "mtime": 1778950127.8590949,
+    "hash": "74e3bf6b512b09629f786cdd91826e22"
   },
   "F:\\startup\\picfomo\\src\\app\\api\\indexing\\route.ts": {
     "mtime": 1778704184.4096408,
     "hash": "e48697df0c85bed0d9157b78e5af6035"
+  },
+  "F:\\startup\\picfomo\\src\\app\\api\\og\\route.tsx": {
+    "mtime": 1778947431.1560688,
+    "hash": "9d7a0f6ab0f0237aecdfc6e7a8d32c8c"
+  },
+  "F:\\startup\\picfomo\\src\\app\\api\\revalidate\\route.ts": {
+    "mtime": 1778948052.123457,
+    "hash": "63aa602093e304fc7c643a7782b90421"
   },
   "F:\\startup\\picfomo\\src\\app\\api\\upload\\route.ts": {
     "mtime": 1776384969.8710947,
     "hash": "a44da5553874d282915c0b3b0694c297"
   },
   "F:\\startup\\picfomo\\src\\app\\api\\webhooks\\clerk\\route.ts": {
-    "mtime": 1778178804.5240946,
-    "hash": "0b84f2f3886baf9d1dfbe536f06d45f6"
+    "mtime": 1778947988.7267294,
+    "hash": "38801e9cc0bcdb7a2d553a343b93a599"
   },
   "F:\\startup\\picfomo\\src\\app\\api\\webhooks\\replicate\\rouet.ts": {
     "mtime": 1776372703.6656852,
     "hash": "d0f8566dd5acd37ca3298f729067a73f"
   },
+  "F:\\startup\\picfomo\\src\\app\\authenticity\\page.tsx": {
+    "mtime": 1778947419.4309192,
+    "hash": "89d03979bf53acda194bbcb200a0fbd3"
+  },
+  "F:\\startup\\picfomo\\src\\app\\blog\\page.tsx": {
+    "mtime": 1778957376.97641,
+    "hash": "11358e39009b0c679f189304a4e9902d"
+  },
+  "F:\\startup\\picfomo\\src\\app\\blog\\[slug]\\page.tsx": {
+    "mtime": 1778957376.9834156,
+    "hash": "09e20e424dc245a8e46870a075ddccee"
+  },
+  "F:\\startup\\picfomo\\src\\app\\compare\\[slug]\\page.tsx": {
+    "mtime": 1778947174.4544735,
+    "hash": "2c97b7673297c845030c7ee29eebb6e4"
+  },
   "F:\\startup\\picfomo\\src\\app\\creators\\page.tsx": {
-    "mtime": 1778175941.6710172,
-    "hash": "1cc09110997c84e6baeb8049bcaa606d"
+    "mtime": 1778936516.9525561,
+    "hash": "555984a2f4875e9c3be6813bdec815c5"
   },
   "F:\\startup\\picfomo\\src\\app\\explore\\FeedClient.tsx": {
-    "mtime": 1778657239.5446522,
-    "hash": "9eed6f436f9c27544580c237396db47e"
+    "mtime": 1778948279.1942005,
+    "hash": "a301b58f9c665f79c29ccb44fa90e1e7"
   },
   "F:\\startup\\picfomo\\src\\app\\explore\\page.tsx": {
-    "mtime": 1776986712.65882,
-    "hash": "bb8dbaef835a277739896786d8936cc7"
+    "mtime": 1778930924.858394,
+    "hash": "a6053ede42da91af777d699f18a96ac0"
+  },
+  "F:\\startup\\picfomo\\src\\app\\glossary\\GlossaryClient.tsx": {
+    "mtime": 1778796844.7432609,
+    "hash": "e4377b1f6cda268a2c4370f1982129d0"
+  },
+  "F:\\startup\\picfomo\\src\\app\\glossary\\page.tsx": {
+    "mtime": 1778796825.5815105,
+    "hash": "a01e85ef64888afdbe509e4a739ba8b5"
+  },
+  "F:\\startup\\picfomo\\src\\app\\glossary\\[slug]\\page.tsx": {
+    "mtime": 1778930873.8755884,
+    "hash": "623efb69ec0d617160f22ca2aab18043"
+  },
+  "F:\\startup\\picfomo\\src\\app\\grader\\GraderClient.tsx": {
+    "mtime": 1778794103.9130702,
+    "hash": "123a16a41d87c5758a0fca22d35a56a4"
+  },
+  "F:\\startup\\picfomo\\src\\app\\grader\\page.tsx": {
+    "mtime": 1778794070.137465,
+    "hash": "77b0c5dc636e333bcbf668e7ec159584"
+  },
+  "F:\\startup\\picfomo\\src\\app\\guides\\[slug]\\page.tsx": {
+    "mtime": 1778946691.5371332,
+    "hash": "5e742046bcf4ebdf5fd4483e0af4bad7"
   },
   "F:\\startup\\picfomo\\src\\app\\how-it-works\\page.tsx": {
     "mtime": 1778175955.769914,
@@ -227,25 +295,77 @@
     "mtime": 1778657239.5478141,
     "hash": "8f120d59272f4d9484650f5fd201bda4"
   },
+  "F:\\startup\\picfomo\\src\\app\\llms-full.txt\\route.ts": {
+    "mtime": 1778947198.8028958,
+    "hash": "375a32bbb121a82fbf7458aeb677b782"
+  },
+  "F:\\startup\\picfomo\\src\\app\\llms.txt\\route.ts": {
+    "mtime": 1778947217.3243008,
+    "hash": "ea37cf9472adf935fc556e55d1d9c569"
+  },
+  "F:\\startup\\picfomo\\src\\app\\platform\\[slug]\\page.tsx": {
+    "mtime": 1778946119.9622772,
+    "hash": "55c047d30b811555b47dd0368d1acc2b"
+  },
   "F:\\startup\\picfomo\\src\\app\\post\\[id]\\page.tsx": {
-    "mtime": 1778178413.9961932,
-    "hash": "bb70b76748d94e84ad872a03f5265d33"
+    "mtime": 1778956477.74287,
+    "hash": "1932d71b15b7a3f9635d16cd45da61b7"
   },
   "F:\\startup\\picfomo\\src\\app\\post\\[id]\\PostClient.tsx": {
-    "mtime": 1778657239.5562527,
-    "hash": "51af1220962f13f243bd64360da583e8"
+    "mtime": 1778946598.1628788,
+    "hash": "930544690ca7672056f0e229d48d043f"
+  },
+  "F:\\startup\\picfomo\\src\\app\\problems\\[slug]\\page.tsx": {
+    "mtime": 1778946127.8517952,
+    "hash": "c593faddc6830f819b79a40916d84eb2"
+  },
+  "F:\\startup\\picfomo\\src\\app\\research\\page.tsx": {
+    "mtime": 1778946818.040548,
+    "hash": "defd9f0b7e9a35b71221eeafca6cb24c"
   },
   "F:\\startup\\picfomo\\src\\app\\sandbox\\collab\\page.tsx": {
     "mtime": 1776710467.1624641,
     "hash": "9117d262abe2d2b10adf064955e9e66a"
   },
+  "F:\\startup\\picfomo\\src\\app\\shards\\images\\[id]\\route.ts": {
+    "mtime": 1778948307.767698,
+    "hash": "3214171392670dc4bef564e5a2874a80"
+  },
+  "F:\\startup\\picfomo\\src\\app\\shards\\posts\\[id]\\route.ts": {
+    "mtime": 1778948333.9290917,
+    "hash": "15cd65d827d0100158b6b96a1077097b"
+  },
+  "F:\\startup\\picfomo\\src\\app\\sitemap-core.xml\\route.ts": {
+    "mtime": 1778947839.4453704,
+    "hash": "1639d739312ca28262e716dc72940b0d"
+  },
+  "F:\\startup\\picfomo\\src\\app\\sitemap-platforms.xml\\route.ts": {
+    "mtime": 1778946143.7947907,
+    "hash": "9d7fd14ff072d0e7d0002b9753a6033c"
+  },
+  "F:\\startup\\picfomo\\src\\app\\sitemap-problems.xml\\route.ts": {
+    "mtime": 1778946151.8220332,
+    "hash": "44318f39a2d56afe95665aa3fbba8c75"
+  },
+  "F:\\startup\\picfomo\\src\\app\\sitemap-styles.xml\\route.ts": {
+    "mtime": 1778929487.3733404,
+    "hash": "97f7f3408ab9886941b4b694acff778b"
+  },
+  "F:\\startup\\picfomo\\src\\app\\sitemap-usecases.xml\\route.ts": {
+    "mtime": 1778946207.7353206,
+    "hash": "d0ef2240bdfbd3d65a68553793ab37e5"
+  },
+  "F:\\startup\\picfomo\\src\\app\\sitemap.xml\\route.ts": {
+    "mtime": 1778948703.5166402,
+    "hash": "e2a5b93134c5fe5b5684994d1b4b4e89"
+  },
   "F:\\startup\\picfomo\\src\\app\\style\\[slug]\\page.tsx": {
-    "mtime": 1778657239.610105,
-    "hash": "7d3113b3b823b221a33d1d1ebb37c8a9"
+    "mtime": 1778930063.3929002,
+    "hash": "a37f4a9f0f2f45680147d03370200622"
   },
   "F:\\startup\\picfomo\\src\\app\\styles\\page.tsx": {
-    "mtime": 1778175948.3645115,
-    "hash": "ff550a92066d6bd9d9ca95efa23efef2"
+    "mtime": 1778930933.519134,
+    "hash": "07d2edd5d4ab9949e93a7de5ea5027a5"
   },
   "F:\\startup\\picfomo\\src\\app\\u\\[username]\\page.tsx": {
     "mtime": 1778178399.2064269,
@@ -254,6 +374,10 @@
   "F:\\startup\\picfomo\\src\\app\\u\\[username]\\ProfileClient.tsx": {
     "mtime": 1778657239.6148863,
     "hash": "e2136ed8e1b326b402c6716af2d1eb0d"
+  },
+  "F:\\startup\\picfomo\\src\\app\\use-case\\[slug]\\page.tsx": {
+    "mtime": 1778946111.209128,
+    "hash": "3eeaffb870e890763b8c265f27961936"
   },
   "F:\\startup\\picfomo\\src\\components\\navbar.tsx": {
     "mtime": 1775561478.9381669,
@@ -275,6 +399,10 @@
     "mtime": 1778686414.007494,
     "hash": "6c73aabd7a156453be4fd82bdba4b6a4"
   },
+  "F:\\startup\\picfomo\\src\\components\\dashboard\\VaultHandoff.tsx": {
+    "mtime": 1778948104.434543,
+    "hash": "0807755efe1fbd82e79704a8c383eead"
+  },
   "F:\\startup\\picfomo\\src\\components\\marketing\\CTABand.tsx": {
     "mtime": 1778657239.6294773,
     "hash": "a2ea1eefa4272e6e0c5ec6313c797f17"
@@ -284,8 +412,8 @@
     "hash": "eecaad56e00feb429f6e6b660ae40cc4"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\Footer.tsx": {
-    "mtime": 1778175936.1470764,
-    "hash": "625f2b4e91b8e7e638f5d801d93e01ba"
+    "mtime": 1778878039.4366858,
+    "hash": "cf6a9d0f25fdd2e70a8324cf56245bf1"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\GradientBackground.tsx": {
     "mtime": 1778627457.643955,
@@ -300,32 +428,32 @@
     "hash": "5e39eb4ac847d53a300c3ec2e045cdfe"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\IdentityFlow.tsx": {
-    "mtime": 1778626402.1783655,
-    "hash": "749df75b57c7957b3354e41e5bfe4e0b"
+    "mtime": 1778795497.9280617,
+    "hash": "a82fa247a7645f4f9d5941202cfa0a47"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\MacDock.tsx": {
     "mtime": 1778689244.3599238,
     "hash": "6d0869563e183468b52bcc6ec2f20376"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\Navbar.tsx": {
-    "mtime": 1778698560.8549538,
-    "hash": "9976f4fd2c7228a7cfd7a9b78ef6e779"
+    "mtime": 1778971502.6177588,
+    "hash": "92aea8f9f72967c4a5673698b0e81db2"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\NewFAQ.tsx": {
     "mtime": 1778626486.621327,
     "hash": "e404f6ef469a3d4f2e5e97a3db47a1b2"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\NewFeed.tsx": {
-    "mtime": 1778621551.2494469,
-    "hash": "17c48118151d630b6aab0325651f9073"
+    "mtime": 1778767894.1726162,
+    "hash": "2fcdfa3ea3aed5febc03167f84059236"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\NewFooter.tsx": {
-    "mtime": 1778686414.007494,
-    "hash": "f66e596bfef7cdba742b087e20c25a5e"
+    "mtime": 1778971515.7035325,
+    "hash": "0e43a18cbb5b4c073ceb1397236f1bbf"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\NewHero.tsx": {
-    "mtime": 1778703512.1080818,
-    "hash": "5b5820b31b72a58f4b5249fec3286684"
+    "mtime": 1778799470.9591887,
+    "hash": "d98cb2e746f0136708669bd19d84614d"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\NewPricing.tsx": {
     "mtime": 1778621541.0921268,
@@ -336,20 +464,20 @@
     "hash": "5e4545e47bd606638bd6437aad49b9fb"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\OrganicCarousel.tsx": {
-    "mtime": 1778626428.7530901,
-    "hash": "005fb238eb8d3fe123682bd83bc82a3f"
+    "mtime": 1778790035.4389207,
+    "hash": "0881fa6daacc776fa0252b4b2f0f0f7b"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\Pricing.tsx": {
     "mtime": 1778657239.6441076,
     "hash": "9329cfb272a78cd7becd41cd432810b6"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\PublicFunnelModal.tsx": {
-    "mtime": 1778753514.8413198,
-    "hash": "53185973776857dc04302ac79da0b39a"
+    "mtime": 1778766146.2494473,
+    "hash": "1ba2ceede3966401fa5aaad799dea189"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\ResultsGrid.tsx": {
-    "mtime": 1778619005.980186,
-    "hash": "341728061681bc7039f78bdcbc3eddab"
+    "mtime": 1778795477.2725105,
+    "hash": "cf1b353dd3c01b6dc48bbb823e7da9d7"
   },
   "F:\\startup\\picfomo\\src\\components\\marketing\\SmoothScroll.tsx": {
     "mtime": 1778625526.4969862,
@@ -359,6 +487,10 @@
     "mtime": 1778657239.6472661,
     "hash": "e963668ee98b5585a4418471b9bbdbc6"
   },
+  "F:\\startup\\picfomo\\src\\components\\marketing\\SoftwareSchema.tsx": {
+    "mtime": 1778767846.1867354,
+    "hash": "859d8923d96a0c7af01d3fd21c36028b"
+  },
   "F:\\startup\\picfomo\\src\\components\\marketing\\StylePalette.tsx": {
     "mtime": 1778657239.6639137,
     "hash": "316f40cc7e6dfd6b482b92db3817e029"
@@ -367,6 +499,66 @@
     "mtime": 1778657239.665415,
     "hash": "175f990ff484b82ef6fa211fb758bdb6"
   },
+  "F:\\startup\\picfomo\\src\\components\\seo\\CommunityGrid.tsx": {
+    "mtime": 1778877671.5580237,
+    "hash": "249e56390a24cf0fa3bf1a968e23fd88"
+  },
+  "F:\\startup\\picfomo\\src\\components\\seo\\ProgrammaticPage.tsx": {
+    "mtime": 1778947162.9275227,
+    "hash": "0b15af467af09d7ac56076ce1560d766"
+  },
+  "F:\\startup\\picfomo\\src\\components\\seo\\SmartLinker.tsx": {
+    "mtime": 1778947865.6963654,
+    "hash": "5016178eac85a844edcf2c43099b2284"
+  },
+  "F:\\startup\\picfomo\\src\\data\\blog.ts": {
+    "mtime": 1778802522.9967356,
+    "hash": "974f81e3438ce246f9649adda8f02774"
+  },
+  "F:\\startup\\picfomo\\src\\data\\comparisons.ts": {
+    "mtime": 1778794768.485027,
+    "hash": "fc8331596fcac9c2dff6f5ede93c9976"
+  },
+  "F:\\startup\\picfomo\\src\\data\\glossary.ts": {
+    "mtime": 1778796810.0556643,
+    "hash": "dd5ed4f49bb66928caec49d9e1499562"
+  },
+  "F:\\startup\\picfomo\\src\\data\\platforms.ts": {
+    "mtime": 1778946076.182428,
+    "hash": "e40b7eb0234f713922eeb0c740faa85f"
+  },
+  "F:\\startup\\picfomo\\src\\data\\problems.ts": {
+    "mtime": 1778946083.208645,
+    "hash": "47ffd2fefe634f3f5a09ce7e7e111e50"
+  },
+  "F:\\startup\\picfomo\\src\\data\\research.ts": {
+    "mtime": 1778946799.4407096,
+    "hash": "c8d234509144385db8353c41c3b21a67"
+  },
+  "F:\\startup\\picfomo\\src\\data\\use-cases.ts": {
+    "mtime": 1778802617.1819956,
+    "hash": "23f1ad7c8ed45ba0fa487487665364e2"
+  },
+  "F:\\startup\\picfomo\\src\\lib\\cache-throttle.ts": {
+    "mtime": 1778932916.4405339,
+    "hash": "34e458b864c7e32c62b7cf2342b9a868"
+  },
+  "F:\\startup\\picfomo\\src\\lib\\cache.ts": {
+    "mtime": 1778876980.3920448,
+    "hash": "72603721941222a355f9d525b34e6443"
+  },
+  "F:\\startup\\picfomo\\src\\lib\\db-queries.ts": {
+    "mtime": 1778948520.1184506,
+    "hash": "be46588fb2e627b4299b79642254b46b"
+  },
+  "F:\\startup\\picfomo\\src\\lib\\quality-scoring.ts": {
+    "mtime": 1778931667.1948383,
+    "hash": "5bf8ff779626263955f53ef3553f358e"
+  },
+  "F:\\startup\\picfomo\\src\\lib\\schema.ts": {
+    "mtime": 1778930802.3013875,
+    "hash": "c19da35367f1093f11468ec66582b7ee"
+  },
   "F:\\startup\\picfomo\\src\\lib\\uploadImage.ts": {
     "mtime": 1776385038.0862098,
     "hash": "0629b740b14bc1e8fca5c4cecd9e1ef9"
@@ -374,6 +566,18 @@
   "F:\\startup\\picfomo\\src\\lib\\utils.ts": {
     "mtime": 1778629367.0834415,
     "hash": "e9c82528199b56e8d570a5e2901592bc"
+  },
+  "F:\\startup\\picfomo\\src\\lib\\seo\\links.ts": {
+    "mtime": 1778946183.4399226,
+    "hash": "aa8a4916cad1a9d1912916490bb2f25c"
+  },
+  "F:\\startup\\picfomo\\src\\lib\\seo\\schemaFactory.ts": {
+    "mtime": 1778971583.487053,
+    "hash": "6361cb9145c175547ec7daae15a3bbbc"
+  },
+  "F:\\startup\\picfomo\\src\\lib\\seo\\seeds.ts": {
+    "mtime": 1778934107.2993116,
+    "hash": "7a3dc1f731d5bc6b3ce9122a0f6683c1"
   },
   "F:\\startup\\picfomo\\src\\store\\useFunnelStore.ts": {
     "mtime": 1778703951.2936604,
@@ -384,30 +588,354 @@
     "hash": "e4023f216098995c20c53f4f9c06a6be"
   },
   "F:\\startup\\picfomo\\src\\utils\\indexing.ts": {
-    "mtime": 1778178752.606522,
-    "hash": "e9e8855df9002e503f0cf6f6b587254f"
+    "mtime": 1778951264.320712,
+    "hash": "355ced075e878fc1141c3a2795415114"
+  },
+  "F:\\startup\\picfomo\\src\\utils\\seo.tsx": {
+    "mtime": 1778947876.6030836,
+    "hash": "7f0ee4679b5e34f8bc16eb86c11aaad3"
   },
   "F:\\startup\\picfomo\\gemini-code.html": {
     "mtime": 1778109176.777108,
     "hash": "8df441eaef861077fd10984ef7e36890"
   },
   "F:\\startup\\picfomo\\GEMINI.md": {
-    "mtime": 1778754066.111036,
-    "hash": "f5077eb834f54ef969e537dd3ed8e2fc"
+    "mtime": 1778796990.238599,
+    "hash": "369f8fa7038508e9d846aa33d3717483"
   },
   "F:\\startup\\picfomo\\help.txt": {
     "mtime": 1776965944.066228,
     "hash": "5e9e80e2a6c47cb742aedc53d3a06977"
   },
+  "F:\\startup\\picfomo\\live.html": {
+    "mtime": 1778969638.0541005,
+    "hash": "5bd1a66dd7035633073efe82d22018a3"
+  },
+  "F:\\startup\\picfomo\\output.txt": {
+    "mtime": 1778961476.8568962,
+    "hash": "c210ab9acdd456b7a8a2d30aded30372"
+  },
   "F:\\startup\\picfomo\\README.md": {
     "mtime": 1775547986.0,
     "hash": "8a9ca0d0d14b01d01a6b5f1008a804b6"
+  },
+  "F:\\startup\\picfomo\\conductor\\fix-worker-size.md": {
+    "mtime": 1778951168.611055,
+    "hash": "561ae234f2ed28f4c0f2c18e697e0654"
+  },
+  "F:\\startup\\picfomo\\public\\humans.txt": {
+    "mtime": 1778788804.6113405,
+    "hash": "21329bb8d1fd9632e5d745ae55f42b3e"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\AI_CRAWLER_AND_LLM_OPTIMIZATION.md": {
+    "mtime": 1778876611.4698284,
+    "hash": "23d832e311895555a97b71073d711b46"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\AI_OVERVIEW_AND_LLM_DISCOVERABILITY_REPORT.md": {
+    "mtime": 1778874806.997167,
+    "hash": "2aa7bc12306da0fa70ae3ab60f9d2478"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\AI_OVERVIEW_LLM_RETRIEVAL_OPTIMIZATION.md": {
+    "mtime": 1778880244.241788,
+    "hash": "3c4d3adef858c92fa148505f864743e9"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\AI_OVERVIEW_LLM_RETRIEVAL_WARFARE.md": {
+    "mtime": 1778875404.2182982,
+    "hash": "e22e566373e608bfdb0b6006ece18e46"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\AI_RETRIEVAL_ENGINEERING.md": {
+    "mtime": 1778880690.2008748,
+    "hash": "5651528021bc7f22333d6ef669928258"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\AUTHORITY_ACQUISITION_ENGINE.md": {
+    "mtime": 1778926567.0770228,
+    "hash": "2909b13fbc8e3cce1babe9b9cfd93bec"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\COMMUNITY_WARFARE_SYSTEM.md": {
+    "mtime": 1778876022.588805,
+    "hash": "56ec2863a42a80251dee4c97b266444a"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\COMPARISON_DOMINATION_ENGINE.md": {
+    "mtime": 1778926567.0770228,
+    "hash": "6a396659b77c3c27cfdf8dcd367ebc8f"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\COMPETITOR_BEHAVIORAL_BREAKDOWN.md": {
+    "mtime": 1778874806.997167,
+    "hash": "f8e44508dceeca81ffd533cb2c281c56"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\CONTENT_QUALITY_SCORING_SYSTEM.md": {
+    "mtime": 1778926567.0770228,
+    "hash": "873d2eb03a90869fb0715baf12888a1f"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\CONTENT_TOPOLOGY_REPORT.md": {
+    "mtime": 1778874044.1672945,
+    "hash": "cf9ccda4202be190010def296d1c0563"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\D1_DATABASE_IMPLEMENTATION_LAYER.md": {
+    "mtime": 1778880628.857548,
+    "hash": "e541e239dcbbf4b467ee5085367bb45d"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\DATABASE_SEMANTIC_SCHEMA.md": {
+    "mtime": 1778876611.465792,
+    "hash": "0126b3e037efe3356f922f3af318ab70"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\EMOTIONAL_DEMAND_GENERATION_REPORT.md": {
+    "mtime": 1778875404.2182982,
+    "hash": "133f251ea35f7b642c12866efeb83b47"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\EMOTIONAL_QUERY_PATTERN_REPORT.md": {
+    "mtime": 1778874806.998167,
+    "hash": "b8082024bd96be5bda83b85014d85a57"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\ENTITY_AND_SEMANTIC_CLUSTER_MAP.md": {
+    "mtime": 1778874806.997167,
+    "hash": "2560cac7ebbb31729228496d55b3c2df"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\ENTITY_GENERATION_ENGINE.md": {
+    "mtime": 1778926567.0770228,
+    "hash": "137605fbe6cbf14e93134761f52489d8"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\ENTITY_GRAPH_ANALYSIS.md": {
+    "mtime": 1778873980.127762,
+    "hash": "6f001ceda97ca1957d224ff57badf143"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\ENTITY_GRAPH_MASTER.md": {
+    "mtime": 1778876022.5848136,
+    "hash": "5137e4fd3d21d22fcfd82611026451ff"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\EXECUTION_ORDER.md": {
+    "mtime": 1778880690.2008748,
+    "hash": "11e6caa705c230b27957e103ac65ed57"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\EXECUTION_PRIORITY_MATRIX.md": {
+    "mtime": 1778876022.5858002,
+    "hash": "8c7944af51b669e6f8a8ca6487e6c364"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\EXECUTION_ROADMAP.md": {
+    "mtime": 1778880244.241788,
+    "hash": "58cde016b452ef57e9bffc8076058773"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\FINAL_EXECUTIVE_WAR_PLAN.md": {
+    "mtime": 1778875470.5955493,
+    "hash": "6cde7f99ba6ec5e5d4a7feb16f4c0115"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\FUTURE_SEMANTIC_EXPANSION_PLAN.md": {
+    "mtime": 1778874044.169345,
+    "hash": "b9f33e33e3aa912ca3c12121f003751c"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\GOOGLE_ALGORITHM_INTERPRETATION_REPORT.md": {
+    "mtime": 1778875404.2182982,
+    "hash": "38a82d1526c8af56153a08a177acdcb6"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\HUMAN_SEARCH_BEHAVIOR_REPORT.md": {
+    "mtime": 1778874806.9724078,
+    "hash": "61f294335fadaed1d0d237eb8a54a18c"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\INDEXABILITY_AND_CRAWL_REPORT.md": {
+    "mtime": 1778874044.160779,
+    "hash": "31166b8879feafbcddbb75715ec63781"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\INDEXING_GOVERNANCE_SYSTEM.md": {
+    "mtime": 1778926567.0770228,
+    "hash": "c3cd0951e54a80b8dc650e7b84b38b4f"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\INFRASTRUCTURE_VERIFICATION_REPORT.md": {
+    "mtime": 1778878431.054721,
+    "hash": "aba97e96f0b9a6dcecbbcb1fe9c6b119"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\INTERNAL_AUTHORITY_FLOW_MAP.md": {
+    "mtime": 1778880244.241788,
+    "hash": "75330602d63d5ba9c900e432b0b9d87d"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\INTERNAL_AUTHORITY_FLOW_SYSTEM.md": {
+    "mtime": 1778876022.5858002,
+    "hash": "4e5ee574280ca931129fdfed53086299"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\INTERNAL_LINKING_ANALYSIS.md": {
+    "mtime": 1778874012.5754797,
+    "hash": "d956aa9d4a0bde7ce70768875f17bf9d"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\INTERNAL_LINK_AUTOMATION_ENGINE.md": {
+    "mtime": 1778876611.4698284,
+    "hash": "7423b2b66730889cb917825676134afa"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\INTERNAL_LINK_AUTOMATION_V2.md": {
+    "mtime": 1778880665.115211,
+    "hash": "39b358a66d11e31e8dd9d6e1299aa511"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\LLM_RETRIEVAL_ENGINEERING.md": {
+    "mtime": 1778876022.5858002,
+    "hash": "21ef6bc4c2afbb16ead024ad4d7b736d"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\LONG_TAIL_QUERY_EXPANSION_ENGINE.md": {
+    "mtime": 1778880244.241788,
+    "hash": "51cfbbac161ad4df1ecb98902c0b655c"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\MARKET_WEAKNESS_EXPLOITATION_MATRIX.md": {
+    "mtime": 1778875470.5950408,
+    "hash": "cc7f6260df9d464de5a0dfd141d7a281"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\MASTER_TAXONOMY_SYSTEM.md": {
+    "mtime": 1778880244.241788,
+    "hash": "7548b6bb0ccc380960610abd707cc933"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\NEXTJS_APP_ROUTER_STRUCTURE.md": {
+    "mtime": 1778880628.857548,
+    "hash": "a7224fc496dcf6afe785b5861ef7d6c3"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\NEXTJS_SEARCH_ARCHITECTURE.md": {
+    "mtime": 1778876611.465792,
+    "hash": "37ca07e4e370706864f4dbb563421b42"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\NICHE_DOMINATION_OPPORTUNITIES.md": {
+    "mtime": 1778874806.997167,
+    "hash": "f293e93dc56c38b7802bbf6f22f8c232"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\OPERATIONAL_EXECUTION_MATRIX.md": {
+    "mtime": 1778926567.0770228,
+    "hash": "bce8410ebc4921a86a8cc7decb8864a1"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\ORGANIC_VIRALITY_ENGINE.md": {
+    "mtime": 1778875470.5955493,
+    "hash": "047611370aea25e07c8a07aedddf5e43"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\PERFORMANCE_BOTTLENECKS.md": {
+    "mtime": 1778874012.5482974,
+    "hash": "d54a41dd4429713f5bcafe13734a1dae"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\PHASE_1_EXECUTION_RUNBOOK.md": {
+    "mtime": 1778925473.7388642,
+    "hash": "b283799ece10cec08ca24c158ac3276b"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\PROGRAMMATIC_PAGE_ENGINE.md": {
+    "mtime": 1778880665.115211,
+    "hash": "8354dd3f11bbd818b6524ed381644655"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\PROGRAMMATIC_PAGE_GENERATOR.md": {
+    "mtime": 1778876611.4688194,
+    "hash": "3d34ed2c0302d4d4a5b60f0b43b2f9ab"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\PROGRAMMATIC_PAGE_MATRIX.md": {
+    "mtime": 1778880244.241788,
+    "hash": "b0fd928c3cdebdd5971cf5235f82da58"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\PROGRAMMATIC_SEO_STRATEGY.md": {
+    "mtime": 1778874012.3477304,
+    "hash": "40c41ff6577bdeb69bcc1f618dd21b88"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\PROGRAMMATIC_SEO_SYSTEM.md": {
+    "mtime": 1778876022.5848136,
+    "hash": "63f84901aa538adbfa198986585819d8"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\REDDIT_AND_COMMUNITY_INTELLIGENCE.md": {
+    "mtime": 1778875404.2182982,
+    "hash": "a398476131a8e47e53135e8d54f90a69"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\RENDERING_ARCHITECTURE_MAP.md": {
+    "mtime": 1778873980.127762,
+    "hash": "c38a68c21b17a581b85abb6ddd91485d"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SCALE_SAFETY_SYSTEMS.md": {
+    "mtime": 1778880690.2008748,
+    "hash": "08c4d4ea5640c7e18cde28b5651262d5"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SCHEMA_COVERAGE_REPORT.md": {
+    "mtime": 1778874044.1598234,
+    "hash": "d11a7f0a601875a721e0c44c2bff2635"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SCHEMA_FACTORY_SYSTEM.md": {
+    "mtime": 1778876611.4688194,
+    "hash": "65db5c8788b5c317e19a8d6ee7fd5fac"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SCHEMA_FACTORY_V2.md": {
+    "mtime": 1778880665.115211,
+    "hash": "897f70a6d743e78b968c2a82a3242fda"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SEARCH_DOMINANCE_VALIDATION_REPORT.md": {
+    "mtime": 1778926203.6662395,
+    "hash": "740e2f2e54f1b1ba1c6b73190c28ca4f"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SEARCH_ECOSYSTEM_MAP.md": {
+    "mtime": 1778875404.2182982,
+    "hash": "90e1441f37932105288fc75e157307c1"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SEARCH_INTENT_FUNNEL_MAP.md": {
+    "mtime": 1778874806.997167,
+    "hash": "736d7978521f7d6e0bf1eead7165f62b"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SEARCH_INTENT_FUTURECAST_2026_2030.md": {
+    "mtime": 1778875470.593031,
+    "hash": "3638cfaedca95d299c2e63906b779563"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SEARCH_INTENT_TERRITORY_MAP.md": {
+    "mtime": 1778876022.5848136,
+    "hash": "39dfd3e6d830fe7290b43442c90863ff"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SEARCH_JOURNEY_PSYCHOLOGY_MODEL.md": {
+    "mtime": 1778875470.593031,
+    "hash": "cbabccc39b740a57650ebcba77c8faa5"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SEARCH_PERFORMANCE_WAR_PLAN.md": {
+    "mtime": 1778876611.4698284,
+    "hash": "7ea780e5f4e5901d98e34308509ee7b0"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SEARCH_TELEMETRY_ARCHITECTURE.md": {
+    "mtime": 1778926567.0770228,
+    "hash": "356bbd02c97d06898a03d991d9d7de2e"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SEO_SYSTEM_AUDIT.md": {
+    "mtime": 1778873980.1085815,
+    "hash": "6a5208634fbba16edb1ac6b638efd59e"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\SERP_PSYCHOLOGY_ANALYSIS.md": {
+    "mtime": 1778874806.997167,
+    "hash": "6da75c91c9dfed22d3febddd4bebdd5a"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\VISUAL_INDEXING_ENGINE.md": {
+    "mtime": 1778876611.4698284,
+    "hash": "beb8e594c92b1ef7cc4a9803ef51136e"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\VISUAL_SEARCH_DOMINATION.md": {
+    "mtime": 1778876022.5858002,
+    "hash": "caa66ee9e8a1e9e8c46d6d351964c36e"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\VISUAL_SEARCH_EXPANSION.md": {
+    "mtime": 1778880244.241788,
+    "hash": "1907144a0725a1c03574a980aabccdd1"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM\\VISUAL_SEARCH_IMPLEMENTATION.md": {
+    "mtime": 1778880665.1162112,
+    "hash": "0cd38897220f851e8a10907051479a44"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM_V2\\PHASE_0_INTEL.md": {
+    "mtime": 1778943505.4092648,
+    "hash": "045068af88e6fd3e0c16e4e2b2fe978d"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM_V2\\PHASE_1_FOUNDATION.md": {
+    "mtime": 1778943505.4092648,
+    "hash": "c5b1e671125d5974161a8f010009f5f6"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM_V2\\PHASE_2_PSEO.md": {
+    "mtime": 1778943505.4092648,
+    "hash": "67719bd038d9af4f420847035c415f1b"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM_V2\\PHASE_3_AUTHORITY.md": {
+    "mtime": 1778943505.4092648,
+    "hash": "95c1d40d256b2a7a130419e361003653"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM_V2\\PHASE_4_GEO.md": {
+    "mtime": 1778943505.4092648,
+    "hash": "d9a7e804ba086e141c8df2811108ea26"
+  },
+  "F:\\startup\\picfomo\\WAR_ROOM_V2\\PHASE_5_VIRALITY.md": {
+    "mtime": 1778943505.413751,
+    "hash": "a1a1166a77a1716383fe55df077c9f71"
   },
   "F:\\startup\\picfomo\\picfomo anlysis.pdf": {
     "mtime": 1778174634.4317548,
     "hash": "89e4e8478580c19c03e0c1aac9825116"
   },
-  "F:\\startup\\picfomo\\public\\favicon.png": {
+  "F:\\startup\\picfomo\\public\\f-main.png": {
     "mtime": 1778177193.9236934,
     "hash": "97b4985626a3db479323e26d80cc7c28"
   },
@@ -419,15 +947,23 @@
     "mtime": 1775547986.0,
     "hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
   },
-  "F:\\startup\\picfomo\\public\\full logo.png": {
-    "mtime": 1778177193.229321,
-    "hash": "7226993197b5b628576e89db7dfc55f6"
-  },
   "F:\\startup\\picfomo\\public\\globe.svg": {
     "mtime": 1775547986.0,
     "hash": "2aaafa6a49b6563925fe440891e32717"
   },
-  "F:\\startup\\picfomo\\public\\logo.png": {
+  "F:\\startup\\picfomo\\public\\logo-favicon.png": {
+    "mtime": 1778177193.9236934,
+    "hash": "97b4985626a3db479323e26d80cc7c28"
+  },
+  "F:\\startup\\picfomo\\public\\logo-full.png": {
+    "mtime": 1778177193.229321,
+    "hash": "7226993197b5b628576e89db7dfc55f6"
+  },
+  "F:\\startup\\picfomo\\public\\logo-main.png": {
+    "mtime": 1778177193.229321,
+    "hash": "7226993197b5b628576e89db7dfc55f6"
+  },
+  "F:\\startup\\picfomo\\public\\logo-square.png": {
     "mtime": 1778177193.229321,
     "hash": "7226993197b5b628576e89db7dfc55f6"
   },
@@ -435,17 +971,9 @@
     "mtime": 1775998564.7290084,
     "hash": "1b4b8a2ea271c28599cc9953259052dc"
   },
-  "F:\\startup\\picfomo\\public\\logo2.png": {
-    "mtime": 1778177193.229321,
-    "hash": "7226993197b5b628576e89db7dfc55f6"
-  },
   "F:\\startup\\picfomo\\public\\next.svg": {
     "mtime": 1775547986.0,
     "hash": "8e061864f388b47f33a1c3780831193e"
-  },
-  "F:\\startup\\picfomo\\public\\pic fomo .png": {
-    "mtime": 1778177193.9236934,
-    "hash": "97b4985626a3db479323e26d80cc7c28"
   },
   "F:\\startup\\picfomo\\public\\window.svg": {
     "mtime": 1775547986.0,
@@ -455,33 +983,65 @@
     "mtime": 1776857685.683792,
     "hash": "c864190271de94c2035e2687f8b2f3ed"
   },
+  "F:\\startup\\picfomo\\public\\hero\\1.webp": {
+    "mtime": 1778799561.012,
+    "hash": "1dbaa531037f1f630e1db809a5ab9448"
+  },
   "F:\\startup\\picfomo\\public\\hero\\2.png": {
     "mtime": 1776857959.199646,
     "hash": "94d55aaca44d073c8e81ec3cc11eb367"
+  },
+  "F:\\startup\\picfomo\\public\\hero\\2.webp": {
+    "mtime": 1778799561.446,
+    "hash": "d4a41b0d4dfcbf32dc7dcace1c3bdd92"
   },
   "F:\\startup\\picfomo\\public\\hero\\3.png": {
     "mtime": 1776857982.168781,
     "hash": "b6dd2a62a5595334b406ea85e719cbaf"
   },
+  "F:\\startup\\picfomo\\public\\hero\\3.webp": {
+    "mtime": 1778799562.107,
+    "hash": "f45bac012c86d0e16de752f05b243478"
+  },
   "F:\\startup\\picfomo\\public\\hero\\4.png": {
     "mtime": 1776857998.5794497,
     "hash": "bf3842b5b8be476f39ca154c4d210456"
+  },
+  "F:\\startup\\picfomo\\public\\hero\\4.webp": {
+    "mtime": 1778799562.575,
+    "hash": "49f7fb6ec080d11f0b7a01d1dec9dab3"
   },
   "F:\\startup\\picfomo\\public\\hero\\5.png": {
     "mtime": 1776858017.0209408,
     "hash": "e071181fa2f628a296dd711197c95192"
   },
+  "F:\\startup\\picfomo\\public\\hero\\5.webp": {
+    "mtime": 1778799563.687,
+    "hash": "28d155ad3013b35f54efb7eb1ef3b7bf"
+  },
   "F:\\startup\\picfomo\\public\\hero\\6.png": {
     "mtime": 1776858032.9020438,
     "hash": "f8e34e3880da642e8eafbd9bcb692bba"
+  },
+  "F:\\startup\\picfomo\\public\\hero\\6.webp": {
+    "mtime": 1778799564.254,
+    "hash": "b37eaca43a6f8833b13103b0ed718540"
   },
   "F:\\startup\\picfomo\\public\\hero\\7.png": {
     "mtime": 1776858062.3866053,
     "hash": "104a3fd8861cd10a711c361bf6d57094"
   },
+  "F:\\startup\\picfomo\\public\\hero\\7.webp": {
+    "mtime": 1778799564.96,
+    "hash": "a830ecd9280d761dd732b74292c02a30"
+  },
   "F:\\startup\\picfomo\\public\\hero\\8.png": {
     "mtime": 1776858083.5833523,
     "hash": "ba96a52248719aafc0416ad3c5db2dbb"
+  },
+  "F:\\startup\\picfomo\\public\\hero\\8.webp": {
+    "mtime": 1778799567.108,
+    "hash": "4f8aa46420a94768f82b17ccd78d86ec"
   },
   "F:\\startup\\picfomo\\public\\results\\cr7-after.png": {
     "mtime": 1776860702.8976552,

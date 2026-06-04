@@ -23,14 +23,14 @@ const STEPS = [
     id: 3,
     title: "3. Pick a trending aesthetic",
     desc: "Browse the Studio. What you see is exactly what you get—no prompt engineering required.",
-    image: "/hero/4.png",
+    image: "/hero/4.webp",
     side: "left"
   },
   {
     id: 4,
     title: "4. Remix & Earn Sparks",
     desc: "Publish to the Creator Feed. When someone hits Remix, you earn Sparks to generate more premium looks.",
-    image: "/hero/3.png",
+    image: "/hero/3.webp",
     side: "right",
     isSpecial: true
   }

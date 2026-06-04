@@ -3,21 +3,46 @@
   "short_name": "PicFOMO",
   "description": "Drop your photo. Pick a style. Get a masterpiece.",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#030303",
   "theme_color": "#030303",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "/f-main.png",
+      "src": "/logo-favicon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/f-main.png",
+      "src": "/logo-favicon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/logo-favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/logo-full.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "PicFOMO — AI Portrait Generator"
+    },
+    {
+      "src": "/logo-full.png",
+      "sizes": "720x540",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "PicFOMO — AI Portrait Generator"
+    }
+  ],
+  "categories": ["photo", "entertainment", "social"]
 }

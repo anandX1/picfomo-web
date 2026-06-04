@@ -10,20 +10,21 @@ export default function Navbar() {
         <Link href="/" className="inline-block outline-none transition-transform hover:scale-105 active:scale-95">
           <div className="flex items-center justify-start">
             
-            {/* MOBILE LOGO: Hardcoded to 48x48 pixels. No wrapper sizing needed. */}
+            {/* MOBILE LOGO: Hardcoded to 48x48 pixels. */}
             <Image 
-              src="/pic fomo .png" 
-              alt="P" 
+              src="/logo-favicon.png" 
+              alt="PicFOMO" 
               width={48}
               height={48}
               priority
+              fetchPriority="high"
               className="block md:hidden object-contain drop-shadow-md" 
             />
 
             {/* DESKTOP LOGO: Forced to 180px wide. */}
             {/* 💡 PRO TIP: If your PNG file has a lot of invisible transparent padding around the text, change 180 to 220 or 250! */}
             <Image 
-              src="/full logo.png" 
+              src="/logo-full.png" 
               alt="PicFOMO" 
               width={180}
               height={50}

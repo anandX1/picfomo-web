@@ -10,7 +10,7 @@ export default function NewFooter({ setActivePage }: { setActivePage: (p: string
           <div className="col-span-1 md:col-span-1 flex flex-col gap-6">
             <div className="flex items-center cursor-pointer transition-opacity hover:opacity-80" onClick={() => setActivePage('home')}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/full logo.png" alt="PicFOMO" className="h-16 md:h-20 w-auto object-contain" />
+              <img src="/logo-full.png" alt="PicFOMO" className="h-16 md:h-20 w-auto object-contain" />
             </div>
             <p className="text-gray-200/70 text-sm leading-relaxed">
               The fastest way to generate studio-grade AI portraits and remix viral aesthetics—without prompts.

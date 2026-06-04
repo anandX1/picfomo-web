@@ -10,6 +10,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
+        // ✅ Main crawlers: allow everything except private areas
         userAgent: "*",
         allow: "/",
         disallow: [
@@ -20,13 +21,13 @@ export default function robots(): MetadataRoute.Robots {
           "/static/",
           "/sign-in",
           "/sign-up",
-          "/*?*", // Block all URL parameters (prevents faceted navigation bloat)
+          // NOTE: Removed /*?* — it was blocking Googlebot and external crawlers (Acquire, etc.)
+          // Query params like ?page= and ?style= are legitimate and should be crawlable
         ],
       },
       {
-        // 🌟 AGGRESSIVE BOT PROTECTION
-        // We block AI scrapers that don't provide search value but eat crawl budget.
-        userAgent: ["GPTBot", "CCBot", "Google-Extended", "anthropic-ai", "Omgilibot", "FacebookBot"],
+        // Block AI scrapers that consume crawl budget without contributing search value
+        userAgent: ["GPTBot", "CCBot", "anthropic-ai", "Omgilibot"],
         disallow: ["/style/", "/post/", "/u/"],
       },
     ],

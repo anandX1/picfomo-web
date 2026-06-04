@@ -4,11 +4,13 @@ import { useEffect } from "react";
 
 export default function SmoothScroll() {
   useEffect(() => {
-    // ESM import for Lenis
+    let rafId: number;
+    let lenisInstance: any;
+
     import('lenis').then(({ default: Lenis }) => {
-      const lenis = new Lenis({
+      lenisInstance = new Lenis({
         duration: 1.12,
-        easing: (t) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
+        easing: (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
         orientation: 'vertical',
         smoothWheel: true,
         wheelMultiplier: 0.92,
@@ -17,16 +19,18 @@ export default function SmoothScroll() {
       });
 
       function raf(time: number) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
+        lenisInstance.raf(time);
+        rafId = requestAnimationFrame(raf);
       }
 
-      requestAnimationFrame(raf);
-
-      return () => {
-        lenis.destroy();
-      };
+      rafId = requestAnimationFrame(raf);
     });
+
+    // ✅ Cleanup runs correctly in outer useEffect scope
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (lenisInstance) lenisInstance.destroy();
+    };
   }, []);
 
   return null;

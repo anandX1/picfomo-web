@@ -49,13 +49,8 @@ export const metadata: Metadata = {
   creator: "PicFOMO",
   publisher: "PicFOMO",
 
-  // 4. ALTERNATES: Auto-generates correct canonical URLs for each page based on metadataBase
-  alternates: {
-    languages: {
-      'en-IN': '/en-IN',
-      'en-US': '/en-US',
-    },
-  },
+  // 4. CANONICAL: Let Next.js auto-generate canonical URLs per page based on metadataBase
+  // NOTE: Removed /en-IN and /en-US alternates — those routes don't exist and were penalizing SEO
 
   // 5. ROBOTS DIRECTIVE: Maximize indexing capability
   robots: {
@@ -72,11 +67,14 @@ export const metadata: Metadata = {
 
   icons: {
     icon: [
-      { url: "/favicon.ico?v=2", sizes: "any" },
-      { url: "/f-main.png?v=2", type: "image/png" },
-      { url: "/favicon.svg?v=2", type: "image/svg+xml" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo-favicon.png", type: "image/png", sizes: "192x192" },
     ],
-    apple: "/f-main.png?v=2", 
+    apple: [
+      { url: "/logo-main.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
   },
 
   manifest: "/manifest.json",

@@ -12,8 +12,15 @@ export const runtime = 'edge';
 export async function GET() {
   const baseUrl = "https://www.picfomo.com";
   
-  // 1. Calculate Shard Requirements
-  const postCount = await getPublicPostCount();
+  // 1. Calculate Shard Requirements — with DB fallback to prevent sitemap failure
+  let postCount = 0;
+  try {
+    postCount = await getPublicPostCount();
+  } catch (e) {
+    // DB unavailable (cold start / binding error) — serve static-only sitemap
+    console.error("Sitemap: DB unavailable, falling back to static index", e);
+  }
+
   const POST_SHARD_SIZE = 10000;
   const IMAGE_SHARD_SIZE = 5000;
   
