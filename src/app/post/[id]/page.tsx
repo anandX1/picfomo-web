@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title,
       description,
       images: [{
-        url: `https://www.picfomo.com/api/og?id=${postId}`,
+        url: post.image_url.startsWith('http') ? post.image_url : `https://www.picfomo.com${post.image_url}`,
         width: 1200,
         height: 630,
         alt: title,

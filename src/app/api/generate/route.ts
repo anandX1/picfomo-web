@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { AwsClient } from "aws4fetch";
 
 // 🌟 BULLETPROOF URL CONSTANTS
 const PIXAZO_SCHNELL_URL = "https://gateway.pixazo.ai/flux-1-schnell/v1/getData";
@@ -25,10 +25,9 @@ async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
   const bucketName = env.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME;
   const publicUrl = env.NEXT_PUBLIC_R2_URL || process.env.NEXT_PUBLIC_R2_URL;
 
-  const S3 = new S3Client({
-    region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId: accessKey!, secretAccessKey: secretKey! },
+  const aws = new AwsClient({
+    accessKeyId: accessKey!,
+    secretAccessKey: secretKey!,
   });
 
   const [header, base64Data] = base64Str.split(",");
@@ -43,8 +42,20 @@ async function uploadBase64ToR2(base64Str: string, env: any): Promise<string> {
   }
 
   const key = `uploads/picfomo_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+  const url = `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${key}`;
 
-  await S3.send(new PutObjectCommand({ Bucket: bucketName, Key: key, ContentType: mimeType, Body: bytes }));
+  const response = await aws.fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': mimeType,
+    },
+    body: bytes
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to upload to R2: ${response.statusText}`);
+  }
+
   return `${publicUrl}/${key}`;
 }
 
@@ -68,21 +79,26 @@ async function processAndUploadGeneratedImage(imageUrl: string, styleName: strin
     const bucketName = env.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME;
     const publicUrl = env.NEXT_PUBLIC_R2_URL || process.env.NEXT_PUBLIC_R2_URL;
 
-    const S3 = new S3Client({
-      region: "auto",
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-      credentials: { accessKeyId: accessKey!, secretAccessKey: secretKey! },
+    const aws = new AwsClient({
+      accessKeyId: accessKey!,
+      secretAccessKey: secretKey!,
     });
 
     const uniqueId = Math.random().toString(36).substring(2, 9);
     const key = `renders/${getSemanticFilename(styleName, uniqueId)}`;
+    const url = `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${key}`;
 
-    await S3.send(new PutObjectCommand({ 
-      Bucket: bucketName, 
-      Key: key, 
-      ContentType: 'image/jpeg', 
-      Body: finalBytes 
-    }));
+    const response = await aws.fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'image/jpeg',
+      },
+      body: finalBytes
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to upload to R2: ${response.statusText}`);
+    }
 
     return `${publicUrl}/${key}`;
   } catch (err) {
