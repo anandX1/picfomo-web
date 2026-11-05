@@ -29,22 +29,30 @@ export default function NewHero() {
       </p>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 mb-12 w-full sm:w-auto" id="download">
-        <a
-          href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-1.0.0.exe"
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-white text-black font-bold text-sm md:text-base hover:bg-[#FF4F81] hover:text-white transition-all shadow-lg hover:shadow-[#FF4F81]/25 hover:-translate-y-0.5"
-        >
-          <Download size={18} />
-          Download for Windows (.exe)
-        </a>
+      <div className="flex flex-col items-center gap-3 mb-12 w-full sm:w-auto" id="download">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+          <a
+            href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-1.0.0.exe"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-white text-black font-bold text-sm md:text-base hover:bg-[#FF4F81] hover:text-white transition-all shadow-lg hover:shadow-[#FF4F81]/25 hover:-translate-y-0.5"
+          >
+            <Download size={18} />
+            Download for Windows (.exe)
+          </a>
 
-        <Link
-          href="#pricing"
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 bg-white/5 text-white font-semibold text-sm md:text-base hover:bg-white/10 transition-colors backdrop-blur-md"
+          <Link
+            href="#pricing"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 bg-white/5 text-white font-semibold text-sm md:text-base hover:bg-white/10 transition-colors backdrop-blur-md"
+          >
+            <Zap size={16} className="text-[#FFCD19]" />
+            Get 7-Day Pass — ₹49
+          </Link>
+        </div>
+        <a
+          href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-1.0.0.zip"
+          className="text-xs text-white/40 hover:text-white/80 transition-colors underline underline-offset-4"
         >
-          <Zap size={16} className="text-[#FFCD19]" />
-          Get 7-Day Pass — ₹49
-        </Link>
+          Alternative: Download compressed (.zip) archive
+        </a>
       </div>
 
       {/* Trust Badges */}
@@ -84,18 +92,11 @@ export default function NewHero() {
         {/* Caption Visualizer */}
         <div className="py-8 flex flex-col items-center justify-center gap-3">
           <span className="text-xs uppercase font-mono tracking-widest text-white/30">CANVAS PREVIEW • 00:01:23</span>
-          <div className="text-2xl md:text-4xl font-extrabold text-white tracking-wide">
-            Then{" "}
-            <span className="px-2 py-0.5 rounded bg-[#FF4F81] text-white shadow-lg shadow-[#FF4F81]/50 scale-105 inline-block">
-              Kai Cenat
-            </span>{" "}
-            opened applications
+          <div className="text-lg md:text-2xl font-extrabold text-white/70">
+            for Streamer University,
           </div>
-          <div className="text-xl md:text-3xl font-extrabold text-white/80">
-            for{" "}
-            <span className="text-[#FFCD19] underline decoration-[#FFCD19]/50 underline-offset-4">
-              Streamer University
-            </span>
+          <div className="text-4xl md:text-6xl font-black text-[#FFCD19] tracking-wider scale-110 drop-shadow-xl animate-pulse">
+            2026.
           </div>
         </div>
 
