@@ -36,7 +36,7 @@ export default function NewHero() {
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-white text-black font-bold text-sm md:text-base hover:bg-[#FF4F81] hover:text-white transition-all shadow-lg hover:shadow-[#FF4F81]/25 hover:-translate-y-0.5"
           >
             <Download size={18} />
-            Download for Windows (.exe)
+            Download Setup Wizard (.exe)
           </a>
 
           <Link
@@ -49,10 +49,10 @@ export default function NewHero() {
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-white/40">
           <a
-            href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-1.0.0.zip"
+            href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-Wizard-v1.0.0.zip"
             className="hover:text-white/80 transition-colors underline underline-offset-4"
           >
-            Download compressed (.zip) archive
+            Download Setup Wizard (.zip Package)
           </a>
           <span>•</span>
           <span className="text-[#22C55E]/80">✓ SHA-256 Verified Clean</span>
