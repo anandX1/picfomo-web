@@ -31,8 +31,7 @@ export default function NewHero() {
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row items-center gap-4 mb-12 w-full sm:w-auto" id="download">
         <a
-          href="/PicFomo-Studio-Setup-1.0.0.exe"
-          download
+          href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-1.0.0.exe"
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-white text-black font-bold text-sm md:text-base hover:bg-[#FF4F81] hover:text-white transition-all shadow-lg hover:shadow-[#FF4F81]/25 hover:-translate-y-0.5"
         >
           <Download size={18} />
