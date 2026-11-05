@@ -32,11 +32,11 @@ export default function NewHero() {
       <div className="flex flex-col items-center gap-3 mb-12 w-full sm:w-auto" id="download">
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           <a
-            href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-1.0.0.exe"
+            href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-1.0.0.zip"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-white text-black font-bold text-sm md:text-base hover:bg-[#FF4F81] hover:text-white transition-all shadow-lg hover:shadow-[#FF4F81]/25 hover:-translate-y-0.5"
           >
             <Download size={18} />
-            Download Setup Wizard (.exe)
+            Download Setup Wizard (.zip)
           </a>
 
           <Link
@@ -49,10 +49,10 @@ export default function NewHero() {
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-white/40">
           <a
-            href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-Wizard-v1.0.0.zip"
+            href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-1.0.0.exe"
             className="hover:text-white/80 transition-colors underline underline-offset-4"
           >
-            Download Setup Wizard (.zip Package)
+            Direct .exe installer
           </a>
           <span>•</span>
           <span className="text-[#22C55E]/80">✓ SHA-256 Verified Clean</span>
