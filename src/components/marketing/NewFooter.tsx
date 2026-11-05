@@ -1,51 +1,54 @@
-"use client";
-
 import Link from "next/link";
+import Image from "next/image";
 
-export default function NewFooter({ setActivePage }: { setActivePage: (p: string) => void }) {
+export default function NewFooter() {
   return (
-    <footer className="border-t border-white/5 py-16 relative z-50 brand-gold-glow brand-gold-glow--footer">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
-          <div className="col-span-1 md:col-span-1 flex flex-col gap-6">
-            <div className="flex items-center cursor-pointer transition-opacity hover:opacity-80" onClick={() => setActivePage('home')}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-full.png" alt="PicFOMO" className="h-16 md:h-20 w-auto object-contain" />
-            </div>
-            <p className="text-gray-200/70 text-sm leading-relaxed">
-              The fastest way to generate studio-grade AI portraits and remix viral aesthetics—without prompts.
+    <footer className="border-t border-white/5 py-16 bg-[#030305] text-white/60 text-xs">
+      <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          <div className="col-span-1 md:col-span-1 flex flex-col gap-4">
+            <Image src="/logo-full.png" alt="PicFomo Studio" width={160} height={40} className="object-contain" />
+            <p className="text-white/50 leading-relaxed">
+              Professional documentary captioning and multi-track NLE sequence generation for creators and editors.
             </p>
           </div>
+
           <div>
-            <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-widest text-[10px]">Product</h4>
-            <ul className="flex flex-col gap-3">
-              <li><button onClick={() => setActivePage('home')} className="text-gray-200/70 hover:text-[var(--color-gold)] text-sm transition text-left">Styles</button></li>
-              <li><button onClick={() => setActivePage('feed')} className="text-gray-200/70 hover:text-[var(--color-gold)] text-sm transition text-left">Creator Feed</button></li>
-              <li><button onClick={() => setActivePage('pricing')} className="text-gray-200/70 hover:text-[var(--color-gold)] text-sm transition text-left">Pricing</button></li>
+            <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Integrations</h4>
+            <ul className="flex flex-col gap-2">
+              <li><Link href="#features" className="hover:text-white transition-colors">Adobe Premiere Pro (.xml)</Link></li>
+              <li><Link href="#features" className="hover:text-white transition-colors">Adobe After Effects (.jsx)</Link></li>
+              <li><Link href="#features" className="hover:text-white transition-colors">DaVinci Resolve (.srt)</Link></li>
+              <li><Link href="#features" className="hover:text-white transition-colors">OpenTimelineIO (.otio)</Link></li>
             </ul>
           </div>
+
           <div>
-            <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-widest text-[10px]">Company</h4>
-            <ul className="flex flex-col gap-3">
-              <li><Link href="#" className="text-gray-200/70 hover:text-[var(--color-gold)] text-sm transition">About Us</Link></li>
-              <li><Link href="#" className="text-gray-200/70 hover:text-[var(--color-gold)] text-sm transition">Careers</Link></li>
-              <li><Link href="#" className="text-gray-200/70 hover:text-[var(--color-gold)] text-sm transition">Contact Support</Link></li>
+            <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Pricing & Plans</h4>
+            <ul className="flex flex-col gap-2">
+              <li><Link href="#pricing" className="hover:text-white transition-colors">7-Day Launch Pass (₹49)</Link></li>
+              <li><Link href="#pricing" className="hover:text-white transition-colors">Pro Monthly (₹499)</Link></li>
+              <li><Link href="#pricing" className="hover:text-white transition-colors">Founder Lifetime (₹2,999)</Link></li>
+              <li><Link href="#download" className="hover:text-white transition-colors">Download Studio Setup</Link></li>
             </ul>
           </div>
+
           <div>
-            <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-widest text-[10px]">Legal</h4>
-            <ul className="flex flex-col gap-3">
-              <li><Link href="#" className="text-gray-200/70 hover:text-[var(--color-gold)] text-sm transition">Terms of Service</Link></li>
-              <li><Link href="#" className="text-gray-200/70 hover:text-[var(--color-gold)] text-sm transition">Privacy Policy</Link></li>
+            <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Privacy & Trust</h4>
+            <ul className="flex flex-col gap-2">
+              <li><span className="text-white/40">100% Local On-Device Processing</span></li>
+              <li><span className="text-white/40">Zero Cloud Audio/Video Storage</span></li>
+              <li><span className="text-white/40">Full Commercial Rights to Exports</span></li>
+              <li><span className="text-white/40">Support: support@picfomo.com</span></li>
             </ul>
           </div>
         </div>
-        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-gray-200/60 text-xs">© 2026 PicFOMO. All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <Link href="#" className="text-gray-200/60 hover:text-white transition">
-              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            </Link>
+
+        <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-white/40">
+          <p>© 2026 PicFomo Technologies (picfomo.com). All rights reserved.</p>
+          <div className="flex gap-4">
+            <Link href="#pricing" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="#pricing" className="hover:text-white transition-colors">Privacy Policy</Link>
           </div>
         </div>
       </div>

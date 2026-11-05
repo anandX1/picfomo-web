@@ -48,6 +48,13 @@ next-env.d.ts
 .wrangler
 .dev.vars*
 
+# Binary installers & archives
+public/*.exe
+public/*.dmg
+public/*.AppImage
+.archive_auth/
+
+
 
 !.dev.vars.example
 

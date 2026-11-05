@@ -1,6 +1,10 @@
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
-
-initOpenNextCloudflareForDev();
+// Optional OpenNext Cloudflare Dev hook
+if (process.env.CF_PAGES === '1') {
+  try {
+    const { initOpenNextCloudflareForDev } = require("@opennextjs/cloudflare");
+    initOpenNextCloudflareForDev();
+  } catch {}
+}
 
 /** * EXPERT STANDARD SECURITY HEADERS
  * Prevents clickjacking, MIME-sniffing, and cross-site scripting attacks.
