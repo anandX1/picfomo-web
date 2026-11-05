@@ -47,12 +47,16 @@ export default function NewHero() {
             Get 7-Day Pass — ₹49
           </Link>
         </div>
-        <a
-          href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-1.0.0.zip"
-          className="text-xs text-white/40 hover:text-white/80 transition-colors underline underline-offset-4"
-        >
-          Alternative: Download compressed (.zip) archive
-        </a>
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-white/40">
+          <a
+            href="https://github.com/anandX1/picfomo-web/releases/download/v1.0.0/PicFomo-Studio-Setup-1.0.0.zip"
+            className="hover:text-white/80 transition-colors underline underline-offset-4"
+          >
+            Download compressed (.zip) archive
+          </a>
+          <span>•</span>
+          <span className="text-[#22C55E]/80">✓ SHA-256 Verified Clean</span>
+        </div>
       </div>
 
       {/* Trust Badges */}
@@ -63,7 +67,7 @@ export default function NewHero() {
         </div>
         <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white/[0.02] border border-white/5">
           <Monitor size={14} className="text-[#00E0FF]" />
-          <span>No Python Needed</span>
+          <span>Foveal AI Cadence</span>
         </div>
         <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white/[0.02] border border-white/5">
           <span className="font-bold text-[#FF4F81]">Ae</span>
